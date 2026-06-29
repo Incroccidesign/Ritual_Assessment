@@ -1,0 +1,459 @@
+{
+  "app": {
+    "name": "Ritual Assessments",
+    "claim": "Assessment visuali guidati per la ricerca",
+    "loading": "Caricamento."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "builder": "Builder",
+    "results": "Risultati",
+    "newAssessment": "Nuovo assessment"
+  },
+  "common": {
+    "add": "Aggiungi",
+    "addActivity": "Aggiungi attivita",
+    "back": "Indietro",
+    "cancel": "Annulla",
+    "completeActivity": "Completa attivita",
+    "copyPublicLink": "Copia link pubblico",
+    "createAssessment": "Crea assessment",
+    "download": "Scarica",
+    "edit": "Modifica",
+    "empty": "Non c'e ancora nulla.",
+    "exportDocx": "Esporta DOCX",
+    "exportExcel": "Esporta Excel",
+    "exportJson": "Esporta JSON",
+    "next": "Avanti",
+    "open": "Apri",
+    "optional": "Opzionale",
+    "previous": "Precedente",
+    "publish": "Pubblica",
+    "remove": "Rimuovi",
+    "save": "Salva",
+    "saved": "Salvato",
+    "submitAssessment": "Invia assessment",
+    "viewResults": "Vedi risultati"
+  },
+  "otherOption": {
+    "allowLabel": "Consenti opzione \"Altro\"",
+    "allowHelper": "I partecipanti possono aggiungere una risposta personalizzata se nessuna opzione e adatta.",
+    "label": "Altro",
+    "placeholder": "Scrivi la tua risposta...",
+    "validationRequired": "Scrivi la tua risposta o deseleziona \"Altro\".",
+    "resultsLabel": "Altro",
+    "addedByParticipants": "Aggiunto dai partecipanti"
+  },
+  "dashboard": {
+    "title": "Assessment",
+    "body": "Crea assessment, condividi il link e segui le risposte mentre arrivano.",
+    "emptyTitle": "Nessun assessment",
+    "emptyBody": "Crea il tuo primo assessment visuale guidato per iniziare a raccogliere risposte strutturate.",
+    "draft": "Bozza",
+    "published": "Pubblicato",
+    "closed": "Chiuso",
+    "response": "risposta",
+    "responses": "risposte",
+    "noResponsesYet": "Nessuna risposta ancora",
+    "status": "Stato",
+    "createNewAssessment": "Nuovo assessment",
+    "createNasijAssessment": "Crea assessment NASIJ",
+    "creatingNasijAssessment": "Creazione assessment NASIJ...",
+    "createNasijAssessmentError": "Impossibile creare l'assessment NASIJ.",
+    "edit": "Modifica",
+    "copyLink": "Copia link",
+    "viewResults": "Vedi risultati",
+    "hideResults": "Nascondi risultati",
+    "export": "Esporta",
+    "delete": "Elimina",
+    "deleteTitle": "Eliminare l'assessment?",
+    "deleteBody": "Questo rimuovera definitivamente l'assessment e le sue risposte.",
+    "deleteError": "Impossibile eliminare questo assessment.",
+    "overview": "Panoramica",
+    "people": "Persone",
+    "completed": "Completati",
+    "stepsCompleted": "Step completati",
+    "organization": "Organizzazione",
+    "sector": "Settore",
+    "role": "Ruolo",
+    "submittedLabel": "Inviato",
+    "stopped": "Interrotto",
+    "exploration": "Esplorazione",
+    "explorationBody": "Cio che i partecipanti hanno selezionato nel primo step.",
+    "prioritization": "Prioritizzazione",
+    "prioritizationBody": "Le sfide che sono emerse come piu rilevanti.",
+    "framing": "Framing",
+    "framingBody": "Bisogni che emergono dalle sfide selezionate e prioritarizzate.",
+    "predefinedChallenges": "Sfide predefinite",
+    "selectedChallenges": "Sfide selezionate",
+    "challenge": "Sfida",
+    "emergingNeeds": "Bisogni emergenti",
+    "priorityOrder": "Ordine di priorita",
+    "exportActions": "Esporta risultati",
+    "participantRankings": "Ranking per partecipante",
+    "participantSelections": "Selezioni per partecipante",
+    "linkCopied": "Link pubblico copiato",
+    "publishToGenerateLink": "Pubblica l'assessment per generare un link pubblico.",
+    "noResponsesToExport": "Non ci sono ancora risposte da esportare.",
+    "noCustomResponses": "Nessuna risposta personalizzata aggiunta."
+  },
+  "assessmentCreate": {
+    "title": "Crea assessment",
+    "helper": "Scegli come vuoi iniziare.",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "newAssessment": "Nuovo assessment",
+    "createError": "Impossibile creare questo assessment.",
+    "startFromScratch": {
+      "title": "Parti da zero",
+      "description": "Crea un assessment vuoto e costruisci il flusso manualmente.",
+      "cta": "Crea assessment vuoto"
+    },
+    "templates": {
+      "title": "Usa un modello esistente",
+      "description": "Scegli un modello per creare un nuovo assessment modificabile.",
+      "choiceDescription": "Parti da una struttura salvata o proposta di default e personalizzala.",
+      "createNew": "Crea nuovo modello",
+      "use": "Usa modello",
+      "delete": "Elimina",
+      "defaultBadge": "Modello di default",
+      "buildNew": "Crea un nuovo modello",
+      "buildNewHelper": "Crea una struttura riutilizzabile nel builder normale. La modalita modello sara gia attiva.",
+      "nasijName": "Sfide di sostenibilita NASIJ",
+      "nasijDescription": "Identifica obiettivi, sfide, bisogni e opportunita di collaborazione a breve, medio e lungo termine.",
+      "blankName": "Modello senza titolo",
+      "blankDescription": "Una struttura vuota riutilizzabile da usare come punto di partenza.",
+      "createNewPlaceholder": "E stato creato un modello vuoto riutilizzabile. L'editing completo dei modelli potra essere collegato al builder in uno step successivo.",
+      "deleteConfirm": {
+        "title": "Eliminare il modello?",
+        "body": "Questo rimuovera definitivamente il modello. Gli assessment gia creati da questo modello non saranno modificati.",
+        "cancel": "Annulla",
+        "confirm": "Elimina modello"
+      }
+    }
+  },
+  "auth": {
+    "title": "Accesso designer",
+    "body": "Accedi per gestire gli assessment e leggere i risultati privati. I partecipanti non hanno bisogno di account.",
+    "email": "Email",
+    "password": "Password",
+    "continueAsDesigner": "Continua come designer",
+    "mockNote": "Supabase Auth non e configurato, quindi questa build locale usa una sessione designer mock.",
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "signInLoading": "Accesso in corso...",
+    "signUpLoading": "Creazione account...",
+    "signUpSuccess": "Controlla la tua email per confermare l'account.",
+    "switchToSignUp": "Ti serve un account? Registrati",
+    "switchToSignIn": "Hai gia un account? Accedi",
+    "signInError": "Impossibile accedere.",
+    "enterEmail": "Inserisci il tuo indirizzo email.",
+    "validEmail": "Inserisci un indirizzo email valido.",
+    "enterPassword": "Inserisci la tua password.",
+    "createPassword": "Crea una password.",
+    "passwordMin": "La password deve contenere almeno {min} caratteri.",
+    "invalidCredentials": "Email o password non corretti.",
+    "accountExists": "Esiste gia un account con questa email. Prova ad accedere.",
+    "unexpectedError": "Qualcosa e andato storto. Riprova.",
+    "signOut": "Esci",
+    "redirecting": "Reindirizzamento al login.",
+    "supabaseRequired": "Supabase Auth non e configurato. Aggiungi NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY per abilitare l'accesso designer."
+  },
+  "home": {
+    "title": "Costruisci un assessment visuale guidato",
+    "body": "Un percorso ispirato a Ritual per designer e ricercatori che raccolgono evidenze qualitative e semi-strutturate senza trasformare l'esperienza in un questionario classico.",
+    "cta": "Crea assessment",
+    "secondary": "Accedi",
+    "tertiary": "Registrati"
+  },
+  "presets": {
+    "assessment": {
+      "draftTitle": "Assessment senza titolo",
+      "demoTitle": "Assessment dei bisogni organizzativi",
+      "demoDescription": "Un percorso visuale guidato per identificare sfide, ordinare priorita e inquadrare bisogni emergenti."
+    },
+    "activities": {
+      "profiling": {
+        "title": "Profilo partecipante",
+        "prompt": "Raccontaci la tua organizzazione.",
+        "organizationName": "Nome organizzazione",
+        "sector": "Settore",
+        "country": "Paese",
+        "respondentRole": "Ruolo del rispondente"
+      },
+      "exploration": {
+        "title": "Esplora le sfide attuali",
+        "prompt": "Quali sono le principali sfide a breve termine che la tua organizzazione sta affrontando?",
+        "energyCosts": "Costi energetici",
+        "staffTurnover": "Turnover del personale",
+        "trainingNeeds": "Bisogni di formazione",
+        "digitalizationGaps": "Gap di digitalizzazione"
+      },
+      "prioritization": {
+        "title": "Prioritizza le sfide selezionate",
+        "prompt": "Tocca gli elementi in ordine di priorita."
+      },
+      "framing": {
+        "title": "Inquadra i bisogni emergenti",
+        "prompt": "A partire da queste priorita, descrivi i bisogni che emergono per la tua organizzazione.",
+        "defaultQuestionTitle": "Riflessione",
+        "defaultQuestionPrompt": "Quali bisogni emergono da queste priorita?",
+        "answerPlaceholder": "Scrivi la tua riflessione..."
+      }
+    }
+  },
+  "builder": {
+    "title": "Builder assessment",
+    "assessmentDetails": "Dettagli assessment",
+    "assessmentFlow": "Flusso assessment",
+    "assessmentFlowHelper": "Scegli le attivita che i partecipanti completeranno. Ogni step ti aiuta a raccogliere un tipo diverso di insight.",
+    "activityAddedSingular": "{count} attivita aggiunta",
+    "activitiesAddedPlural": "{count} attivita aggiunte",
+    "activityFlow": "Flusso attivita",
+    "activitySettings": "Impostazioni attivita",
+    "participantPreview": "Link partecipante",
+    "titleLabel": "Titolo assessment",
+    "descriptionLabel": "Descrizione",
+    "estimatedDurationLabel": "Durata stimata",
+    "estimatedDurationMin": "Min",
+    "estimatedDurationMax": "Max",
+    "estimatedDurationToggle": "Mostra nella schermata di benvenuto",
+    "languageLabel": "Lingua assessment",
+    "promptLabel": "Domanda guida",
+    "noActivitySelected": "Seleziona un'attivita per configurarla.",
+    "publishHint": "La pubblicazione crea un token pubblico per l'accesso dei partecipanti.",
+    "templatePublishHint": "I modelli non possono essere pubblicati o condivisi direttamente.",
+    "templateSaveHint": "Questa struttura e salvata come modello riutilizzabile e apparira nella lista dei modelli.",
+    "linkReady": "Link pubblico pronto",
+    "copied": "Copiato",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giu",
+    "templateToggle": {
+      "label": "Salva questo assessment come modello",
+      "helper": "I modelli sono strutture riutilizzabili. Non possono essere pubblicati o condivisi direttamente."
+    },
+    "template": {
+      "save": "Salva modello"
+    },
+    "activityCards": {
+      "profiling": {
+        "description": "Raccogli il contesto di base sul partecipante o sull'organizzazione."
+      },
+      "exploration": {
+        "description": "Raccogli bisogni, sfide, opportunita e input aperti."
+      },
+      "prioritization": {
+        "description": "Chiedi ai partecipanti di ordinare cio che conta di piu."
+      },
+      "framing": {
+        "description": "Raccogli i bisogni e le riflessioni che emergono."
+      },
+      "planning_report": {
+        "description": "Genera un report strutturato a partire dalle risposte del partecipante."
+      }
+    }
+  },
+  "activities": {
+    "profiling": {
+      "label": "Profilazione",
+      "purpose": "Raccoglie informazioni di contesto sul partecipante o sull'organizzazione.",
+      "addField": "Aggiungi campo",
+      "fieldLabel": "Etichetta campo",
+      "fieldType": "Tipo campo",
+      "required": "Obbligatorio",
+      "summary": "Profilo salvato"
+    },
+    "exploration": {
+      "label": "Esplorazione",
+      "purpose": "Identifica elementi rilevanti a partire da una domanda guida.",
+      "elementType": "Tipo di elemento",
+      "responseMode": "Modalita risposta",
+      "options": "Opzioni predefinite",
+      "addOption": "Aggiungi opzione",
+      "addAnother": "Aggiungi un altro elemento",
+      "customPlaceholder": "Scrivi un elemento",
+      "selectedSummary": "Hai selezionato {count} elementi"
+    },
+    "prioritization": {
+      "label": "Prioritizzazione",
+      "purpose": "Ordina gli elementi prodotti da una precedente Esplorazione.",
+      "sourceActivity": "Attivita sorgente",
+      "tapInstruction": "Tocca gli elementi in ordine di priorita.",
+      "ranking": "La tua classifica delle priorita",
+      "clearRanking": "Svuota classifica"
+    },
+    "framing": {
+      "label": "Framing",
+      "purpose": "Raccoglie una riflessione guidata a partire da una classifica precedente.",
+      "sourceActivity": "Attivita sorgente",
+      "maxLength": "Lunghezza massima",
+      "rankingContext": "Le tue sfide prioritarie",
+      "questions": "Domande",
+      "questionTitle": "Titolo domanda",
+      "questionPrompt": "Prompt domanda",
+      "questionPlaceholder": "Placeholder",
+      "addQuestion": "Aggiungi domanda",
+      "answerPlaceholder": "Scrivi la tua riflessione",
+      "savedSummary": "Risposta salvata"
+    },
+    "planning_report": {
+      "label": "Report di pianificazione",
+      "purpose": "Genera un report strutturato a partire dalle risposte del partecipante."
+    }
+  },
+  "planningReport": {
+    "activity": {
+      "label": "Report di pianificazione",
+      "description": "Genera un report strutturato a partire dalle risposte del partecipante.",
+      "finalStepWarning": "Questa attivita dovrebbe essere posizionata alla fine dell'assessment."
+    },
+    "builder": {
+      "settings": "Report settings",
+      "reportTitle": "Report title",
+      "subtitle": "Subtitle",
+      "reportSubtitle": "Sottotitolo report",
+      "structure": "Report structure",
+      "sections": "Sezioni report",
+      "sectionsHelper": "Costruisci il report dalle attività di questo assessment. I titoli delle sezioni diventano capitoli; i titoli delle attività diventano sottosezioni.",
+      "sectionTitle": "Titolo sezione",
+      "activityTitle": "Titolo attività nel report",
+      "activitySection": "Sezione report",
+      "addSection": "Aggiungi sezione report",
+      "addSectionShort": "Aggiungi sezione",
+      "newSection": "Nuova sezione report",
+      "defaultSection": "Risposte dell'assessment",
+      "missingActivity": "Attività mancante",
+      "rename": "Rinomina",
+      "moveUp": "Sposta su",
+      "moveDown": "Sposta giù",
+      "hide": "Nascondi",
+      "show": "Mostra",
+      "hidden": "Nascosta",
+      "deleteSection": "Elimina sezione",
+      "deleteActivity": "Rimuovi attività",
+      "remove": "Rimuovi",
+      "moveToSection": "Sposta in sezione",
+      "addActivity": "Aggiungi attività a questa sezione",
+      "chooseActivity": "Scegli un'attività",
+      "activityCountSingular": "{count} activity",
+      "activityCountPlural": "{count} activity",
+      "visible": "Visibile"
+    },
+    "title": {
+      "default": "Report di pianificazione"
+    },
+    "subtitle": {
+      "default": "Una sintesi strutturata basata sulle tue risposte all'assessment."
+    },
+    "participantTitle": "Il tuo report di pianificazione",
+    "participantDescription": "Questo report organizza le tue risposte in un output strutturato di pianificazione.",
+    "finalSubmit": {
+      "title": "Ultimo passo",
+      "description": "Hai completato il questionario.\nOra puoi inviare le tue risposte e concludere l'assessment NASIJ.",
+      "submit": "Invia le risposte",
+      "back": "Torna indietro"
+    },
+    "download": "Scarica report",
+    "view": "Vedi report",
+    "summary": "Report di pianificazione pronto",
+    "empty": "Nessuna risposta fornita.",
+    "noCollaboration": "Non e stata indicata nessuna opportunita di collaborazione.",
+    "horizons": {
+      "short": "Priorita a breve termine",
+      "medium": "Priorita a medio termine",
+      "long": "Priorita a lungo termine"
+    },
+    "fields": {
+      "assessmentTitle": "Titolo assessment",
+      "organizationName": "Nome organizzazione",
+      "country": "Paese",
+      "respondentRole": "Ruolo del rispondente",
+      "organizationType": "Tipo di organizzazione",
+      "activityArea": "Area principale di attivita",
+      "sector": "Settore",
+      "completionDate": "Data completamento",
+      "selectedCount": "Sfide selezionate",
+      "topRanked": "Sfide piu prioritarie",
+      "relatedNeeds": "Bisogni collegati"
+    },
+    "sections": {
+      "header": "Intestazione report",
+      "organizationSnapshot": "Snapshot organizzazione",
+      "planningOverview": "Panoramica pianificazione",
+      "shortTermPlan": "Piano a breve termine",
+      "mediumTermPlan": "Piano a medio termine",
+      "longTermPlan": "Piano a lungo termine",
+      "collaboration": "Opportunita di collaborazione",
+      "nextSteps": "Prossimi step raccomandati"
+    }
+  },
+  "template": {
+    "delete": {
+      "title": "Eliminare il modello?",
+      "body": "Questo rimuovera definitivamente il modello. Gli assessment gia creati da questo modello non saranno modificati.",
+      "cancel": "Annulla",
+      "confirm": "Elimina modello",
+      "error": "Impossibile eliminare questo modello."
+    }
+  },
+  "activityTypes": {
+    "problems": "Problemi",
+    "objectives": "Obiettivi",
+    "criticalities": "Criticita",
+    "barriers": "Barriere",
+    "opportunities": "Opportunita",
+    "other": "Altro",
+    "closed_list": "Lista chiusa",
+    "open_list": "Lista aperta",
+    "free_input": "Input libero",
+    "text": "Testo",
+    "number": "Numero",
+    "email": "Email",
+    "country": "Paese",
+    "select": "Selezione"
+  },
+  "participant": {
+    "welcome": {
+      "title": "Benvenuto nell'assessment NASIJ",
+      "description": "Questo questionario aiuta a comprendere le criticità, gli obiettivi, le priorità e i bisogni di supporto della vostra organizzazione in relazione alla sostenibilità, al lavoro dignitoso e allo sviluppo del network NASIJ.",
+      "note": "Tempo stimato di compilazione: circa 35–45 minuti.",
+      "cta": "Inizia l'assessment"
+    },
+    "intro": "Introduzione attivita",
+    "summary": "Sintesi attivita",
+    "completionTitle": "Assessment inviato",
+    "completionBody": "Grazie. Le tue risposte sono state salvate per chi gestisce l'assessment.",
+    "notFound": "Questo link pubblico non e disponibile.",
+    "notPublished": "Questo assessment non e attualmente aperto.",
+    "progress": "Attivita {current} di {total}",
+    "startActivity": "Inizia attivita"
+  },
+  "reports": {
+    "title": "Dashboard risultati",
+    "overview": "Panoramica",
+    "participants": "Partecipanti",
+    "activityResults": "Risultati",
+    "submitted": "Inviate",
+    "inProgress": "In corso",
+    "rawData": "Dati grezzi",
+    "averageRank": "Rank medio",
+    "rankedFirst": "Prima posizione",
+    "topThree": "Menzioni in top 3",
+    "customItems": "Aggiunti dai partecipanti"
+  },
+  "exports": {
+    "assessmentSummary": "Sintesi assessment",
+    "language": "Lingua",
+    "activities": "Attivita",
+    "participants": "Partecipanti",
+    "submittedResponses": "Risposte inviate",
+    "activityStructure": "Struttura attivita",
+    "order": "Ordine",
+    "type": "Tipo",
+    "title": "Titolo",
+    "guidingQuestion": "Domanda guida",
+    "qualitativeFramingResponses": "Risposte qualitative di framing",
+    "noFramingResponsesYet": "Nessuna risposta di framing ancora.",
+    "otherResponses": "Risposte altro"
+  }
+}

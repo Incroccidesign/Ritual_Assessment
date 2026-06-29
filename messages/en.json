@@ -1,0 +1,459 @@
+{
+  "app": {
+    "name": "Ritual Assessments",
+    "claim": "Guided visual assessments for research",
+    "loading": "Loading."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "builder": "Builder",
+    "results": "Results",
+    "newAssessment": "New assessment"
+  },
+  "common": {
+    "add": "Add",
+    "addActivity": "Add activity",
+    "back": "Back",
+    "cancel": "Cancel",
+    "completeActivity": "Complete activity",
+    "copyPublicLink": "Copy public link",
+    "createAssessment": "Create assessment",
+    "download": "Download",
+    "edit": "Edit",
+    "empty": "Nothing here yet.",
+    "exportDocx": "Export DOCX",
+    "exportExcel": "Export Excel",
+    "exportJson": "Export JSON",
+    "next": "Next",
+    "open": "Open",
+    "optional": "Optional",
+    "previous": "Previous",
+    "publish": "Publish",
+    "remove": "Remove",
+    "save": "Save",
+    "saved": "Saved",
+    "submitAssessment": "Submit assessment",
+    "viewResults": "View results"
+  },
+  "otherOption": {
+    "allowLabel": "Allow \"Other\" option",
+    "allowHelper": "Participants can add a custom answer if none of the options fit.",
+    "label": "Other",
+    "placeholder": "Write your answer...",
+    "validationRequired": "Write your answer or deselect \"Other\".",
+    "resultsLabel": "Other",
+    "addedByParticipants": "Added by participants"
+  },
+  "dashboard": {
+    "title": "Assessments",
+    "body": "Create assessments, share the link, and follow responses as they come in.",
+    "emptyTitle": "No assessments yet",
+    "emptyBody": "Create your first guided visual assessment to start collecting structured responses.",
+    "draft": "Draft",
+    "published": "Published",
+    "closed": "Closed",
+    "response": "response",
+    "responses": "responses",
+    "noResponsesYet": "No responses yet",
+    "status": "Status",
+    "createNewAssessment": "New assessment",
+    "createNasijAssessment": "Create NASIJ assessment",
+    "creatingNasijAssessment": "Creating NASIJ assessment...",
+    "createNasijAssessmentError": "Unable to create the NASIJ assessment.",
+    "edit": "Edit",
+    "copyLink": "Copy link",
+    "viewResults": "View results",
+    "hideResults": "Hide results",
+    "export": "Export",
+    "delete": "Delete",
+    "deleteTitle": "Delete assessment?",
+    "deleteBody": "This will permanently remove the assessment and its responses.",
+    "deleteError": "Unable to delete this assessment.",
+    "overview": "Overview",
+    "people": "People",
+    "completed": "Completed",
+    "stepsCompleted": "Steps completed",
+    "organization": "Organization",
+    "sector": "Sector",
+    "role": "Role",
+    "submittedLabel": "Submitted",
+    "stopped": "Stopped",
+    "exploration": "Exploration",
+    "explorationBody": "What participants selected during the first step.",
+    "prioritization": "Prioritization",
+    "prioritizationBody": "The challenges that rose to the top.",
+    "framing": "Framing",
+    "framingBody": "Needs emerging from the selected and prioritized challenges.",
+    "predefinedChallenges": "Predefined challenges",
+    "selectedChallenges": "Selected challenges",
+    "challenge": "Challenge",
+    "emergingNeeds": "Emerging needs",
+    "priorityOrder": "Priority order",
+    "exportActions": "Export results",
+    "participantRankings": "Participant rankings",
+    "participantSelections": "Participant selections",
+    "linkCopied": "Public link copied",
+    "publishToGenerateLink": "Publish the assessment to generate a public link.",
+    "noResponsesToExport": "No responses available to export yet.",
+    "noCustomResponses": "No custom responses added."
+  },
+  "assessmentCreate": {
+    "title": "Create assessment",
+    "helper": "Choose how you want to start.",
+    "close": "Close",
+    "back": "Back",
+    "newAssessment": "New assessment",
+    "createError": "Unable to create this assessment.",
+    "startFromScratch": {
+      "title": "Start from scratch",
+      "description": "Create an empty assessment and build the flow manually.",
+      "cta": "Create blank assessment"
+    },
+    "templates": {
+      "title": "Use an existing template",
+      "description": "Choose a template to create a new editable assessment.",
+      "choiceDescription": "Start from a saved or default structure and customize it.",
+      "createNew": "Create new template",
+      "use": "Use template",
+      "delete": "Delete",
+      "defaultBadge": "Default template",
+      "buildNew": "Build a new template",
+      "buildNewHelper": "Create a reusable structure in the normal builder. Template mode will already be enabled.",
+      "nasijName": "NASIJ Sustainability Challenges",
+      "nasijDescription": "Identify goals, challenges, needs and collaboration opportunities across short, medium and long term.",
+      "blankName": "Untitled template",
+      "blankDescription": "A reusable blank structure you can use as a starting point.",
+      "createNewPlaceholder": "A blank reusable template was created. Full template editing can be connected in the builder in a later step.",
+      "deleteConfirm": {
+        "title": "Delete template?",
+        "body": "This will permanently remove the template. Assessments already created from it will not be affected.",
+        "cancel": "Cancel",
+        "confirm": "Delete template"
+      }
+    }
+  },
+  "auth": {
+    "title": "Sign in",
+    "body": "Manage your assessments and review results in one place.",
+    "email": "Email",
+    "password": "Password",
+    "continueAsDesigner": "Continue as designer",
+    "mockNote": "Supabase Auth is not configured, so this local build uses a mock designer session.",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signInLoading": "Signing in...",
+    "signUpLoading": "Creating account...",
+    "signUpSuccess": "Check your email to confirm your account.",
+    "switchToSignUp": "Need an account? Create one",
+    "switchToSignIn": "Already have an account? Sign in",
+    "signInError": "Unable to sign in.",
+    "enterEmail": "Enter your email address.",
+    "validEmail": "Enter a valid email address.",
+    "enterPassword": "Enter your password.",
+    "createPassword": "Create a password.",
+    "passwordMin": "Password must be at least {min} characters.",
+    "invalidCredentials": "Email or password is incorrect.",
+    "accountExists": "An account with this email already exists. Try signing in instead.",
+    "unexpectedError": "Something went wrong. Please try again.",
+    "signOut": "Sign out",
+    "redirecting": "Redirecting to login.",
+    "supabaseRequired": "Supabase Auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable designer access."
+  },
+  "home": {
+    "title": "Build a guided visual assessment",
+    "body": "Build guided assessments, share them with participants, and turn responses into structured insights you can review and export.",
+    "cta": "Create assessment",
+    "secondary": "Sign in",
+    "tertiary": "Sign up"
+  },
+  "presets": {
+    "assessment": {
+      "draftTitle": "Untitled assessment",
+      "demoTitle": "Organizational needs assessment",
+      "demoDescription": "A guided visual path to identify challenges, rank priorities and frame emerging needs."
+    },
+    "activities": {
+      "profiling": {
+        "title": "Participant profile",
+        "prompt": "Tell us about your organization.",
+        "organizationName": "Organization name",
+        "sector": "Sector",
+        "country": "Country",
+        "respondentRole": "Respondent role"
+      },
+      "exploration": {
+        "title": "Explore current challenges",
+        "prompt": "What are the main short-term challenges your organization is facing?",
+        "energyCosts": "Energy costs",
+        "staffTurnover": "Staff turnover",
+        "trainingNeeds": "Training needs",
+        "digitalizationGaps": "Digitalization gaps"
+      },
+      "prioritization": {
+        "title": "Prioritize the selected challenges",
+        "prompt": "Tap the elements in order of priority."
+      },
+      "framing": {
+        "title": "Frame the emerging needs",
+        "prompt": "Based on these priorities, describe the needs that emerge for your organization.",
+        "defaultQuestionTitle": "Reflection",
+        "defaultQuestionPrompt": "What needs emerge from these priorities?",
+        "answerPlaceholder": "Write your reflection..."
+      }
+    }
+  },
+  "builder": {
+    "title": "Assessment builder",
+    "assessmentDetails": "Assessment details",
+    "assessmentFlow": "Assessment flow",
+    "assessmentFlowHelper": "Choose the activities participants will complete. Each step helps you collect a different kind of insight.",
+    "activityAddedSingular": "{count} activity added",
+    "activitiesAddedPlural": "{count} activities added",
+    "activityFlow": "Activity flow",
+    "activitySettings": "Activity settings",
+    "participantPreview": "Participant link",
+    "titleLabel": "Assessment title",
+    "descriptionLabel": "Description",
+    "estimatedDurationLabel": "Estimated duration",
+    "estimatedDurationMin": "Min",
+    "estimatedDurationMax": "Max",
+    "estimatedDurationToggle": "Show on welcome screen",
+    "languageLabel": "Assessment language",
+    "promptLabel": "Guiding question",
+    "noActivitySelected": "Select an activity to configure it.",
+    "publishHint": "Publishing creates a public token for participant access.",
+    "templatePublishHint": "Templates cannot be published or shared directly.",
+    "templateSaveHint": "This structure is saved as a reusable template and will appear in the template list.",
+    "linkReady": "Public link ready",
+    "copied": "Copied",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "templateToggle": {
+      "label": "Save this assessment as a template",
+      "helper": "Templates are reusable structures. They cannot be published or shared directly."
+    },
+    "template": {
+      "save": "Save template"
+    },
+    "activityCards": {
+      "profiling": {
+        "description": "Collect basic context about the participant or organization."
+      },
+      "exploration": {
+        "description": "Collect needs, challenges, opportunities, and open inputs."
+      },
+      "prioritization": {
+        "description": "Ask participants to rank what matters most."
+      },
+      "framing": {
+        "description": "Capture the needs and reflections that emerge."
+      },
+      "planning_report": {
+        "description": "Generate a structured report from the participant's answers."
+      }
+    }
+  },
+  "activities": {
+    "profiling": {
+      "label": "Profiling",
+      "purpose": "Collect contextual information about the participant or organization.",
+      "addField": "Add field",
+      "fieldLabel": "Field label",
+      "fieldType": "Field type",
+      "required": "Required",
+      "summary": "Profile saved"
+    },
+    "exploration": {
+      "label": "Exploration",
+      "purpose": "Identify relevant elements based on a guiding question.",
+      "elementType": "Element type",
+      "responseMode": "Response mode",
+      "options": "Predefined options",
+      "addOption": "Add option",
+      "addAnother": "Add another element",
+      "customPlaceholder": "Type an element",
+      "selectedSummary": "You selected {count} elements"
+    },
+    "prioritization": {
+      "label": "Prioritization",
+      "purpose": "Rank elements from a previous Exploration activity.",
+      "sourceActivity": "Source activity",
+      "tapInstruction": "Tap the elements in order of priority.",
+      "ranking": "Your priority ranking",
+      "clearRanking": "Clear ranking"
+    },
+    "framing": {
+      "label": "Framing",
+      "purpose": "Collect a guided reflection based on a previous ranking.",
+      "sourceActivity": "Source activity",
+      "maxLength": "Maximum length",
+      "rankingContext": "Your prioritized challenges",
+      "questions": "Questions",
+      "questionTitle": "Question title",
+      "questionPrompt": "Question prompt",
+      "questionPlaceholder": "Placeholder",
+      "addQuestion": "Add question",
+      "answerPlaceholder": "Write your reflection...",
+      "savedSummary": "Response saved"
+    },
+    "planning_report": {
+      "label": "Planning report",
+      "purpose": "Generate a structured report from the participant's answers."
+    }
+  },
+  "planningReport": {
+    "activity": {
+      "label": "Planning report",
+      "description": "Generate a structured report from the participant's answers.",
+      "finalStepWarning": "This activity should be placed at the end of the assessment."
+    },
+    "builder": {
+      "settings": "Report settings",
+      "reportTitle": "Report title",
+      "subtitle": "Subtitle",
+      "reportSubtitle": "Report subtitle",
+      "structure": "Report structure",
+      "sections": "Report sections",
+      "sectionsHelper": "Build the report from the activities in this assessment. Section titles become report chapters; activity titles become subsections.",
+      "sectionTitle": "Section title",
+      "activityTitle": "Activity title in report",
+      "activitySection": "Report section",
+      "addSection": "Add report section",
+      "addSectionShort": "Add section",
+      "newSection": "New report section",
+      "defaultSection": "Assessment responses",
+      "missingActivity": "Missing activity",
+      "rename": "Rename",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "hide": "Hide",
+      "show": "Show",
+      "hidden": "Hidden",
+      "deleteSection": "Delete section",
+      "deleteActivity": "Remove activity",
+      "remove": "Remove",
+      "moveToSection": "Move to section",
+      "addActivity": "Add activity to this section",
+      "chooseActivity": "Choose an activity",
+      "activityCountSingular": "{count} activity",
+      "activityCountPlural": "{count} activities",
+      "visible": "Visible"
+    },
+    "title": {
+      "default": "Planning report"
+    },
+    "subtitle": {
+      "default": "A structured summary based on your assessment responses."
+    },
+    "participantTitle": "Your planning report",
+    "participantDescription": "This report organizes your answers into a structured planning output.",
+    "finalSubmit": {
+      "title": "Final step",
+      "description": "You have completed the questionnaire.\nYou can now submit your answers and finish the NASIJ assessment.",
+      "submit": "Submit answers",
+      "back": "Go back"
+    },
+    "download": "Download report",
+    "view": "View report",
+    "summary": "Planning report ready",
+    "empty": "No answer provided.",
+    "noCollaboration": "No collaboration opportunity was provided.",
+    "horizons": {
+      "short": "Short-term priorities",
+      "medium": "Medium-term priorities",
+      "long": "Long-term priorities"
+    },
+    "fields": {
+      "assessmentTitle": "Assessment title",
+      "organizationName": "Organization name",
+      "country": "Country",
+      "respondentRole": "Respondent role",
+      "organizationType": "Type of organization",
+      "activityArea": "Main area of activity",
+      "sector": "Sector",
+      "completionDate": "Completion date",
+      "selectedCount": "Selected challenges",
+      "topRanked": "Top ranked challenges",
+      "relatedNeeds": "Related needs"
+    },
+    "sections": {
+      "header": "Report header",
+      "organizationSnapshot": "Organization snapshot",
+      "planningOverview": "Planning overview",
+      "shortTermPlan": "Short-term plan",
+      "mediumTermPlan": "Medium-term plan",
+      "longTermPlan": "Long-term plan",
+      "collaboration": "Collaboration opportunities",
+      "nextSteps": "Recommended next steps"
+    }
+  },
+  "template": {
+    "delete": {
+      "title": "Delete template?",
+      "body": "This will permanently remove the template. Assessments already created from it will not be affected.",
+      "cancel": "Cancel",
+      "confirm": "Delete template",
+      "error": "Unable to delete this template."
+    }
+  },
+  "activityTypes": {
+    "problems": "Problems",
+    "objectives": "Objectives",
+    "criticalities": "Criticalities",
+    "barriers": "Barriers",
+    "opportunities": "Opportunities",
+    "other": "Other",
+    "closed_list": "Closed list",
+    "open_list": "Open list",
+    "free_input": "Free input",
+    "text": "Text",
+    "number": "Number",
+    "email": "Email",
+    "country": "Country",
+    "select": "Select"
+  },
+  "participant": {
+    "welcome": {
+      "title": "Welcome to the NASIJ assessment",
+      "description": "This questionnaire helps identify your organization's current challenges, objectives, priorities and support needs in relation to sustainability, decent work and the development of the NASIJ network.",
+      "note": "Estimated completion time: around 35–45 minutes.",
+      "cta": "Start assessment"
+    },
+    "intro": "Activity intro",
+    "summary": "Activity summary",
+    "completionTitle": "Assessment submitted",
+    "completionBody": "Thank you. Your responses have been saved for the assessment owner.",
+    "notFound": "This public assessment link is not available.",
+    "notPublished": "This assessment is not currently open.",
+    "progress": "Activity {current} of {total}",
+    "startActivity": "Start activity"
+  },
+  "reports": {
+    "title": "Results dashboard",
+    "overview": "Overview",
+    "participants": "Participants",
+    "activityResults": "Results",
+    "submitted": "Submitted",
+    "inProgress": "In progress",
+    "rawData": "Raw data",
+    "averageRank": "Average rank",
+    "rankedFirst": "Ranked first",
+    "topThree": "Top 3 mentions",
+    "customItems": "Added by participants"
+  },
+  "exports": {
+    "assessmentSummary": "Assessment summary",
+    "language": "Language",
+    "activities": "Activities",
+    "participants": "Participants",
+    "submittedResponses": "Submitted responses",
+    "activityStructure": "Activity structure",
+    "order": "Order",
+    "type": "Type",
+    "title": "Title",
+    "guidingQuestion": "Guiding question",
+    "qualitativeFramingResponses": "Qualitative framing responses",
+    "noFramingResponsesYet": "No framing responses yet.",
+    "otherResponses": "Other responses"
+  }
+}

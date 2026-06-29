@@ -1,0 +1,459 @@
+{
+  "app": {
+    "name": "Ritual Assessments",
+    "claim": "Evaluations visuelles guidees pour la recherche",
+    "loading": "Chargement."
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "builder": "Constructeur",
+    "results": "Resultats",
+    "newAssessment": "Nouvelle evaluation"
+  },
+  "common": {
+    "add": "Ajouter",
+    "addActivity": "Ajouter une activite",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "completeActivity": "Terminer l'activite",
+    "copyPublicLink": "Copier le lien public",
+    "createAssessment": "Creer une evaluation",
+    "download": "Telecharger",
+    "edit": "Modifier",
+    "empty": "Rien pour le moment.",
+    "exportDocx": "Exporter DOCX",
+    "exportExcel": "Exporter Excel",
+    "exportJson": "Exporter JSON",
+    "next": "Suivant",
+    "open": "Ouvrir",
+    "optional": "Optionnel",
+    "previous": "Precedent",
+    "publish": "Publier",
+    "remove": "Supprimer",
+    "save": "Enregistrer",
+    "saved": "Enregistre",
+    "submitAssessment": "Envoyer l'evaluation",
+    "viewResults": "Voir les resultats"
+  },
+  "otherOption": {
+    "allowLabel": "Autoriser l'option \"Autre\"",
+    "allowHelper": "Les participants peuvent ajouter une reponse personnalisee si aucune option ne convient.",
+    "label": "Autre",
+    "placeholder": "Ecrivez votre reponse...",
+    "validationRequired": "Ecrivez votre reponse ou deselectionnez \"Autre\".",
+    "resultsLabel": "Autre",
+    "addedByParticipants": "Ajoute par les participants"
+  },
+  "dashboard": {
+    "title": "Evaluations",
+    "body": "Creez des evaluations, partagez le lien et suivez les reponses au fil de l'arrivee.",
+    "emptyTitle": "Aucune evaluation pour le moment",
+    "emptyBody": "Creez votre premiere evaluation visuelle guidee pour commencer a collecter des reponses structurees.",
+    "draft": "Brouillon",
+    "published": "Publiee",
+    "closed": "Fermee",
+    "response": "reponse",
+    "responses": "reponses",
+    "noResponsesYet": "Aucune reponse pour le moment",
+    "status": "Statut",
+    "createNewAssessment": "Nouvelle evaluation",
+    "createNasijAssessment": "Creer l'evaluation NASIJ",
+    "creatingNasijAssessment": "Creation de l'evaluation NASIJ...",
+    "createNasijAssessmentError": "Impossible de creer l'evaluation NASIJ.",
+    "edit": "Modifier",
+    "copyLink": "Copier le lien",
+    "viewResults": "Voir les resultats",
+    "hideResults": "Masquer les resultats",
+    "export": "Exporter",
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer l'evaluation ?",
+    "deleteBody": "Cela supprimera definitivement l'evaluation et ses reponses.",
+    "deleteError": "Impossible de supprimer cette evaluation.",
+    "overview": "Vue d'ensemble",
+    "people": "Personnes",
+    "completed": "Terminees",
+    "stepsCompleted": "Etapes completees",
+    "organization": "Organisation",
+    "sector": "Secteur",
+    "role": "Role",
+    "submittedLabel": "Envoye",
+    "stopped": "Arrete",
+    "exploration": "Exploration",
+    "explorationBody": "Ce que les participants ont selectionne pendant la premiere etape.",
+    "prioritization": "Priorisation",
+    "prioritizationBody": "Les enjeux qui sont remontes en tete.",
+    "framing": "Cadrage",
+    "framingBody": "Les besoins qui emergent des enjeux selectionnes et priorises.",
+    "predefinedChallenges": "Defis predefinis",
+    "selectedChallenges": "Defis selectionnes",
+    "challenge": "Defi",
+    "emergingNeeds": "Besoins emergents",
+    "priorityOrder": "Ordre de priorite",
+    "exportActions": "Exporter les resultats",
+    "participantRankings": "Classements par participant",
+    "participantSelections": "Selections par participant",
+    "linkCopied": "Lien public copie",
+    "publishToGenerateLink": "Publiez l'evaluation pour generer un lien public.",
+    "noResponsesToExport": "Aucune reponse disponible a exporter pour le moment.",
+    "noCustomResponses": "Aucune reponse personnalisee ajoutee."
+  },
+  "assessmentCreate": {
+    "title": "Creer un assessment",
+    "helper": "Choisissez comment commencer.",
+    "close": "Fermer",
+    "back": "Retour",
+    "newAssessment": "Nouvel assessment",
+    "createError": "Impossible de creer cet assessment.",
+    "startFromScratch": {
+      "title": "Partir de zero",
+      "description": "Creer un assessment vide et construire le parcours manuellement.",
+      "cta": "Creer un assessment vide"
+    },
+    "templates": {
+      "title": "Utiliser un modele existant",
+      "description": "Choisissez un modele pour creer un nouvel assessment modifiable.",
+      "choiceDescription": "Partir d'une structure enregistree ou proposee par defaut et la personnaliser.",
+      "createNew": "Creer un nouveau modele",
+      "use": "Utiliser le modele",
+      "delete": "Supprimer",
+      "defaultBadge": "Modele par defaut",
+      "buildNew": "Creer un nouveau modele",
+      "buildNewHelper": "Creez une structure reutilisable dans le builder normal. Le mode modele sera deja active.",
+      "nasijName": "Defis de durabilite NASIJ",
+      "nasijDescription": "Identifier les objectifs, les defis, les besoins et les opportunites de collaboration a court, moyen et long terme.",
+      "blankName": "Modele sans titre",
+      "blankDescription": "Une structure vide reutilisable que vous pouvez utiliser comme point de depart.",
+      "createNewPlaceholder": "Un modele vide reutilisable a ete cree. L'edition complete des modeles pourra etre connectee au builder dans une prochaine etape.",
+      "deleteConfirm": {
+        "title": "Supprimer le modele ?",
+        "body": "Cela supprimera definitivement le modele. Les assessments deja crees a partir de ce modele ne seront pas affectes.",
+        "cancel": "Annuler",
+        "confirm": "Supprimer le modele"
+      }
+    }
+  },
+  "auth": {
+    "title": "Se connecter",
+    "body": "Gerez vos evaluations et consultez les resultats au meme endroit.",
+    "email": "Email",
+    "password": "Mot de passe",
+    "continueAsDesigner": "Continuer",
+    "mockNote": "Supabase Auth n'est pas configure, cette version locale utilise donc une session de test.",
+    "signIn": "Se connecter",
+    "signUp": "Creer un compte",
+    "signInLoading": "Connexion en cours...",
+    "signUpLoading": "Creation du compte...",
+    "signUpSuccess": "Verifiez votre e-mail pour confirmer votre compte.",
+    "switchToSignUp": "Besoin d'un compte ? Creer un compte",
+    "switchToSignIn": "Vous avez deja un compte ? Se connecter",
+    "signInError": "Connexion impossible.",
+    "enterEmail": "Saisissez votre adresse e-mail.",
+    "validEmail": "Saisissez une adresse e-mail valide.",
+    "enterPassword": "Saisissez votre mot de passe.",
+    "createPassword": "Creez un mot de passe.",
+    "passwordMin": "Le mot de passe doit contenir au moins {min} caracteres.",
+    "invalidCredentials": "Email ou mot de passe incorrect.",
+    "accountExists": "Un compte avec cet e-mail existe deja. Essayez plutot de vous connecter.",
+    "unexpectedError": "Un probleme est survenu. Veuillez reessayer.",
+    "signOut": "Se deconnecter",
+    "redirecting": "Redirection vers la connexion.",
+    "supabaseRequired": "Supabase Auth n'est pas configure. Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer l'acces."
+  },
+  "home": {
+    "title": "Construire une evaluation visuelle guidee",
+    "body": "Creez des evaluations guidees, partagez-les avec les participants, puis transformez les reponses en insights structures que vous pouvez consulter et exporter.",
+    "cta": "Creer une evaluation",
+    "secondary": "Se connecter",
+    "tertiary": "Creer un compte"
+  },
+  "presets": {
+    "assessment": {
+      "draftTitle": "Evaluation sans titre",
+      "demoTitle": "Evaluation des besoins organisationnels",
+      "demoDescription": "Un parcours visuel guide pour identifier les defis, classer les priorites et cadrer les besoins emergents."
+    },
+    "activities": {
+      "profiling": {
+        "title": "Profil participant",
+        "prompt": "Parlez-nous de votre organisation.",
+        "organizationName": "Nom de l'organisation",
+        "sector": "Secteur",
+        "country": "Pays",
+        "respondentRole": "Role du repondant"
+      },
+      "exploration": {
+        "title": "Explorer les defis actuels",
+        "prompt": "Quels sont les principaux defis a court terme auxquels votre organisation est confrontee ?",
+        "energyCosts": "Couts de l'energie",
+        "staffTurnover": "Rotation du personnel",
+        "trainingNeeds": "Besoins de formation",
+        "digitalizationGaps": "Ecarts de digitalisation"
+      },
+      "prioritization": {
+        "title": "Prioriser les defis selectionnes",
+        "prompt": "Touchez les elements dans l'ordre de priorite."
+      },
+      "framing": {
+        "title": "Cadrer les besoins emergents",
+        "prompt": "A partir de ces priorites, decrivez les besoins qui emergent pour votre organisation.",
+        "defaultQuestionTitle": "Reflexion",
+        "defaultQuestionPrompt": "Quels besoins emergent de ces priorites ?",
+        "answerPlaceholder": "Ecrivez votre reflexion..."
+      }
+    }
+  },
+  "builder": {
+    "title": "Constructeur d'evaluation",
+    "assessmentDetails": "Details de l'evaluation",
+    "assessmentFlow": "Parcours de l'evaluation",
+    "assessmentFlowHelper": "Choisissez les activites que les participants suivront. Chaque etape vous aide a recueillir un type d'insight different.",
+    "activityAddedSingular": "{count} activite ajoutee",
+    "activitiesAddedPlural": "{count} activites ajoutees",
+    "activityFlow": "Parcours d'activites",
+    "activitySettings": "Parametres de l'activite",
+    "participantPreview": "Lien participant",
+    "titleLabel": "Titre de l'evaluation",
+    "descriptionLabel": "Description",
+    "estimatedDurationLabel": "Durée estimée",
+    "estimatedDurationMin": "Min",
+    "estimatedDurationMax": "Max",
+    "estimatedDurationToggle": "Afficher sur l'écran d'accueil",
+    "languageLabel": "Langue de l'evaluation",
+    "promptLabel": "Question guide",
+    "noActivitySelected": "Selectionnez une activite pour la configurer.",
+    "publishHint": "La publication cree un jeton public pour les participants.",
+    "templatePublishHint": "Les modeles ne peuvent pas etre publies ni partages directement.",
+    "templateSaveHint": "Cette structure est enregistree comme modele reutilisable et apparaitra dans la liste des modeles.",
+    "linkReady": "Lien public pret",
+    "copied": "Copie",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "templateToggle": {
+      "label": "Enregistrer cet assessment comme modele",
+      "helper": "Les modeles sont des structures reutilisables. Ils ne peuvent pas etre publies ni partages directement."
+    },
+    "template": {
+      "save": "Enregistrer le modele"
+    },
+    "activityCards": {
+      "profiling": {
+        "description": "Collectez le contexte de base du participant ou de l'organisation."
+      },
+      "exploration": {
+        "description": "Recueillez les besoins, les defis, les opportunites et les contributions ouvertes."
+      },
+      "prioritization": {
+        "description": "Demandez aux participants de classer ce qui compte le plus."
+      },
+      "framing": {
+        "description": "Capturez les besoins et les reflexions qui emergent."
+      },
+      "planning_report": {
+        "description": "Generer un rapport structure a partir des reponses du participant."
+      }
+    }
+  },
+  "activities": {
+    "profiling": {
+      "label": "Profilage",
+      "purpose": "Collecter des informations contextuelles sur le participant ou l'organisation.",
+      "addField": "Ajouter un champ",
+      "fieldLabel": "Libelle du champ",
+      "fieldType": "Type de champ",
+      "required": "Obligatoire",
+      "summary": "Profil enregistre"
+    },
+    "exploration": {
+      "label": "Exploration",
+      "purpose": "Identifier les elements pertinents a partir d'une question guide.",
+      "elementType": "Type d'element",
+      "responseMode": "Mode de reponse",
+      "options": "Options predefinies",
+      "addOption": "Ajouter une option",
+      "addAnother": "Ajouter un autre element",
+      "customPlaceholder": "Saisir un element",
+      "selectedSummary": "Vous avez selectionne {count} elements"
+    },
+    "prioritization": {
+      "label": "Priorisation",
+      "purpose": "Classer les elements issus d'une activite d'exploration.",
+      "sourceActivity": "Activite source",
+      "tapInstruction": "Touchez les elements dans l'ordre de priorite.",
+      "ranking": "Votre classement des priorites",
+      "clearRanking": "Effacer le classement"
+    },
+    "framing": {
+      "label": "Cadrage",
+      "purpose": "Collecter une reflexion guidee a partir d'un classement precedent.",
+      "sourceActivity": "Activite source",
+      "maxLength": "Longueur maximale",
+      "rankingContext": "Vos defis prioritaires",
+      "questions": "Questions",
+      "questionTitle": "Titre de la question",
+      "questionPrompt": "Prompt de question",
+      "questionPlaceholder": "Placeholder",
+      "addQuestion": "Ajouter une question",
+      "answerPlaceholder": "Ecrivez votre reflexion",
+      "savedSummary": "Reponse enregistree"
+    },
+    "planning_report": {
+      "label": "Rapport de planification",
+      "purpose": "Generer un rapport structure a partir des reponses du participant."
+    }
+  },
+  "planningReport": {
+    "activity": {
+      "label": "Rapport de planification",
+      "description": "Generer un rapport structure a partir des reponses du participant.",
+      "finalStepWarning": "Cette activite doit etre placee a la fin de l'assessment."
+    },
+    "builder": {
+      "settings": "Report settings",
+      "reportTitle": "Report title",
+      "subtitle": "Subtitle",
+      "reportSubtitle": "Sous-titre du rapport",
+      "structure": "Report structure",
+      "sections": "Sections du rapport",
+      "sectionsHelper": "Construisez le rapport à partir des activités de cet assessment. Les titres des sections deviennent des chapitres ; les titres des activités deviennent des sous-sections.",
+      "sectionTitle": "Titre de section",
+      "activityTitle": "Titre de l'activité dans le rapport",
+      "activitySection": "Section du rapport",
+      "addSection": "Ajouter une section au rapport",
+      "addSectionShort": "Ajouter une section",
+      "newSection": "Nouvelle section du rapport",
+      "defaultSection": "Réponses de l'assessment",
+      "missingActivity": "Activité manquante",
+      "rename": "Renommer",
+      "moveUp": "Déplacer vers le haut",
+      "moveDown": "Déplacer vers le bas",
+      "hide": "Masquer",
+      "show": "Afficher",
+      "hidden": "Masquée",
+      "deleteSection": "Supprimer la section",
+      "deleteActivity": "Retirer l'activité",
+      "remove": "Retirer",
+      "moveToSection": "Déplacer vers une section",
+      "addActivity": "Ajouter une activité à cette section",
+      "chooseActivity": "Choisir une activité",
+      "activityCountSingular": "{count} activité",
+      "activityCountPlural": "{count} activités",
+      "visible": "Visible"
+    },
+    "title": {
+      "default": "Rapport de planification"
+    },
+    "subtitle": {
+      "default": "Une synthese structuree basee sur vos reponses a l'assessment."
+    },
+    "participantTitle": "Votre rapport de planification",
+    "participantDescription": "Ce rapport organise vos reponses dans un document de planification structure.",
+    "finalSubmit": {
+      "title": "Dernière étape",
+      "description": "Vous avez terminé le questionnaire.\nVous pouvez maintenant envoyer vos réponses et conclure l'assessment NASIJ.",
+      "submit": "Envoyer les réponses",
+      "back": "Retour"
+    },
+    "download": "Telecharger le rapport",
+    "view": "Voir le rapport",
+    "summary": "Rapport de planification pret",
+    "empty": "Aucune reponse fournie.",
+    "noCollaboration": "Aucune opportunite de collaboration n'a ete indiquee.",
+    "horizons": {
+      "short": "Priorites a court terme",
+      "medium": "Priorites a moyen terme",
+      "long": "Priorites a long terme"
+    },
+    "fields": {
+      "assessmentTitle": "Titre de l'evaluation",
+      "organizationName": "Nom de l'organisation",
+      "country": "Pays",
+      "respondentRole": "Role du repondant",
+      "organizationType": "Type d'organisation",
+      "activityArea": "Domaine principal d'activite",
+      "sector": "Secteur",
+      "completionDate": "Date de completion",
+      "selectedCount": "Defis selectionnes",
+      "topRanked": "Defis les mieux classes",
+      "relatedNeeds": "Besoins associes"
+    },
+    "sections": {
+      "header": "En-tete du rapport",
+      "organizationSnapshot": "Apercu de l'organisation",
+      "planningOverview": "Vue d'ensemble de la planification",
+      "shortTermPlan": "Plan a court terme",
+      "mediumTermPlan": "Plan a moyen terme",
+      "longTermPlan": "Plan a long terme",
+      "collaboration": "Opportunites de collaboration",
+      "nextSteps": "Prochaines etapes recommandees"
+    }
+  },
+  "template": {
+    "delete": {
+      "title": "Supprimer le modele ?",
+      "body": "Cela supprimera definitivement le modele. Les assessments deja crees a partir de ce modele ne seront pas affectes.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer le modele",
+      "error": "Impossible de supprimer ce modele."
+    }
+  },
+  "activityTypes": {
+    "problems": "Problemes",
+    "objectives": "Objectifs",
+    "criticalities": "Points critiques",
+    "barriers": "Barrieres",
+    "opportunities": "Opportunites",
+    "other": "Autre",
+    "closed_list": "Liste fermee",
+    "open_list": "Liste ouverte",
+    "free_input": "Saisie libre",
+    "text": "Texte",
+    "number": "Nombre",
+    "email": "Email",
+    "country": "Pays",
+    "select": "Selection"
+  },
+  "participant": {
+    "welcome": {
+      "title": "Bienvenue dans l'évaluation NASIJ",
+      "description": "Ce questionnaire vise à comprendre les difficultés actuelles, les objectifs, les priorités et les besoins d'accompagnement de votre organisation en lien avec la durabilité, le travail décent et le développement du réseau NASIJ.",
+      "note": "Temps estimé de réponse : environ 35–45 minutes.",
+      "cta": "Commencer l'évaluation"
+    },
+    "intro": "Introduction de l'activite",
+    "summary": "Resume de l'activite",
+    "completionTitle": "Evaluation envoyee",
+    "completionBody": "Merci. Vos reponses ont ete enregistrees pour le proprietaire de l'evaluation.",
+    "notFound": "Ce lien public d'evaluation n'est pas disponible.",
+    "notPublished": "Cette evaluation n'est pas ouverte actuellement.",
+    "progress": "Activite {current} sur {total}",
+    "startActivity": "Commencer l'activite"
+  },
+  "reports": {
+    "title": "Tableau de bord des resultats",
+    "overview": "Vue d'ensemble",
+    "participants": "Participants",
+    "activityResults": "Resultats",
+    "submitted": "Envoyees",
+    "inProgress": "En cours",
+    "rawData": "Donnees brutes",
+    "averageRank": "Rang moyen",
+    "rankedFirst": "Classe premier",
+    "topThree": "Mentions dans le top 3",
+    "customItems": "Ajoutes par les participants"
+  },
+  "exports": {
+    "assessmentSummary": "Synthese de l'evaluation",
+    "language": "Langue",
+    "activities": "Activites",
+    "participants": "Participants",
+    "submittedResponses": "Reponses envoyees",
+    "activityStructure": "Structure des activites",
+    "order": "Ordre",
+    "type": "Type",
+    "title": "Titre",
+    "guidingQuestion": "Question guide",
+    "qualitativeFramingResponses": "Reponses qualitatives de cadrage",
+    "noFramingResponsesYet": "Aucune reponse de cadrage pour le moment.",
+    "otherResponses": "Reponses autre"
+  }
+}
