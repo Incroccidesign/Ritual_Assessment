@@ -94,6 +94,33 @@ function ResultBlock({
   );
 }
 
+function TabButton({
+  active,
+  label,
+  meta,
+  onClick
+}: {
+  active: boolean;
+  label: string;
+  meta?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`rounded-md border px-4 py-3 text-left transition ${
+        active
+          ? "border-mint/45 bg-mint/12 text-bone"
+          : "border-bone/10 bg-night/35 text-bone/62 hover:border-bone/25 hover:bg-bone/8"
+      }`}
+      onClick={onClick}
+    >
+      <span className="block text-sm font-semibold">{label}</span>
+      {meta ? <span className="mt-1 block text-xs text-bone/42">{meta}</span> : null}
+    </button>
+  );
+}
+
 function participantCodeMap(participants: Participant[], responses: AssessmentResponse[]) {
   const participantOrder = [...participants].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   const missingParticipantIds = responses
@@ -475,34 +502,97 @@ export function GroupedActivityResults({
 }) {
   const { messages } = useLocale();
   const hasPlanningReport = activitiesByType(assessment, "planning_report").length > 0;
+  const submittedCount = responses.filter((response) => response.status === "submitted").length;
+  const [activeTab, setActiveTab] = useState<"overview" | "participants" | "report" | "activities">(
+    hasPlanningReport ? "report" : "overview"
+  );
 
   return (
     <div className="space-y-7">
-      <Section title={messages.dashboard.overview}>
-        <AssessmentSummary assessment={assessment} participants={participants} responses={responses} />
-      </Section>
+      <AssessmentSummary assessment={assessment} participants={participants} responses={responses} />
 
-      <Section title={messages.reports.participants}>
-        <ParticipantsTable assessment={assessment} participants={participants} responses={responses} />
-      </Section>
+      <div className="grid gap-3 md:grid-cols-4">
+        <TabButton
+          active={activeTab === "overview"}
+          label={messages.dashboard.overview}
+          meta={assessment.status}
+          onClick={() => setActiveTab("overview")}
+        />
+        <TabButton
+          active={activeTab === "participants"}
+          label={messages.reports.participants}
+          meta={`${participants.length} ${messages.dashboard.people.toLowerCase()}`}
+          onClick={() => setActiveTab("participants")}
+        />
+        {hasPlanningReport ? (
+          <TabButton
+            active={activeTab === "report"}
+            label={messages.planningReport.activity.label}
+            meta={`${submittedCount} ${messages.dashboard.responses}`}
+            onClick={() => setActiveTab("report")}
+          />
+        ) : null}
+        <TabButton
+          active={activeTab === "activities"}
+          label={messages.reports.activityResults}
+          meta={`${assessment.activities.length} ${messages.exports.activities.toLowerCase()}`}
+          onClick={() => setActiveTab("activities")}
+        />
+      </div>
 
-      <Section title={messages.reports.activityResults}>
-        <div className="space-y-7">
-          <ResultBlock title={messages.dashboard.exploration} body={messages.dashboard.explorationBody}>
-            <ExplorationResults assessment={assessment} responses={responses} participants={participants} />
-          </ResultBlock>
-          <ResultBlock title={messages.dashboard.prioritization} body={messages.dashboard.prioritizationBody}>
-            <PrioritizationResults assessment={assessment} responses={responses} participants={participants} />
-          </ResultBlock>
-          <ResultBlock title={messages.dashboard.framing} body={messages.dashboard.framingBody}>
-            <FramingResults assessment={assessment} responses={responses} participants={participants} />
-          </ResultBlock>
-        </div>
-      </Section>
+      {activeTab === "overview" ? (
+        <Section title={messages.dashboard.overview}>
+          <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
+            <SubtlePanel>
+              <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.builder.titleLabel}</p>
+              <h3 className="mt-2 font-heading text-2xl font-semibold text-bone">{assessment.title}</h3>
+              {assessment.description ? <p className="mt-3 text-sm leading-6 text-bone/62">{assessment.description}</p> : null}
+            </SubtlePanel>
+            <SubtlePanel>
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-bone/45">{messages.dashboard.status}</dt>
+                  <dd className="font-semibold text-bone">{assessment.status}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-bone/45">{messages.builder.languageLabel}</dt>
+                  <dd className="font-semibold text-bone">{assessment.language.toUpperCase()}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-bone/45">{messages.builder.estimatedDurationLabel}</dt>
+                  <dd className="font-semibold text-bone">{assessment.estimatedDuration ?? messages.common.empty}</dd>
+                </div>
+              </dl>
+            </SubtlePanel>
+          </div>
+        </Section>
+      ) : null}
 
-      {hasPlanningReport ? (
+      {activeTab === "participants" ? (
+        <Section title={messages.reports.participants}>
+          <ParticipantsTable assessment={assessment} participants={participants} responses={responses} />
+        </Section>
+      ) : null}
+
+      {activeTab === "report" && hasPlanningReport ? (
         <Section title={messages.planningReport.activity.label}>
           <PlanningReportResults assessment={assessment} responses={responses} participants={participants} />
+        </Section>
+      ) : null}
+
+      {activeTab === "activities" ? (
+        <Section title={messages.reports.activityResults}>
+          <div className="space-y-7">
+            <ResultBlock title={messages.dashboard.exploration} body={messages.dashboard.explorationBody}>
+              <ExplorationResults assessment={assessment} responses={responses} participants={participants} />
+            </ResultBlock>
+            <ResultBlock title={messages.dashboard.prioritization} body={messages.dashboard.prioritizationBody}>
+              <PrioritizationResults assessment={assessment} responses={responses} participants={participants} />
+            </ResultBlock>
+            <ResultBlock title={messages.dashboard.framing} body={messages.dashboard.framingBody}>
+              <FramingResults assessment={assessment} responses={responses} participants={participants} />
+            </ResultBlock>
+          </div>
         </Section>
       ) : null}
 
