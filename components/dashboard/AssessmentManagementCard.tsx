@@ -1,16 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Copy, ExternalLink, FileSpreadsheet, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
-import { ExportDocxButton } from "@/components/reports/ExportDocxButton";
-import { ExportExcelButton } from "@/components/reports/ExportExcelButton";
-import { ExportJsonButton } from "@/components/reports/ExportJsonButton";
+import { ExportMenuButton } from "@/components/reports/ExportMenuButton";
 import { GroupedActivityResults } from "@/components/reports/GroupedActivityResults";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
-import { exportAssessmentExcel } from "@/lib/exports/exportExcel";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { deleteSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
 
@@ -60,15 +57,6 @@ export function AssessmentManagementCard({
     window.setTimeout(() => setCopied(false), 1400);
   }
 
-  async function exportExcel() {
-    if (!responses.length) {
-      setNotice(messages.dashboard.noResponsesToExport);
-      return;
-    }
-    setNotice(null);
-    await exportAssessmentExcel(assessment, participants, responses, messages);
-  }
-
   async function confirmDelete() {
     try {
       setDeleting(true);
@@ -106,9 +94,7 @@ export function AssessmentManagementCard({
         <Button type="button" variant="secondary" onClick={() => void copyPublicLink()}>
           <Copy size={16} /> {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
         </Button>
-        <Button type="button" variant="secondary" disabled={!responses.length} onClick={() => void exportExcel()}>
-          <FileSpreadsheet size={16} /> {messages.dashboard.export}
-        </Button>
+        <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
         <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)}>
           <Trash2 size={16} /> {messages.dashboard.delete}
         </Button>
@@ -147,9 +133,7 @@ export function AssessmentManagementCard({
             responses={responses}
             exportActions={
               <div className="flex flex-wrap gap-3">
-                <ExportExcelButton assessment={assessment} participants={participants} responses={responses} />
-                <ExportDocxButton assessment={assessment} participants={participants} responses={responses} />
-                <ExportJsonButton assessment={assessment} participants={participants} responses={responses} />
+                <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
               </div>
             }
           />

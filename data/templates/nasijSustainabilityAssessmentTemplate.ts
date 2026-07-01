@@ -112,6 +112,7 @@ const governorates = [
 ];
 
 const italianRespondentRoles = [
+  "Artigiano",
   "Proprietario/a d'impresa",
   "Fondatore / fondatrice",
   "Direttore generale",
@@ -134,6 +135,7 @@ const italianRespondentRoles = [
 ];
 
 const frenchRespondentRoles = [
+  "Artisan",
   "Propriétaire d'entreprise",
   "Fondateur / fondatrice",
   "Directeur général",
@@ -156,23 +158,25 @@ const frenchRespondentRoles = [
 ];
 
 const italianOrganizationTypes = [
-  "Azienda privata",
   "Cooperativa",
   "Associazione",
-  "Start-up",
-  "Organizzazione di formazione",
-  "Centro di ricerca / ente di ricerca",
-  "Organizzazione di supporto tecnico / consulenza"
+  "Impresa individuale — 1 dipendenti",
+  "Microazienda — 2-4 dipendenti",
+  "Azienda di piccole dimensioni — 5-19 dipendenti",
+  "Azienda di medie dimensioni — 20-99 dipendenti",
+  "Azienda di grandi dimensioni — 100 o più dipendenti",
+  "Start-up"
 ];
 
 const frenchOrganizationTypes = [
-  "Entreprise privée",
   "Coopérative",
   "Association",
-  "Start-up",
-  "Organisation de formation",
-  "Centre de recherche / organisme de recherche",
-  "Organisation de soutien technique / conseil"
+  "Entreprise individuelle — 1 employé",
+  "Microentreprise — 2-4 employés",
+  "Petite entreprise — 5-19 employés",
+  "Entreprise moyenne — 20-99 employés",
+  "Grande entreprise — 100 employés ou plus",
+  "Start-up"
 ];
 
 const italianOrganizationSizes = [
@@ -497,8 +501,8 @@ function planningReport(locale: "it" | "fr"): TemplatePlanningReportActivity {
       : "Consultez la synthèse de vos réponses et téléchargez le rapport final de l'assessment NASIJ.",
     reportTitle: isItalian ? "Report assessment NASIJ" : "Rapport d'assessment NASIJ",
     reportSubtitle: isItalian
-      ? "Sintesi strutturata delle risposte, delle priorità e dei contributi emersi durante l'assessment."
-      : "Synthèse structurée des réponses, des priorités et des contributions issues de l'assessment.",
+      ? "Sintesi strutturata delle risposte, delle priorità, dei punti di forza e dei contributi emersi durante l'assessment."
+      : "Synthèse structurée des réponses, des priorités, des points forts et des contributions issues de l'assessment.",
     sections: [
       {
         key: "profile",
@@ -526,8 +530,7 @@ function planningReport(locale: "it" | "fr"): TemplatePlanningReportActivity {
         items: [
           item("short-objective", isItalian ? "Obiettivo principale a breve termine" : "Objectif principal à court terme"),
           item("short-challenges", isItalian ? "Challenge operative" : "Défis opérationnels"),
-          item("short-priorities", isItalian ? "Priorità a breve termine" : "Priorités à court terme"),
-          item("short-needs", isItalian ? "Bisogni e supporti" : "Besoins et soutiens")
+          item("short-priorities", isItalian ? "Priorità a breve termine" : "Priorités à court terme")
         ]
       },
       {
@@ -535,19 +538,23 @@ function planningReport(locale: "it" | "fr"): TemplatePlanningReportActivity {
         title: isItalian ? "Medio-lungo termine" : "Moyen-long terme",
         visible: true,
         items: [
-          item("medium-objective", isItalian ? "Obiettivo principale a medio-lungo termine" : "Objectif principal à moyen-long terme"),
-          item("strategic-challenges", isItalian ? "Challenge strategiche" : "Défis stratégiques"),
-          item("strategic-priorities", isItalian ? "Priorità a medio-lungo termine" : "Priorités à moyen-long terme"),
-          item("enabling-needs", isItalian ? "Bisogni e condizioni abilitanti" : "Besoins et conditions favorables")
+          item("medium-objective", isItalian ? "Obiettivo principale a medio-lungo termine" : "Objectif principal à moyen-long terme")
+        ]
+      },
+      {
+        key: "strengths-impact",
+        title: isItalian ? "Punti di forza e impatto sul territorio" : "Points forts et impact sur le territoire",
+        visible: true,
+        items: [
+          item("elements-to-value", isItalian ? "Punti di forza e impatto sul territorio" : "Points forts et impact sur le territoire")
         ]
       },
       {
         key: "network-contribution",
-        title: isItalian ? "Risorse, contributi ed elementi da valorizzare" : "Ressources, contributions et éléments à valoriser",
+        title: isItalian ? "Risorse e contributi per il network NASIJ" : "Ressources et contributions pour le réseau NASIJ",
         visible: true,
         items: [
-          item("network-resources", isItalian ? "Risorse e contributi per il network NASIJ" : "Ressources et contributions pour le réseau NASIJ"),
-          item("elements-to-value", isItalian ? "Elementi da valorizzare" : "Éléments à valoriser")
+          item("network-resources", isItalian ? "Risorse e contributi per il network NASIJ" : "Ressources et contributions pour le réseau NASIJ")
         ]
       }
     ]
@@ -562,7 +569,7 @@ function buildItalianTemplate(): AssessmentTemplate {
     pickerBadge: "IT",
     title: "Valutazione degli obiettivi, delle criticità, delle sfide e delle opportunità di collaborazione NASIJ",
     description:
-      "Questa valutazione aiuta a identificare le criticità attuali, gli obiettivi principali di sostenibilità ambientale, economica e sociale dei partner NASIJ nel breve e medio-lungo termine. Per ciascun orizzonte temporale, il template permette di collegare le difficoltà rilevate agli obiettivi, alle challenge operative su cui lavorare, alle priorità e al tipo di supporto necessario.",
+      "Questa valutazione aiuta a identificare le criticità attuali, gli obiettivi principali di sostenibilità ambientale, economica e sociale dei partner NASIJ nel breve e medio-lungo termine. Il template collega l'obiettivo a breve termine alle challenge operative e alle priorità; raccoglie inoltre i punti di forza dell'organizzazione, il possibile impatto positivo sul territorio, l'obiettivo principale a medio-lungo termine e le risorse o contributi che l'organizzazione può mettere a disposizione del network.",
     estimatedDuration: nasijEstimatedDurations.it,
     language: "it",
     status: "draft",
@@ -583,8 +590,7 @@ function buildItalianTemplate(): AssessmentTemplate {
             "Più persone di aree/reparti diversi",
             "Con il supporto di un consulente esterno"
           ], true),
-          profilingField("Tipo di organizzazione", "select", italianOrganizationTypes, true),
-          profilingField("Dimensione dell'organizzazione", "select", italianOrganizationSizes),
+          profilingField("Tipo di organizzazione", "select", italianOrganizationTypes),
           profilingField("Ambito principale di attività", "select", activityAreasIt, true)
         ]
       },
@@ -660,29 +666,8 @@ function buildItalianTemplate(): AssessmentTemplate {
         "short-challenges"
       ),
       framing(
-        "short-needs",
-        "5. Bisogni e supporti a breve termine",
-        "Trasformare l'obiettivo e le challenge a breve termine in bisogni operativi, azioni possibili e forme di supporto.",
-        "short-priorities",
-        [
-          {
-            title: "Supporto immediato",
-            prompt:
-              "Quale tipo di supporto aiuterebbe la vostra organizzazione a raggiungere l'obiettivo a breve termine e ad affrontare le challenge più urgenti?"
-          },
-          {
-            title: "Risorse pratiche",
-            prompt: "Quali strumenti, conoscenze, formazioni o supporto tecnico sarebbero utili nei prossimi 6-12 mesi?"
-          },
-          {
-            title: "Primo passo",
-            prompt: "Quale potrebbe essere un primo passo realistico per iniziare a lavorare su questo obiettivo?"
-          }
-        ]
-      ),
-      framing(
         "medium-objective",
-        "6. Obiettivo principale a medio-lungo termine",
+        "5. Obiettivo principale a medio-lungo termine",
         "Identificare un obiettivo principale che l'organizzazione intende raggiungere o preparare nei prossimi 1-5 anni o più.",
         undefined,
         [
@@ -693,66 +678,33 @@ function buildItalianTemplate(): AssessmentTemplate {
           }
         ]
       ),
-      exploration(
-        "strategic-challenges",
-        "7. Challenge e priorità a medio-lungo termine",
-        "7.1 Su quali challenge strategiche dovrebbe lavorare la vostra organizzazione per raggiungere l'obiettivo a medio-lungo termine indicato?",
-        strategicChallengesIt
-      ),
-      prioritization(
-        "strategic-priorities",
-        "7.2 Priorità a medio-lungo termine",
-        "Classificare le challenge selezionate dalla più strategica alla meno strategica, tenendo conto dell'impatto su competitività, sostenibilità ambientale, sicurezza, qualità del lavoro e sviluppo del territorio.",
-        "strategic-challenges"
-      ),
       framing(
-        "enabling-needs",
-        "8. Bisogni e condizioni abilitanti",
-        "Comprendere cosa sarebbe necessario per sostenere l'obiettivo a medio-lungo termine e preparare una transizione più sostenibile.",
-        "strategic-priorities",
+        "elements-to-value",
+        "6. Punti di forza e impatto sul territorio",
+        "Questa sezione serve a identificare i principali punti di forza dell'organizzazione, gli aspetti da valorizzare e il contributo positivo che può generare sul territorio, sulla comunità locale e sul network NASIJ.",
+        undefined,
         [
           {
-            title: "Competenze e capacità",
+            title: "Punti di forza e impatto sul territorio",
             prompt:
-              "Quali competenze, capacità, profili professionali o conoscenze sarebbero utili per raggiungere l'obiettivo a medio-lungo termine?"
-          },
-          {
-            title: "Processi, strumenti e infrastrutture",
-            prompt: "Quali processi, strumenti, metodi, risorse tecniche o infrastrutture aiuterebbero la vostra organizzazione a progredire?"
-          },
-          {
-            title: "Collaborazioni e risorse",
-            prompt: "Quali collaborazioni, partenariati, opportunità di finanziamento o risorse organizzative sarebbero necessari?"
-          },
-          {
-            title: "Condizioni abilitanti",
-            prompt: "Quali condizioni economiche, sociali, tecniche o istituzionali dovrebbero essere rafforzate per rendere possibile questa transizione?"
+              "Quali sono i principali punti di forza della vostra azienda, organizzazione o attività? Quali elementi pensate debbano essere riconosciuti, rafforzati o comunicati meglio? Che tipo di impatto positivo pensate di poter generare sul territorio o sulla comunità locale?",
+            placeholder:
+              "Potete fare riferimento, ad esempio, a competenze artigianali, know-how tecnico, qualità dei prodotti, capacità produttiva, radicamento territoriale, relazioni locali, pratiche sostenibili già esistenti, cultura del lavoro, innovazione, identità aziendale, potenziale di collaborazione, opportunità occupazionali, trasmissione di competenze, inclusione sociale o contributo allo sviluppo della comunità locale."
           }
         ]
       ),
       framing(
         "network-resources",
-        "9. Risorse e contributi per il network NASIJ",
+        "7. Risorse e contributi per il network NASIJ",
         "Questa sezione serve a identificare cosa ogni organizzazione potrebbe condividere o mettere a disposizione delle altre realtà del network NASIJ, indipendentemente dagli obiettivi o dalle challenge indicate nelle sezioni precedenti.",
         undefined,
         [
           {
             title: "Risorse e contributi",
             prompt:
-              "Quali risorse, competenze, esperienze, strumenti, conoscenze, spazi, servizi o opportunità la vostra organizzazione potrebbe mettere a disposizione delle altre aziende o dei soggetti del network NASIJ? Potete indicare, ad esempio, competenze tecniche, esperienze produttive, conoscenze locali, capacità formative, disponibilità a collaborare, accesso a macchinari, spazi, contatti, buone pratiche, casi studio o altre risorse utili."
-          }
-        ]
-      ),
-      framing(
-        "elements-to-value",
-        "10. Elementi da valorizzare",
-        "Questa sezione serve a comprendere quali aspetti dell'organizzazione, della sua attività o del suo contesto dovrebbero essere riconosciuti, rafforzati o comunicati meglio all'interno del progetto NASIJ. Gli elementi indicati possono essere indipendenti dagli obiettivi o dalle challenge selezionate nelle sezioni precedenti.",
-        undefined,
-        [
-          {
-            title: "Elementi da valorizzare",
-            prompt:
-              "Cosa valorizzate maggiormente della vostra azienda, organizzazione o attività? Quali elementi pensate debbano essere riconosciuti, rafforzati o comunicati meglio? Potete fare riferimento, ad esempio, a competenze artigianali, know-how tecnico, qualità dei prodotti, capacità produttiva, radicamento territoriale, relazioni locali, pratiche sostenibili già esistenti, cultura del lavoro, innovazione, identità aziendale o potenziale di collaborazione."
+              "Quali risorse, competenze, esperienze, strumenti, conoscenze, spazi, servizi o opportunità la vostra organizzazione potrebbe mettere a disposizione delle altre aziende o dei soggetti del network NASIJ?",
+            placeholder:
+              "Potete indicare, ad esempio, competenze tecniche, esperienze produttive, conoscenze locali, capacità formative, disponibilità a collaborare, accesso a macchinari, spazi, contatti, buone pratiche, casi studio o altre risorse utili."
           }
         ]
       ),
@@ -769,7 +721,7 @@ function buildFrenchTemplate(): AssessmentTemplate {
     pickerBadge: "FR",
     title: "Évaluation des objectifs, des difficultés, des défis et des opportunités de collaboration NASIJ",
     description:
-      "Cette évaluation aide à identifier les difficultés actuelles, les principaux objectifs de durabilité environnementale, économique et sociale des partenaires NASIJ à court et moyen-long terme. Pour chaque horizon temporel, le modèle permet de relier les difficultés relevées aux objectifs, aux défis opérationnels, aux priorités et au type de soutien nécessaire.",
+      "Cette évaluation aide à identifier les difficultés actuelles, les principaux objectifs de durabilité environnementale, économique et sociale des partenaires NASIJ à court et moyen-long terme. Le modèle relie l'objectif à court terme aux défis opérationnels et aux priorités ; il recueille également les points forts de l'organisation, son impact positif possible sur le territoire, l'objectif principal à moyen-long terme et les ressources ou contributions que l'organisation peut mettre à disposition du réseau.",
     estimatedDuration: nasijEstimatedDurations.fr,
     language: "fr",
     status: "draft",
@@ -790,8 +742,7 @@ function buildFrenchTemplate(): AssessmentTemplate {
             "Plusieurs personnes de services différents",
             "Avec le soutien d'un consultant externe"
           ], true),
-          profilingField("Type d'organisation", "select", frenchOrganizationTypes, true),
-          profilingField("Taille de l'organisation", "select", frenchOrganizationSizes),
+          profilingField("Type d'organisation", "select", frenchOrganizationTypes),
           profilingField("Domaine principal d'activité", "select", activityAreasFr, true)
         ]
       },
@@ -867,29 +818,8 @@ function buildFrenchTemplate(): AssessmentTemplate {
         "short-challenges"
       ),
       framing(
-        "short-needs",
-        "5. Besoins et soutiens à court terme",
-        "Transformer l'objectif et les défis à court terme en besoins opérationnels, actions possibles et formes de soutien.",
-        "short-priorities",
-        [
-          {
-            title: "Soutien immédiat",
-            prompt:
-              "Quel type de soutien aiderait votre organisation à atteindre l'objectif à court terme et à aborder les défis les plus urgents ?"
-          },
-          {
-            title: "Ressources pratiques",
-            prompt: "Quels outils, connaissances, formations ou soutiens techniques seraient utiles dans les 6 à 12 prochains mois ?"
-          },
-          {
-            title: "Premier pas",
-            prompt: "Quel pourrait être un premier pas réaliste pour commencer à travailler sur cet objectif ?"
-          }
-        ]
-      ),
-      framing(
         "medium-objective",
-        "6. Objectif principal à moyen-long terme",
+        "5. Objectif principal à moyen-long terme",
         "Identifier un objectif principal que l'organisation souhaite atteindre ou préparer dans les 1 à 5 prochaines années ou plus.",
         undefined,
         [
@@ -900,66 +830,33 @@ function buildFrenchTemplate(): AssessmentTemplate {
           }
         ]
       ),
-      exploration(
-        "strategic-challenges",
-        "7. Défis et priorités à moyen-long terme",
-        "7.1 Sur quels défis stratégiques votre organisation devrait-elle travailler pour atteindre l'objectif à moyen-long terme indiqué ?",
-        strategicChallengesFr
-      ),
-      prioritization(
-        "strategic-priorities",
-        "7.2 Priorités à moyen-long terme",
-        "Classer les défis sélectionnés du plus stratégique au moins stratégique, en tenant compte de leur impact sur la compétitivité, la durabilité environnementale, la sécurité, la qualité du travail et le développement du territoire.",
-        "strategic-challenges"
-      ),
       framing(
-        "enabling-needs",
-        "8. Besoins et conditions favorables",
-        "Comprendre ce qui serait nécessaire pour soutenir l'atteinte de l'objectif à moyen-long terme et préparer une transition plus durable.",
-        "strategic-priorities",
+        "elements-to-value",
+        "6. Points forts et impact sur le territoire",
+        "Cette section sert à identifier les principaux points forts de l'organisation, les aspects à valoriser et la contribution positive qu'elle peut générer sur le territoire, la communauté locale et le réseau NASIJ.",
+        undefined,
         [
           {
-            title: "Compétences et capacités",
+            title: "Points forts et impact sur le territoire",
             prompt:
-              "Quelles compétences, capacités, profils professionnels ou connaissances seraient utiles pour atteindre l'objectif à moyen-long terme ?"
-          },
-          {
-            title: "Processus, outils et infrastructures",
-            prompt: "Quels processus, outils, méthodes, ressources techniques ou infrastructures aideraient votre organisation à progresser ?"
-          },
-          {
-            title: "Collaborations et ressources",
-            prompt: "Quelles collaborations, quels partenariats, quelles opportunités de financement ou quelles ressources organisationnelles seraient nécessaires ?"
-          },
-          {
-            title: "Conditions favorables",
-            prompt: "Quelles conditions économiques, sociales, techniques ou institutionnelles devraient être renforcées pour rendre cette transition possible ?"
+              "Quels sont les principaux points forts de votre entreprise, organisation ou activité ? Quels éléments pensez-vous devoir être reconnus, renforcés ou mieux communiqués ? Quel type d'impact positif pensez-vous pouvoir générer sur le territoire ou la communauté locale ?",
+            placeholder:
+              "Vous pouvez faire référence, par exemple, aux compétences artisanales, au savoir-faire technique, à la qualité des produits, à la capacité productive, à l'ancrage territorial, aux relations locales, aux pratiques durables déjà existantes, à la culture du travail, à l'innovation, à l'identité d'entreprise, au potentiel de collaboration, aux opportunités d'emploi, à la transmission de compétences, à l'inclusion sociale ou à la contribution au développement de la communauté locale."
           }
         ]
       ),
       framing(
         "network-resources",
-        "9. Ressources et contributions pour le réseau NASIJ",
+        "7. Ressources et contributions pour le réseau NASIJ",
         "Cette section sert à identifier ce que chaque organisation pourrait partager ou mettre à disposition des autres réalités du réseau NASIJ, indépendamment des objectifs ou des défis indiqués dans les sections précédentes.",
         undefined,
         [
           {
             title: "Ressources et contributions",
             prompt:
-              "Quelles ressources, compétences, expériences, outils, connaissances, espaces, services ou opportunités votre organisation pourrait-elle mettre à disposition des autres entreprises ou acteurs du réseau NASIJ ? Vous pouvez indiquer, par exemple, des compétences techniques, des expériences productives, des connaissances locales, des capacités de formation, une disponibilité à collaborer, un accès à des machines, des espaces, des contacts, de bonnes pratiques, des cas d'étude ou d'autres ressources utiles."
-          }
-        ]
-      ),
-      framing(
-        "elements-to-value",
-        "10. Éléments à valoriser",
-        "Cette section sert à comprendre quels aspects de l'organisation, de son activité ou de son contexte devraient être reconnus, renforcés ou mieux communiqués dans le cadre du projet NASIJ. Les éléments indiqués peuvent être indépendants des objectifs ou des défis sélectionnés dans les sections précédentes.",
-        undefined,
-        [
-          {
-            title: "Éléments à valoriser",
-            prompt:
-              "Qu'est-ce que vous valorisez le plus dans votre entreprise, organisation ou activité ? Quels éléments pensez-vous devoir être reconnus, renforcés ou mieux communiqués ? Vous pouvez faire référence, par exemple, aux compétences artisanales, au savoir-faire technique, à la qualité des produits, à la capacité productive, à l'ancrage territorial, aux relations locales, aux pratiques durables déjà existantes, à la culture du travail, à l'innovation, à l'identité d'entreprise ou au potentiel de collaboration."
+              "Quelles ressources, compétences, expériences, outils, connaissances, espaces, services ou opportunités votre organisation pourrait-elle mettre à disposition des autres entreprises ou acteurs du réseau NASIJ ?",
+            placeholder:
+              "Vous pouvez indiquer, par exemple, des compétences techniques, des expériences productives, des connaissances locales, des capacités de formation, une disponibilité à collaborer, un accès à des machines, des espaces, des contacts, de bonnes pratiques, des cas d'étude ou d'autres ressources utiles."
           }
         ]
       ),

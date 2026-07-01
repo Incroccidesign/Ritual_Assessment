@@ -180,7 +180,7 @@ export function AssessmentRunner({ token }: { token: string }) {
       <ParticipantShell>
         <Card>
           <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">{messages.participant.completionTitle}</h1>
-          <p className="mt-4 text-base leading-7 text-bone/62">{messages.participant.completionBody}</p>
+          <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{messages.participant.completionBody}</p>
           {activity.type === "planning_report" ? (
             <PlanningReportDownload assessment={assessment} response={response} activity={activity} />
           ) : null}
@@ -212,6 +212,9 @@ export function AssessmentRunner({ token }: { token: string }) {
   const sourceRanking = activity.type === "framing" ? getRankingContext(activity.sourceActivityId, response) : [];
   const canComplete = validateActivityResponse(activity, currentAnswer);
   const isFinalPlanningReport = activity.type === "planning_report" && currentIndex >= activities.length - 1;
+  const isFramingActivity = activity.type === "framing";
+  const isProfilingActivity = activity.type === "profiling";
+  const framingQuestionText = isFramingActivity ? activity.questions.map((question) => question.prompt).join("\n\n") : "";
 
   async function completeCurrentActivity() {
     if (!response || !activity || !currentAnswer || !canComplete) return;
@@ -289,15 +292,17 @@ export function AssessmentRunner({ token }: { token: string }) {
 
       {phase === "interaction" ? (
         <Card>
-          {!isFinalPlanningReport ? (
+          {!isFinalPlanningReport && !isFramingActivity ? (
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-mint">{messages.activities[activity.type].label}</p>
           ) : null}
-          <h1 className={isFinalPlanningReport ? "font-heading text-4xl font-semibold leading-tight text-bone" : "mt-4 font-heading text-3xl font-semibold leading-tight text-bone"}>
+          <h1 className={isFinalPlanningReport ? "font-heading text-4xl font-semibold leading-tight text-bone" : isFramingActivity ? "font-heading text-3xl font-semibold leading-tight text-bone" : "mt-4 font-heading text-3xl font-semibold leading-tight text-bone"}>
             {isFinalPlanningReport ? messages.planningReport.finalSubmit.title : activity.title}
           </h1>
-          <p className={isFinalPlanningReport ? "mt-4 whitespace-pre-line text-base leading-7 text-bone/62" : "mt-3 text-base leading-7 text-bone/62"}>
-            {isFinalPlanningReport ? messages.planningReport.finalSubmit.description : activity.prompt}
-          </p>
+          {!isProfilingActivity ? (
+            <p className={isFinalPlanningReport || isFramingActivity ? "mt-4 whitespace-pre-line text-base leading-7 text-bone/62" : "mt-3 text-base leading-7 text-bone/62"}>
+              {isFinalPlanningReport ? messages.planningReport.finalSubmit.description : isFramingActivity ? framingQuestionText : activity.prompt}
+            </p>
+          ) : null}
           <div className="mt-7">
             {activity.type === "profiling" && "fields" in currentAnswer ? (
               <ProfilingParticipant activity={activity} answer={currentAnswer as ProfilingAnswer} onChange={setCurrentAnswer} />

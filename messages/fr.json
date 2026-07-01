@@ -38,7 +38,7 @@
   "otherOption": {
     "allowLabel": "Autoriser l'option \"Autre\"",
     "allowHelper": "Les participants peuvent ajouter une reponse personnalisee si aucune option ne convient.",
-    "label": "Autre",
+    "label": "Autre : préciser",
     "placeholder": "Ecrivez votre reponse...",
     "validationRequired": "Ecrivez votre reponse ou deselectionnez \"Autre\".",
     "resultsLabel": "Autre",
@@ -422,7 +422,7 @@
     "intro": "Introduction de l'activite",
     "summary": "Resume de l'activite",
     "completionTitle": "Evaluation envoyee",
-    "completionBody": "Merci. Vos reponses ont ete enregistrees pour le proprietaire de l'evaluation.",
+    "completionBody": "Merci d'avoir complété le questionnaire.\n\nLe rapport transforme les réponses recueillies en une restitution structurée et en une planification stratégique, utile pour comprendre les principaux thèmes émergents, définir les priorités et soutenir les décisions des parties prenantes impliquées.",
     "notFound": "Ce lien public d'evaluation n'est pas disponible.",
     "notPublished": "Cette evaluation n'est pas ouverte actuellement.",
     "progress": "Activite {current} sur {total}",

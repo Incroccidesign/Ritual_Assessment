@@ -6,9 +6,7 @@ import { Designer } from "@/lib/auth/designerAuth";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { ExportDocxButton } from "@/components/reports/ExportDocxButton";
-import { ExportExcelButton } from "@/components/reports/ExportExcelButton";
-import { ExportJsonButton } from "@/components/reports/ExportJsonButton";
+import { ExportMenuButton } from "@/components/reports/ExportMenuButton";
 import { GroupedActivityResults } from "@/components/reports/GroupedActivityResults";
 import { Card, StepHeader } from "@/components/ritual-ui";
 import { fetchAssessmentBundle } from "@/lib/supabase/assessmentRepository";
@@ -68,9 +66,7 @@ export function ResultsDashboard({ assessmentId, designer }: { assessmentId: str
       <div className="flex flex-wrap items-start justify-between gap-5">
         <StepHeader title={messages.reports.title} body={assessment.title} />
         <div className="flex flex-wrap gap-3">
-          <ExportExcelButton assessment={assessment} participants={participants} responses={responses} />
-          <ExportDocxButton assessment={assessment} participants={participants} responses={responses} />
-          <ExportJsonButton assessment={assessment} participants={participants} responses={responses} />
+          <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
         </div>
       </div>
       <div className="mt-8 space-y-6">

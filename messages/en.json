@@ -38,7 +38,7 @@
   "otherOption": {
     "allowLabel": "Allow \"Other\" option",
     "allowHelper": "Participants can add a custom answer if none of the options fit.",
-    "label": "Other",
+    "label": "Other: specify",
     "placeholder": "Write your answer...",
     "validationRequired": "Write your answer or deselect \"Other\".",
     "resultsLabel": "Other",
@@ -422,7 +422,7 @@
     "intro": "Activity intro",
     "summary": "Activity summary",
     "completionTitle": "Assessment submitted",
-    "completionBody": "Thank you. Your responses have been saved for the assessment owner.",
+    "completionBody": "Thank you for completing the questionnaire.\n\nThe report turns the collected responses into structured feedback and strategic planning, useful for understanding the main themes that emerged, defining priorities, and supporting decisions for the people and organizations involved.",
     "notFound": "This public assessment link is not available.",
     "notPublished": "This assessment is not currently open.",
     "progress": "Activity {current} of {total}",

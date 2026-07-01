@@ -38,7 +38,7 @@
   "otherOption": {
     "allowLabel": "Consenti opzione \"Altro\"",
     "allowHelper": "I partecipanti possono aggiungere una risposta personalizzata se nessuna opzione e adatta.",
-    "label": "Altro",
+    "label": "Altro: specificare",
     "placeholder": "Scrivi la tua risposta...",
     "validationRequired": "Scrivi la tua risposta o deseleziona \"Altro\".",
     "resultsLabel": "Altro",
@@ -422,7 +422,7 @@
     "intro": "Introduzione attivita",
     "summary": "Sintesi attivita",
     "completionTitle": "Assessment inviato",
-    "completionBody": "Grazie. Le tue risposte sono state salvate per chi gestisce l'assessment.",
+    "completionBody": "Grazie per aver completato il questionario.\n\nIl report trasforma le risposte raccolte in una restituzione strutturata e in una pianificazione strategica, utile per comprendere i principali temi emersi, definire priorità e supportare le decisioni dei soggetti coinvolti.",
     "notFound": "Questo link pubblico non e disponibile.",
     "notPublished": "Questo assessment non e attualmente aperto.",
     "progress": "Attivita {current} di {total}",

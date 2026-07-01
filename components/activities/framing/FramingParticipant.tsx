@@ -1,8 +1,7 @@
 "use client";
 
 import { FramingActivity, FramingAnswer, RankedItem } from "@/types/activity";
-import { inputClass, SubtlePanel } from "@/components/ritual-ui";
-import { RankingContextPanel } from "@/components/activities/framing/RankingContextPanel";
+import { inputClass } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 function combinedAnswer(activity: FramingActivity, questionAnswers: Record<string, string>) {
@@ -42,29 +41,23 @@ export function FramingParticipant({
   }
 
   return (
-    <div className="space-y-5">
-      <RankingContextPanel ranking={ranking} />
-      <div className="space-y-4">
-        {activity.questions.map((question) => {
-          const value = questionAnswers[question.id] ?? "";
-          return (
-            <SubtlePanel key={question.id} className="space-y-3">
-              <div>
-                <p className="font-heading text-xl font-semibold text-bone">{question.title}</p>
-                <p className="mt-2 text-sm leading-6 text-bone/62">{question.prompt}</p>
-              </div>
-              <textarea
-                className={`${inputClass} min-h-36 resize-y text-base leading-7`}
-                maxLength={activity.maxLength}
-                value={value}
-                placeholder={question.placeholder ?? messages.activities.framing.answerPlaceholder}
-                onChange={(event) => updateQuestionAnswer(question.id, event.target.value)}
-              />
-              <p className="text-end text-sm text-bone/42">{value.length} / {activity.maxLength}</p>
-            </SubtlePanel>
-          );
-        })}
-      </div>
+    <div className="space-y-4">
+      {activity.questions.map((question) => {
+        const value = questionAnswers[question.id] ?? "";
+        return (
+          <div key={question.id} className="space-y-3">
+            <textarea
+              className={`${inputClass} min-h-44 resize-y text-base leading-7`}
+              maxLength={activity.maxLength}
+              value={value}
+              aria-label={question.title}
+              placeholder={question.placeholder ?? messages.activities.framing.answerPlaceholder}
+              onChange={(event) => updateQuestionAnswer(question.id, event.target.value)}
+            />
+            <p className="text-end text-sm text-bone/42">{value.length} / {activity.maxLength}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }

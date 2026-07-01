@@ -145,15 +145,41 @@ function participantLabel(codeMap: Map<string, string>, participantId: string) {
 }
 
 function normalizeFieldLabel(label: string) {
-  return label.trim().toLowerCase();
+  return label
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function resolveProfileKey(field: ProfilingField): ProfileKey | null {
-  const label = normalizeFieldLabel(field.label);
-  if (label.includes("organization") || label.includes("organisation") || label.includes("company")) return "organization";
-  if (label.includes("sector") || label.includes("industry") || label.includes("domaine")) return "sector";
-  if (label.includes("country") || label.includes("pays")) return "country";
-  if (label.includes("role") || label.includes("respondent")) return "role";
+  const label = normalizeFieldLabel(`${field.id} ${field.label}`);
+  if (
+    label.includes("organization") ||
+    label.includes("organisation") ||
+    label.includes("organizzazione") ||
+    label.includes("company") ||
+    label.includes("azienda") ||
+    label.includes("ente")
+  ) return "organization";
+  if (
+    label.includes("sector") ||
+    label.includes("settore") ||
+    label.includes("industry") ||
+    label.includes("domaine")
+  ) return "sector";
+  if (
+    label.includes("country") ||
+    label.includes("paese") ||
+    label.includes("pays")
+  ) return "country";
+  if (
+    label.includes("role") ||
+    label.includes("ruolo") ||
+    label.includes("respondent") ||
+    label.includes("respondant") ||
+    label.includes("repondant")
+  ) return "role";
   return null;
 }
 
@@ -431,6 +457,8 @@ function PlanningReportResults({ assessment, responses, participants }: { assess
   const reportActivity = activitiesByType(assessment, "planning_report")[0] as PlanningReportActivity | undefined;
   const submittedResponses = responses.filter((response) => response.status === "submitted");
   const codeMap = participantCodeMap(participants, responses);
+  const profiles = collectParticipantProfiles(assessment, responses);
+  const participantsById = new Map(participants.map((participant) => [participant.id, participant]));
   const [selectedResponseId, setSelectedResponseId] = useState<string | null>(submittedResponses[0]?.id ?? null);
   const selectedResponse = submittedResponses.find((response) => response.id === selectedResponseId) ?? submittedResponses[0] ?? null;
   const model = useMemo(
@@ -446,42 +474,56 @@ function PlanningReportResults({ assessment, responses, participants }: { assess
   return (
     <div className="space-y-5">
       <SubtlePanel className="overflow-x-auto">
-        <table className="w-full min-w-[36rem] text-left text-sm">
+        <table className="w-full min-w-[48rem] text-left text-sm">
           <thead className="text-xs uppercase tracking-[0.16em] text-bone/38">
             <tr>
               <th className="py-3 pe-4">{messages.reports.participants}</th>
+              <th className="py-3 pe-4">{messages.dashboard.organization}</th>
               <th className="py-3 pe-4">{messages.dashboard.submittedLabel}</th>
               <th className="py-3 pe-4">{messages.planningReport.activity.label}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-bone/10 text-bone/72">
-            {submittedResponses.map((response) => (
-              <tr key={response.id}>
-                <td className="py-3 pe-4 font-medium text-bone">{participantLabel(codeMap, response.participantId)}</td>
-                <td className="py-3 pe-4">{formatDateTime(response.submittedAt) || messages.common.empty}</td>
-                <td className="py-3 pe-4">
-                  <Button
-                    type="button"
-                    variant={selectedResponse?.id === response.id ? "primary" : "secondary"}
-                    className="min-h-9 px-3"
-                    onClick={() => setSelectedResponseId(response.id)}
-                  >
-                    {messages.planningReport.view}
-                  </Button>
-                </td>
-              </tr>
-            ))}
+            {submittedResponses.map((response) => {
+              const profile = profiles.get(response.participantId);
+              const participant = participantsById.get(response.participantId);
+              const organization = profile?.organization || participant?.companyName || messages.common.empty;
+              const rowModel = generatePlanningReportModel(assessment, response, reportActivity, messages);
+
+              return (
+                <tr key={response.id}>
+                  <td className="py-3 pe-4 font-medium text-bone">{participantLabel(codeMap, response.participantId)}</td>
+                  <td className="py-3 pe-4">{organization}</td>
+                  <td className="py-3 pe-4">{formatDateTime(response.submittedAt) || messages.common.empty}</td>
+                  <td className="py-3 pe-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant={selectedResponse?.id === response.id ? "primary" : "secondary"}
+                        className="min-h-9 px-3"
+                        onClick={() => setSelectedResponseId(response.id)}
+                      >
+                        {messages.planningReport.view}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="min-h-9 px-3"
+                        onClick={() => void downloadPlanningReportDocx(rowModel)}
+                      >
+                        {messages.planningReport.download}
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </SubtlePanel>
 
       {model ? (
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button type="button" variant="secondary" onClick={() => void downloadPlanningReportDocx(model)}>
-              {messages.planningReport.download}
-            </Button>
-          </div>
           <PlanningReportPreview model={model} />
         </div>
       ) : null}
