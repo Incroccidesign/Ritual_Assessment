@@ -213,8 +213,13 @@ export function AssessmentRunner({ token }: { token: string }) {
   const canComplete = validateActivityResponse(activity, currentAnswer);
   const isFinalPlanningReport = activity.type === "planning_report" && currentIndex >= activities.length - 1;
   const isFramingActivity = activity.type === "framing";
+  const isMultiQuestionFraming = isFramingActivity && activity.questions.length > 1;
   const isProfilingActivity = activity.type === "profiling";
-  const framingQuestionText = isFramingActivity ? activity.questions.map((question) => question.prompt).join("\n\n") : "";
+  const framingQuestionText = isFramingActivity
+    ? isMultiQuestionFraming
+      ? activity.prompt
+      : activity.questions.map((question) => question.prompt).join("\n\n")
+    : "";
 
   async function completeCurrentActivity() {
     if (!response || !activity || !currentAnswer || !canComplete) return;
