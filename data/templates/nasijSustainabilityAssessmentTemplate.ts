@@ -530,7 +530,8 @@ function planningReport(locale: "it" | "fr"): TemplatePlanningReportActivity {
         items: [
           item("short-objective", isItalian ? "Obiettivo principale a breve termine" : "Objectif principal à court terme"),
           item("short-challenges", isItalian ? "Challenge operative" : "Défis opérationnels"),
-          item("short-priorities", isItalian ? "Priorità a breve termine" : "Priorités à court terme")
+          item("short-priorities", isItalian ? "Priorità a breve termine" : "Priorités à court terme"),
+          item("short-needs-framing", isItalian ? "Framing dei bisogni a breve termine" : "Cadrage des besoins à court terme")
         ]
       },
       {
@@ -666,8 +667,29 @@ function buildItalianTemplate(): AssessmentTemplate {
         "short-challenges"
       ),
       framing(
+        "short-needs-framing",
+        "5. Framing dei bisogni a breve termine",
+        "Questa sezione serve a trasformare l'obiettivo e le challenge a breve termine in bisogni operativi, azioni possibili e forme di supporto.",
+        "short-priorities",
+        [
+          {
+            title: "Supporto immediato",
+            prompt:
+              "Quale tipo di supporto aiuterebbe la vostra organizzazione a raggiungere l'obiettivo a breve termine e ad affrontare le challenge più urgenti?"
+          },
+          {
+            title: "Risorse pratiche",
+            prompt: "Quali strumenti, conoscenze, formazioni o supporto tecnico sarebbero utili nei prossimi 6-12 mesi?"
+          },
+          {
+            title: "Primo passo",
+            prompt: "Quale potrebbe essere un primo passo realistico per iniziare a lavorare su questo obiettivo?"
+          }
+        ]
+      ),
+      framing(
         "medium-objective",
-        "5. Obiettivo principale a medio-lungo termine",
+        "6. Obiettivo principale a medio-lungo termine",
         "Identificare un obiettivo principale che l'organizzazione intende raggiungere o preparare nei prossimi 1-5 anni o più.",
         undefined,
         [
@@ -680,7 +702,7 @@ function buildItalianTemplate(): AssessmentTemplate {
       ),
       framing(
         "elements-to-value",
-        "6. Punti di forza e impatto sul territorio",
+        "7. Punti di forza e impatto sul territorio",
         "Questa sezione serve a identificare i principali punti di forza dell'organizzazione, gli aspetti da valorizzare e il contributo positivo che può generare sul territorio, sulla comunità locale e sul network NASIJ.",
         undefined,
         [
@@ -695,7 +717,7 @@ function buildItalianTemplate(): AssessmentTemplate {
       ),
       framing(
         "network-resources",
-        "7. Risorse e contributi per il network NASIJ",
+        "8. Risorse e contributi per il network NASIJ",
         "Questa sezione serve a identificare cosa ogni organizzazione potrebbe condividere o mettere a disposizione delle altre realtà del network NASIJ, indipendentemente dagli obiettivi o dalle challenge indicate nelle sezioni precedenti.",
         undefined,
         [
@@ -818,8 +840,29 @@ function buildFrenchTemplate(): AssessmentTemplate {
         "short-challenges"
       ),
       framing(
+        "short-needs-framing",
+        "5. Cadrage des besoins à court terme",
+        "Cette section sert à transformer l'objectif et les défis à court terme en besoins opérationnels, actions possibles et formes de soutien.",
+        "short-priorities",
+        [
+          {
+            title: "Soutien immédiat",
+            prompt:
+              "Quel type de soutien aiderait votre organisation à atteindre l'objectif à court terme et à traiter les défis les plus urgents ?"
+          },
+          {
+            title: "Ressources pratiques",
+            prompt: "Quels outils, connaissances, formations ou soutiens techniques seraient utiles dans les 6 à 12 prochains mois ?"
+          },
+          {
+            title: "Premier pas",
+            prompt: "Quel pourrait être un premier pas réaliste pour commencer à travailler sur cet objectif ?"
+          }
+        ]
+      ),
+      framing(
         "medium-objective",
-        "5. Objectif principal à moyen-long terme",
+        "6. Objectif principal à moyen-long terme",
         "Identifier un objectif principal que l'organisation souhaite atteindre ou préparer dans les 1 à 5 prochaines années ou plus.",
         undefined,
         [
@@ -832,7 +875,7 @@ function buildFrenchTemplate(): AssessmentTemplate {
       ),
       framing(
         "elements-to-value",
-        "6. Points forts et impact sur le territoire",
+        "7. Points forts et impact sur le territoire",
         "Cette section sert à identifier les principaux points forts de l'organisation, les aspects à valoriser et la contribution positive qu'elle peut générer sur le territoire, la communauté locale et le réseau NASIJ.",
         undefined,
         [
@@ -847,7 +890,7 @@ function buildFrenchTemplate(): AssessmentTemplate {
       ),
       framing(
         "network-resources",
-        "7. Ressources et contributions pour le réseau NASIJ",
+        "8. Ressources et contributions pour le réseau NASIJ",
         "Cette section sert à identifier ce que chaque organisation pourrait partager ou mettre à disposition des autres réalités du réseau NASIJ, indépendamment des objectifs ou des défis indiqués dans les sections précédentes.",
         undefined,
         [
