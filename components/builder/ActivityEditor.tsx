@@ -12,11 +12,13 @@ import { useLocale } from "@/lib/i18n/useLocale";
 export function ActivityEditor({
   activity,
   activities,
-  onChange
+  onChange,
+  embedded = false
 }: {
   activity: Activity | null;
   activities: Activity[];
   onChange: (activity: Activity) => void;
+  embedded?: boolean;
 }) {
   const { messages } = useLocale();
 
@@ -28,8 +30,8 @@ export function ActivityEditor({
     );
   }
 
-  return (
-    <Card className="space-y-6">
+  const content = (
+    <div className="space-y-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mint">{messages.activities[activity.type].label}</p>
         <p className="mt-2 text-sm leading-6 text-bone/56">{messages.activities[activity.type].purpose}</p>
@@ -47,6 +49,8 @@ export function ActivityEditor({
       {activity.type === "prioritization" ? <PrioritizationEditor activity={activity} activities={activities} onChange={onChange} /> : null}
       {activity.type === "framing" ? <FramingEditor activity={activity} activities={activities} onChange={onChange} /> : null}
       {activity.type === "planning_report" ? <PlanningReportEditor activity={activity} activities={activities} onChange={onChange} /> : null}
-    </Card>
+    </div>
   );
+
+  return embedded ? content : <Card className="space-y-6">{content}</Card>;
 }

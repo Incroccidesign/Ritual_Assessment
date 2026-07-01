@@ -11,11 +11,13 @@ import { getErrorMessage } from "@/lib/utils/errors";
 export function LinkGenerator({
   assessment,
   onPublish,
-  disabled = false
+  disabled = false,
+  compact = false
 }: {
   assessment: Assessment;
   onPublish: (assessment: Assessment) => void;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const { messages, href } = useLocale();
   const [copied, setCopied] = useState(false);
@@ -46,6 +48,29 @@ export function LinkGenerator({
     await navigator.clipboard.writeText(publicLink);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
+  }
+
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        {!disabled && (assessment.status !== "published" || !assessment.publicToken) ? (
+          <Button type="button" onClick={() => void publish()} disabled={publishing}>
+            {publishing ? messages.app.loading : messages.common.publish}
+          </Button>
+        ) : !disabled ? (
+          <>
+            <Button type="button" variant="secondary" onClick={() => void copyLink()}>
+              {copied ? <Check size={17} /> : <Copy size={17} />}
+              {copied ? messages.builder.copied : messages.common.copyPublicLink}
+            </Button>
+            <ButtonLink href={href(publicPath)} variant="ghost">
+              {messages.common.open} <ExternalLink size={17} />
+            </ButtonLink>
+          </>
+        ) : null}
+        {error ? <p className="w-full text-sm text-orange">{error}</p> : null}
+      </div>
+    );
   }
 
   return (

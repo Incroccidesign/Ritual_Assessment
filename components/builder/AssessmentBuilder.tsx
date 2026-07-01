@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Save } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Activity, ActivityType } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
 import { ActivityEditor } from "@/components/builder/ActivityEditor";
 import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
 import { BuilderShell } from "@/components/layout/BuilderShell";
-import { Button, Card, Field, inputClass, selectClass, StepHeader } from "@/components/ritual-ui";
+import { Button, ButtonLink, Card, Field, inputClass, selectClass, StepHeader } from "@/components/ritual-ui";
 import { createActivityPreset } from "@/data/activity-presets";
 import { previousExplorationActivities, previousPrioritizationActivities } from "@/lib/activities/dependencies";
 import { locales } from "@/lib/i18n/config";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
+  deleteSupabaseAssessment,
   deleteSupabaseActivity,
   fetchAssessmentBundle,
   insertSupabaseActivity,
@@ -34,11 +36,6 @@ function reorderActivities(activities: Activity[]) {
 
 function orderedFromCurrentOrder(activities: Activity[]) {
   return activities.map((activity, orderIndex) => ({ ...activity, orderIndex }) as Activity);
-}
-
-function formatActivityCountLabel(count: number, singularLabel: string, pluralLabel: string) {
-  const template = count === 1 ? singularLabel : pluralLabel;
-  return template.replace("{count}", String(count));
 }
 
 function defaultEstimatedDuration(locale: Locale) {
@@ -69,12 +66,15 @@ export function AssessmentBuilder({
   initialTemplateMode?: boolean;
 }) {
   const { messages, localeNames } = useLocale();
+  const router = useRouter();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [isTemplate, setIsTemplate] = useState(initialTemplateMode);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export function AssessmentBuilder({
         const nextIsTemplate = initialTemplateMode || Boolean(bundle?.assessment && isTemplateAssessment(bundle.assessment.id, ownerId));
         setIsTemplate(nextIsTemplate);
         if (initialTemplateMode && bundle?.assessment) markAssessmentAsTemplate(bundle.assessment.id, ownerId);
-        setSelectedActivityId(bundle?.assessment.activities[0]?.id ?? null);
+        setSelectedActivityId(null);
       } catch (loadError) {
         if (!active) return;
         setError(getErrorMessage(loadError, messages.common.empty));
@@ -105,16 +105,10 @@ export function AssessmentBuilder({
   }, [assessmentId, initialTemplateMode, messages.common.empty, ownerId]);
 
   const activities = useMemo(() => reorderActivities(assessment?.activities ?? []), [assessment?.activities]);
-  const selectedActivity = activities.find((activity) => activity.id === selectedActivityId) ?? activities[0] ?? null;
   const estimatedDurationRange = useMemo(
     () => durationRangeFromText(assessment?.estimatedDuration),
     [assessment?.estimatedDuration]
   );
-  const activityCountLabel = useMemo(
-    () => formatActivityCountLabel(activities.length, messages.builder.activityAddedSingular, messages.builder.activitiesAddedPlural),
-    [activities.length, messages.builder.activityAddedSingular, messages.builder.activitiesAddedPlural]
-  );
-
   async function persist<T>(operation: () => Promise<T>, onSuccess?: (result: T) => void) {
     setSaving(true);
     setError(null);
@@ -170,7 +164,7 @@ export function AssessmentBuilder({
             ? { ...current, activities: reorderActivities([...current.activities, insertedActivity]) }
             : current
         );
-        setSelectedActivityId(insertedActivity.id);
+        setSelectedActivityId(null);
       }
     );
   }
@@ -192,7 +186,7 @@ export function AssessmentBuilder({
     if (!assessment) return;
     const nextActivities = orderedFromCurrentOrder(activities.filter((activity) => activity.id !== activityId));
     setAssessment({ ...assessment, activities: nextActivities });
-    if (selectedActivityId === activityId) setSelectedActivityId(nextActivities[0]?.id ?? null);
+    if (selectedActivityId === activityId) setSelectedActivityId(null);
     void persist(async () => {
       await deleteSupabaseActivity(activityId);
       await reorderSupabaseActivities(nextActivities);
@@ -218,6 +212,22 @@ export function AssessmentBuilder({
     );
   }
 
+  async function deleteDraft() {
+    if (!assessment) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteSupabaseAssessment(assessment.id);
+      window.dispatchEvent(new Event("ritual-assessment-storage"));
+      router.push("/dashboard");
+    } catch (deleteError) {
+      setError(getErrorMessage(deleteError, messages.dashboard.deleteError));
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  }
+
   if (loading) {
     return (
       <BuilderShell>
@@ -241,15 +251,47 @@ export function AssessmentBuilder({
   return (
     <BuilderShell>
       <div className="flex flex-wrap items-start justify-between gap-5">
-        <StepHeader title={messages.builder.title} body={assessment.description} />
-        <Button type="button" variant="secondary" disabled>
-          <Save size={16} /> {saving ? messages.app.loading : saved ? messages.common.saved : isTemplate ? messages.builder.template.save : messages.common.save}
-        </Button>
+        <div className="space-y-5">
+          <ButtonLink href="/dashboard" variant="ghost" className="min-h-10 px-0 text-bone/70 hover:text-bone">
+            <ArrowLeft size={17} />
+            {messages.nav.dashboard}
+          </ButtonLink>
+          <StepHeader title={messages.builder.title} body={assessment.description} />
+        </div>
       </div>
       {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
+      {deleteOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <Card className="w-full max-w-md">
+            <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteDraftTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-bone/62">{messages.builder.deleteDraftBody}</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+                {messages.common.cancel}
+              </Button>
+              <Button type="button" variant="danger" onClick={() => void deleteDraft()} disabled={deleting}>
+                {deleting ? messages.app.loading : messages.builder.deleteDraft}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
-        <div className="space-y-6">
+      <div className="mt-8">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-bone/12 bg-night/45 px-5 py-4">
+            <p className="text-sm font-semibold text-bone/58">
+              {saving ? messages.builder.saving : saved ? messages.builder.savedAutomatically : messages.builder.savedAutomatically}
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              {assessment.status === "draft" ? (
+                <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)} disabled={deleting}>
+                  {messages.builder.deleteDraft}
+                </Button>
+              ) : null}
+              <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} compact />
+            </div>
+          </div>
           <Card className="space-y-5">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentDetails}</h2>
             <Field label={messages.builder.titleLabel}>
@@ -331,23 +373,19 @@ export function AssessmentBuilder({
                 <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentFlow}</h2>
                 <p className="max-w-2xl text-sm leading-6 text-bone/60">{messages.builder.assessmentFlowHelper}</p>
               </div>
-              <span className="shrink-0 pt-1 text-sm text-bone/45">{activityCountLabel}</span>
             </div>
             <ActivityList
               activities={activities}
-              selectedId={selectedActivity?.id ?? null}
+              selectedId={selectedActivityId}
               onSelect={setSelectedActivityId}
               onAdd={addActivity}
               onMove={moveActivity}
               onRemove={removeActivity}
+              renderActivityEditor={(activity) => (
+                <ActivityEditor activity={activity} activities={activities} onChange={updateActivity} embedded />
+              )}
             />
           </Card>
-          <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} />
-        </div>
-
-        <div>
-          <h2 className="mb-4 font-heading text-2xl font-semibold text-bone">{messages.builder.activitySettings}</h2>
-          <ActivityEditor activity={selectedActivity} activities={activities} onChange={updateActivity} />
         </div>
       </div>
     </BuilderShell>
