@@ -51,6 +51,8 @@
     "emptyBody": "Create your first guided visual assessment to start collecting structured responses.",
     "draft": "Draft",
     "published": "Published",
+    "publishedDate": "Published",
+    "createdDate": "Created",
     "closed": "Closed",
     "response": "response",
     "responses": "responses",

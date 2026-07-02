@@ -22,7 +22,7 @@ export function AssessmentManagementCard({
   responses: AssessmentResponse[];
   onDelete?: (assessmentId: string) => void;
 }) {
-  const { messages, href } = useLocale();
+  const { locale, messages, href } = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -44,6 +44,13 @@ export function AssessmentManagementCard({
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
     return messages.dashboard.closed;
+  }
+
+  function dateLabel() {
+    const dateValue = assessment.status === "published" && assessment.publishedAt ? assessment.publishedAt : assessment.createdAt;
+    const prefix = assessment.status === "published" && assessment.publishedAt ? messages.dashboard.publishedDate : messages.dashboard.createdDate;
+    const formattedDate = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", year: "numeric" }).format(new Date(dateValue));
+    return `${prefix} ${formattedDate}`;
   }
 
   async function copyPublicLink() {
@@ -79,6 +86,9 @@ export function AssessmentManagementCard({
           <div className="mt-3 flex flex-wrap gap-2 text-sm">
             <span className="rounded-full border border-bone/10 bg-night/50 px-3 py-1 text-bone/62">
               {statusLabel()}
+            </span>
+            <span className="rounded-full border border-bone/10 bg-night/50 px-3 py-1 text-bone/48">
+              {dateLabel()}
             </span>
             <span className="rounded-full border border-mint/20 bg-mint/10 px-3 py-1 text-mint">
               {responseCountLabel()}

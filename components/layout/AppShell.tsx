@@ -10,12 +10,14 @@ export function AppShell({
   children,
   compact = false,
   wide = false,
-  showHeaderDivider = true
+  showHeaderDivider = true,
+  headerAction
 }: {
   children: React.ReactNode;
   compact?: boolean;
   wide?: boolean;
   showHeaderDivider?: boolean;
+  headerAction?: React.ReactNode;
 }) {
   const { href, direction } = useLocale();
 
@@ -39,9 +41,12 @@ export function AppShell({
           <Link href={href("/")} className="block py-1 focus:outline-none focus:ring-2 focus:ring-mint">
             <img src="/ritual-logo-white.svg" alt="Ritual" className="h-auto w-28 sm:w-32 md:w-36" />
           </Link>
-          <Suspense fallback={null}>
-            <LanguageSwitcher />
-          </Suspense>
+          <div className="flex items-center gap-3">
+            <Suspense fallback={null}>
+              <LanguageSwitcher />
+            </Suspense>
+            {headerAction}
+          </div>
         </header>
         {children}
       </div>

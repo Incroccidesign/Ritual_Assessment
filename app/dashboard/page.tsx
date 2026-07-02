@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Designer } from "@/lib/auth/designerAuth";
-import { DesignerAuthGate, DesignerSignOutButton } from "@/components/auth/DesignerAuthGate";
+import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreationCard";
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -186,7 +186,6 @@ function DashboardContent({ designer }: { designer: Designer }) {
               {messages.assessmentCreate.newAssessment}
             </Button>
           </span>
-          <DesignerSignOutButton />
           {creationOpen ? (
             <div ref={creationPopoverRef} className="absolute right-0 top-[calc(100%+0.75rem)] z-50">
               <AssessmentCreationCard

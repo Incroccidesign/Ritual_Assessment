@@ -51,6 +51,8 @@
     "emptyBody": "Crea il tuo primo assessment visuale guidato per iniziare a raccogliere risposte strutturate.",
     "draft": "Bozza",
     "published": "Pubblicato",
+    "publishedDate": "Pubblicato il",
+    "createdDate": "Creato il",
     "closed": "Chiuso",
     "response": "risposta",
     "responses": "risposte",

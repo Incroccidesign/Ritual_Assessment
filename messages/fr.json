@@ -51,6 +51,8 @@
     "emptyBody": "Creez votre premiere evaluation visuelle guidee pour commencer a collecter des reponses structurees.",
     "draft": "Brouillon",
     "published": "Publiee",
+    "publishedDate": "Publie le",
+    "createdDate": "Cree le",
     "closed": "Fermee",
     "response": "reponse",
     "responses": "reponses",
