@@ -1,5 +1,6 @@
 import type {
   ElementType,
+  ExplorationOptionGroup,
   ExplorationResponseMode,
   PlanningReportSectionConfig,
   ProfilingField,
@@ -25,6 +26,8 @@ type TemplateExplorationActivity = BaseTemplateActivity & {
   itemType: ElementType;
   responseMode: ExplorationResponseMode;
   options: string[];
+  optionGroups?: ExplorationOptionGroup[];
+  optionGroupAssignments?: Record<string, string>;
   allowOther?: boolean;
   maxSelections?: number;
 };
@@ -446,7 +449,9 @@ function exploration(
   prompt: string,
   options: string[],
   allowOther = true,
-  maxSelections?: number
+  maxSelections?: number,
+  optionGroups?: ExplorationOptionGroup[],
+  optionGroupAssignments?: Record<string, string>
 ): TemplateExplorationActivity {
   return {
     key,
@@ -457,9 +462,143 @@ function exploration(
     responseMode: "open_list",
     allowOther,
     maxSelections,
-    options
+    options,
+    ...(optionGroups ? { optionGroups } : {}),
+    ...(optionGroupAssignments ? { optionGroupAssignments } : {})
   };
 }
+
+function groupedChallengeOptions(
+  socialOptions: string[],
+  environmentalOptions: string[],
+  socialLabel: string,
+  environmentalLabel: string
+) {
+  const optionGroups = [
+    { id: "social-personnel", label: socialLabel, orderIndex: 0 },
+    { id: "environmental-processes", label: environmentalLabel, orderIndex: 1 }
+  ];
+  const options = [...socialOptions, ...environmentalOptions];
+  const optionGroupAssignments: Record<string, string> = {};
+  socialOptions.forEach((_, index) => {
+    optionGroupAssignments[String(index)] = optionGroups[0].id;
+  });
+  environmentalOptions.forEach((_, index) => {
+    optionGroupAssignments[String(socialOptions.length + index)] = optionGroups[1].id;
+  });
+
+  return { options, optionGroups, optionGroupAssignments };
+}
+
+const shortChallengeGroupsIt = groupedChallengeOptions(
+  [
+    "Migliorare la regolarità e la stabilità dei rapporti di lavoro",
+    "Garantire retribuzioni eque e pagamenti regolari",
+    "Migliorare l'organizzazione degli orari e la conciliazione tra lavoro e vita familiare",
+    "Formare il personale su competenze tecniche specifiche",
+    "Formare il personale su sostenibilità, qualità o innovazione",
+    "Migliorare la sicurezza e le condizioni di lavoro"
+  ],
+  [
+    "Ridurre i consumi energetici nei processi produttivi",
+    "Ridurre i consumi idrici",
+    "Migliorare la gestione degli scarti tessili",
+    "Valorizzare gli scarti di produzione",
+    "Ridurre sprechi, rilavorazioni e difetti di produzione",
+    "Raccogliere dati su consumi, costi, scarti e impatti",
+    "Migliorare l'organizzazione interna dei processi",
+    "Individuare materiali o fornitori più sostenibili",
+    "Rispondere alle richieste di sostenibilità dei clienti",
+    "Prepararsi a standard, certificazioni o audit",
+    "Comunicare meglio le pratiche sostenibili già esistenti",
+    "Migliorare la tracciabilità dei prodotti o dei processi"
+  ],
+  "Ambito sociale e del personale",
+  "Ambito ambientale e dei processi"
+);
+
+const shortChallengeGroupsFr = groupedChallengeOptions(
+  [
+    "Améliorer la régularité et la stabilité des relations de travail",
+    "Garantir des rémunérations équitables et des paiements réguliers",
+    "Améliorer l'organisation des horaires et l'équilibre entre travail et vie familiale",
+    "Former le personnel à des compétences techniques spécifiques",
+    "Former le personnel à la durabilité, à la qualité ou à l'innovation",
+    "Améliorer la sécurité et les conditions de travail"
+  ],
+  [
+    "Réduire les consommations énergétiques dans les processus de production",
+    "Réduire les consommations d'eau",
+    "Améliorer la gestion des déchets textiles",
+    "Valoriser les déchets de production",
+    "Réduire les gaspillages, reprises et défauts de production",
+    "Collecter des données sur les consommations, les coûts, les déchets et les impacts",
+    "Améliorer l'organisation interne des processus",
+    "Identifier des matériaux ou fournisseurs plus durables",
+    "Répondre aux demandes de durabilité des clients",
+    "Se préparer aux standards, certifications ou audits",
+    "Mieux communiquer les pratiques durables déjà existantes",
+    "Améliorer la traçabilité des produits ou des processus"
+  ],
+  "Domaine social et du personnel",
+  "Domaine environnemental et des processus"
+);
+
+const strategicChallengeGroupsIt = groupedChallengeOptions(
+  [
+    "Creare e consolidare occupazione stabile, regolare e dignitosa",
+    "Sviluppare politiche aziendali per la parità di genere e l'accesso delle donne ai ruoli decisionali",
+    "Costruire percorsi di carriera, qualificazione e aggiornamento continuo delle lavoratrici e dei lavoratori",
+    "Rafforzare sistemi permanenti di salute, sicurezza e prevenzione dei rischi professionali",
+    "Rafforzare le competenze tecniche e manageriali interne",
+    "Attrarre e formare giovani lavoratori qualificati"
+  ],
+  [
+    "Modernizzare impianti, macchinari o tecnologie produttive",
+    "Integrare soluzioni di efficienza energetica",
+    "Adottare energie rinnovabili dove possibile",
+    "Sviluppare prodotti a maggiore valore aggiunto",
+    "Innovare prodotti, processi o modelli di business",
+    "Integrare pratiche di economia circolare",
+    "Creare sistemi per riuso, riciclo o valorizzazione degli scarti tessili",
+    "Ridurre l'impronta ambientale dei prodotti o dei processi",
+    "Trasmettere e valorizzare il know-how locale",
+    "Digitalizzare i processi produttivi e gestionali",
+    "Sviluppare sistemi di tracciabilità digitale",
+    "Collaborare con altre aziende del network",
+    "Adeguarsi ai requisiti ambientali e sociali dei mercati europei"
+  ],
+  "Ambito sociale e del personale",
+  "Ambito ambientale e dei processi"
+);
+
+const strategicChallengeGroupsFr = groupedChallengeOptions(
+  [
+    "Créer et consolider un emploi stable, régulier et digne",
+    "Développer des politiques d'entreprise pour l'égalité de genre et l'accès des femmes aux rôles décisionnels",
+    "Construire des parcours de carrière, de qualification et de mise à jour continue des travailleuses et des travailleurs",
+    "Renforcer des systèmes permanents de santé, de sécurité et de prévention des risques professionnels",
+    "Renforcer les compétences techniques et managériales internes",
+    "Attirer et former de jeunes travailleurs qualifiés"
+  ],
+  [
+    "Moderniser les installations, les machines ou les technologies de production",
+    "Intégrer des solutions d'efficacité énergétique",
+    "Adopter des énergies renouvelables lorsque cela est possible",
+    "Développer des produits à plus forte valeur ajoutée",
+    "Innover les produits, les processus ou les modèles d'affaires",
+    "Intégrer des pratiques d'économie circulaire",
+    "Créer des systèmes de réutilisation, de recyclage ou de valorisation des déchets textiles",
+    "Réduire l'empreinte environnementale des produits ou des processus",
+    "Transmettre et valoriser le savoir-faire local",
+    "Digitaliser les processus de production et de gestion",
+    "Développer des systèmes de traçabilité numérique",
+    "Collaborer avec d'autres entreprises du réseau",
+    "S'adapter aux exigences environnementales et sociales des marchés européens"
+  ],
+  "Domaine social et du personnel",
+  "Domaine environnemental et des processus"
+);
 
 function prioritization(key: string, title: string, prompt: string, sourceKey: string): TemplatePrioritizationActivity {
   return {
@@ -657,8 +796,12 @@ function buildItalianTemplate(): AssessmentTemplate {
       exploration(
         "short-challenges",
         "4. Challenge e priorità a breve termine",
-        "4.1 Su quali challenge operative dovrebbe lavorare la vostra organizzazione per raggiungere l'obiettivo a breve termine indicato? Selezionare una o più challenge operative rilevanti.",
-        shortChallengesIt
+        "4.1 Su quali challenge operative dovrebbe lavorare la vostra organizzazione per raggiungere l'obiettivo a breve termine indicato? Selezionare una o più challenge operative rilevanti, almeno una per ogni ambito (sociale e ambientale). Se necessario, aggiungere una challenge specifica non presente nell'elenco.",
+        shortChallengeGroupsIt.options,
+        true,
+        undefined,
+        shortChallengeGroupsIt.optionGroups,
+        shortChallengeGroupsIt.optionGroupAssignments
       ),
       prioritization(
         "short-priorities",
@@ -830,8 +973,12 @@ function buildFrenchTemplate(): AssessmentTemplate {
       exploration(
         "short-challenges",
         "4. Défis et priorités à court terme",
-        "4.1 Sur quels défis opérationnels votre organisation devrait-elle travailler pour atteindre l'objectif à court terme indiqué ? Sélectionner un ou plusieurs défis opérationnels pertinents.",
-        shortChallengesFr
+        "4.1 Sur quels défis opérationnels votre organisation devrait-elle travailler pour atteindre l'objectif à court terme indiqué ? Sélectionner un ou plusieurs défis opérationnels pertinents, au moins un pour chaque domaine (social et environnemental). Si nécessaire, ajouter un défi spécifique qui n'est pas présent dans la liste.",
+        shortChallengeGroupsFr.options,
+        true,
+        undefined,
+        shortChallengeGroupsFr.optionGroups,
+        shortChallengeGroupsFr.optionGroupAssignments
       ),
       prioritization(
         "short-priorities",

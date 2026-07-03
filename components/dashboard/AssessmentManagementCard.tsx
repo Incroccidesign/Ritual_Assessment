@@ -9,18 +9,20 @@ import { ExportMenuButton } from "@/components/reports/ExportMenuButton";
 import { GroupedActivityResults } from "@/components/reports/GroupedActivityResults";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
-import { deleteSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
+import { deleteSupabaseAssessment, publishSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
 
 export function AssessmentManagementCard({
   assessment,
   participants,
   responses,
-  onDelete
+  onDelete,
+  onUpdate
 }: {
   assessment: Assessment;
   participants: Participant[];
   responses: AssessmentResponse[];
   onDelete?: (assessmentId: string) => void;
+  onUpdate?: (assessment: Assessment) => void;
 }) {
   const { locale, messages, href } = useLocale();
   const [expanded, setExpanded] = useState(false);
@@ -28,6 +30,7 @@ export function AssessmentManagementCard({
   const [notice, setNotice] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const submittedResponses = responses.filter((response) => response.status === "submitted").length;
   const publicLink = useMemo(() => {
     if (!assessment.publicToken || typeof window === "undefined") return "";
@@ -62,6 +65,20 @@ export function AssessmentManagementCard({
     setNotice(null);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
+  }
+
+  async function publishAssessment() {
+    try {
+      setPublishing(true);
+      setNotice(null);
+      const published = await publishSupabaseAssessment(assessment);
+      onUpdate?.(published);
+      window.dispatchEvent(new Event("ritual-assessment-storage"));
+    } catch {
+      setNotice(messages.auth.signInError);
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function confirmDelete() {
@@ -101,9 +118,15 @@ export function AssessmentManagementCard({
         <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="secondary">
           {messages.dashboard.edit} <ExternalLink size={16} />
         </ButtonLink>
-        <Button type="button" variant="secondary" onClick={() => void copyPublicLink()}>
-          <Copy size={16} /> {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
-        </Button>
+        {assessment.status === "published" && assessment.publicToken ? (
+          <Button type="button" variant="secondary" onClick={() => void copyPublicLink()}>
+            <Copy size={16} /> {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
+          </Button>
+        ) : (
+          <Button type="button" onClick={() => void publishAssessment()} disabled={publishing}>
+            {publishing ? messages.app.loading : messages.common.publish}
+          </Button>
+        )}
         <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
         <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)}>
           <Trash2 size={16} /> {messages.dashboard.delete}
@@ -132,7 +155,7 @@ export function AssessmentManagementCard({
         </div>
       ) : null}
 
-      {publicLink ? <p className="break-all text-xs text-bone/38">{publicLink}</p> : null}
+      {assessment.status === "published" && publicLink ? <p className="break-all text-xs text-bone/38">{publicLink}</p> : null}
       {notice ? <p className="text-sm text-orange">{notice}</p> : null}
 
       {expanded ? (

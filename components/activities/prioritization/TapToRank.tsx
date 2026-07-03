@@ -22,7 +22,7 @@ export function TapToRank({
     onChange({
       rankedItems: [
         ...answer.rankedItems,
-        { sourceItemId: item.id, label: item.label, rank: answer.rankedItems.length + 1 }
+        { sourceItemId: item.id, label: item.label, rank: answer.rankedItems.length + 1, groupId: item.groupId, groupLabel: item.groupLabel }
       ]
     });
   }

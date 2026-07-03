@@ -1,5 +1,5 @@
 import { Assessment, AssessmentStatus } from "@/types/assessment";
-import { Activity, ActivityAnswer, ActivityType, FramingQuestion, PlanningReportItemConfig, PlanningReportSectionConfig } from "@/types/activity";
+import { Activity, ActivityAnswer, ActivityType, ExplorationOptionGroup, FramingQuestion, PlanningReportItemConfig, PlanningReportSectionConfig } from "@/types/activity";
 import { Participant, ParticipantStatus } from "@/types/participant";
 import { ActivityResponse, AssessmentResponse, ResponseStatus } from "@/types/response";
 import { createActivityPreset } from "@/data/activity-presets";
@@ -129,6 +129,34 @@ function configQuestionToFramingQuestion(value: unknown): FramingQuestion | null
     ...(typeof question.placeholder === "string" ? { placeholder: question.placeholder } : {}),
     ...(typeof question.required === "boolean" ? { required: question.required } : {})
   };
+}
+
+function configOptionGroups(value: unknown): ExplorationOptionGroup[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item, index) => {
+      if (typeof item !== "object" || item === null) return null;
+      const group = item as Record<string, unknown>;
+      const id = typeof group.id === "string" ? group.id : "";
+      if (!id) return null;
+      return {
+        id,
+        label: typeof group.label === "string" ? group.label : "",
+        orderIndex: typeof group.orderIndex === "number" ? group.orderIndex : index
+      };
+    })
+    .filter((item): item is ExplorationOptionGroup => Boolean(item))
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .map((item, index) => ({ ...item, orderIndex: index }));
+}
+
+function configOptionGroupAssignments(value: unknown): Record<string, string> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).filter(([key, groupId]) =>
+      /^\d+$/.test(key) && typeof groupId === "string" && Boolean(groupId)
+    )
+  ) as Record<string, string>;
 }
 
 function nasijFramingContent(title: string, prompt: string) {
@@ -313,6 +341,8 @@ function rowToActivity(row: ActivityRow): Activity {
       itemType: typeof config.itemType === "string" ? config.itemType as typeof preset.itemType : preset.itemType,
       responseMode: typeof config.responseMode === "string" ? config.responseMode as typeof preset.responseMode : preset.responseMode,
       options: Array.isArray(config.options) ? config.options.filter((item): item is string => typeof item === "string") : preset.options,
+      optionGroups: configOptionGroups(config.optionGroups),
+      optionGroupAssignments: configOptionGroupAssignments(config.optionGroupAssignments),
       allowOther: typeof config.allowOther === "boolean" ? config.allowOther : preset.allowOther,
       maxSelections: typeof config.maxSelections === "number" ? config.maxSelections : preset.maxSelections
     };
@@ -355,6 +385,8 @@ function activityConfig(activity: Activity) {
       itemType: activity.itemType,
       responseMode: activity.responseMode,
       options: activity.options,
+      optionGroups: activity.optionGroups ?? [],
+      optionGroupAssignments: activity.optionGroupAssignments ?? {},
       allowOther: Boolean(activity.allowOther),
       maxSelections: activity.maxSelections
     };
@@ -402,6 +434,8 @@ function templateActivityToActivity(
       itemType: templateActivity.itemType,
       responseMode: templateActivity.responseMode,
       options: templateActivity.options,
+      optionGroups: templateActivity.optionGroups?.map((group) => ({ ...group })) ?? [],
+      optionGroupAssignments: { ...(templateActivity.optionGroupAssignments ?? {}) },
       allowOther: Boolean(templateActivity.allowOther),
       maxSelections: templateActivity.maxSelections
     };
@@ -563,6 +597,8 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
       itemType: activity.itemType,
       responseMode: activity.responseMode,
       options: [...activity.options],
+      optionGroups: activity.optionGroups?.map((group) => ({ ...group })) ?? [],
+      optionGroupAssignments: { ...(activity.optionGroupAssignments ?? {}) },
       allowOther: Boolean(activity.allowOther),
       maxSelections: activity.maxSelections
     };

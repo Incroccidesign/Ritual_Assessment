@@ -6,6 +6,12 @@ export type ExplorationResponseMode = "closed_list" | "open_list" | "free_input"
 
 export type ProfilingFieldType = "text" | "number" | "email" | "country" | "select";
 
+export type ExplorationOptionGroup = {
+  id: string;
+  label: string;
+  orderIndex: number;
+};
+
 export type BaseActivity = {
   id: string;
   type: ActivityType;
@@ -33,6 +39,8 @@ export type ExplorationActivity = BaseActivity & {
   itemType: ElementType;
   responseMode: ExplorationResponseMode;
   options: string[];
+  optionGroups?: ExplorationOptionGroup[];
+  optionGroupAssignments?: Record<string, string>;
   allowOther?: boolean;
   maxSelections?: number;
 };
@@ -101,12 +109,16 @@ export type ExplorationItem = {
   label: string;
   source: "predefined" | "custom" | "other";
   value?: string;
+  groupId?: string;
+  groupLabel?: string;
 };
 
 export type RankedItem = {
   sourceItemId: string;
   label: string;
   rank: number;
+  groupId?: string;
+  groupLabel?: string;
 };
 
 export type ProfilingAnswer = {

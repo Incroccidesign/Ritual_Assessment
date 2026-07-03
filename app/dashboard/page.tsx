@@ -105,6 +105,14 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setBundles((current) => current.filter((bundle) => bundle.assessment.id !== assessmentId));
   }
 
+  function handleUpdateAssessment(nextAssessment: AssessmentBundle["assessment"]) {
+    setBundles((current) =>
+      current.map((bundle) =>
+        bundle.assessment.id === nextAssessment.id ? { ...bundle, assessment: nextAssessment } : bundle
+      )
+    );
+  }
+
   async function handleCreateBlankAssessment() {
     if (!isSupabaseConfigured || creating) return;
     setCreating(true);
@@ -219,6 +227,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                 participants={bundle.participants}
                 responses={bundle.responses}
                 onDelete={handleDeleteAssessment}
+                onUpdate={handleUpdateAssessment}
               />
             ))}
           </div>

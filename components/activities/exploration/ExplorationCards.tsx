@@ -4,6 +4,7 @@ import { Check, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { ExplorationActivity, ExplorationAnswer, ExplorationItem } from "@/types/activity";
 import { Button, inputClass } from "@/components/ritual-ui";
+import { groupedExplorationOptions } from "@/lib/activities/explorationOptionGroups";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils/cn";
 import { cleanText } from "@/lib/utils/text";
@@ -21,11 +22,7 @@ export function ExplorationCards({
   const { messages } = useLocale();
   const [customValue, setCustomValue] = useState("");
   const canAddCustom = activity.responseMode === "free_input" || (activity.responseMode !== "closed_list" && Boolean(activity.allowOther));
-  const predefined = activity.options.filter(Boolean).map((label, index) => ({
-    id: `${activity.id}_option_${index}`,
-    label,
-    source: "predefined" as const
-  }));
+  const predefinedGroups = groupedExplorationOptions(activity);
 
   function isSelected(label: string) {
     return answer.items.some((item) => item.label === label);
@@ -56,26 +53,41 @@ export function ExplorationCards({
   return (
     <div className="space-y-5">
       {activity.responseMode !== "free_input" ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {predefined.map((item) => {
-            const selected = isSelected(item.label);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => toggleItem(item)}
-                className={cn(
-                  "min-h-20 rounded-lg border p-4 text-left transition",
-                  selected ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/55 text-bone/72 hover:border-violet/45"
-                )}
-              >
-                <span className="flex items-start justify-between gap-3">
-                  <span className="text-base font-semibold leading-6">{item.label}</span>
-                  {selected ? <Check size={18} className="text-mint" /> : null}
-                </span>
-              </button>
-            );
-          })}
+        <div className="space-y-6">
+          {predefinedGroups.map(({ group, options }) => (
+            <div key={group?.id ?? "ungrouped"} className="space-y-3">
+              {group ? <p className="text-sm font-semibold uppercase tracking-[0.16em] text-mint">{group.label}</p> : null}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {options.map((item) => {
+                  const selected = isSelected(item.label);
+                  const answerItem = {
+                    id: item.id,
+                    label: item.label,
+                    source: "predefined" as const,
+                    value: item.label,
+                    groupId: item.groupId,
+                    groupLabel: item.groupLabel
+                  };
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => toggleItem(answerItem)}
+                      className={cn(
+                        "min-h-20 rounded-lg border p-4 text-left transition",
+                        selected ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/55 text-bone/72 hover:border-violet/45"
+                      )}
+                    >
+                      <span className="flex items-start justify-between gap-3">
+                        <span className="text-base font-semibold leading-6">{item.label}</span>
+                        {selected ? <Check size={18} className="text-mint" /> : null}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       ) : null}
 

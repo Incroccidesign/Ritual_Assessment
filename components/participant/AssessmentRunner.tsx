@@ -124,6 +124,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   );
   const activities = useMemo(() => assessment?.activities.slice().sort((a, b) => a.orderIndex - b.orderIndex) ?? [], [assessment]);
   const activity = activities[currentIndex] ?? null;
+  const hasPlanningReport = activities.some((candidate) => candidate.type === "planning_report");
 
   useEffect(() => {
     if (!activity) return;
@@ -170,7 +171,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "complete" || !activity || !currentAnswer || !response) {
     return (
       <ParticipantShell>
-        <CompletionScreen />
+        <CompletionScreen hasReport={hasPlanningReport} />
       </ParticipantShell>
     );
   }
