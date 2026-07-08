@@ -441,7 +441,7 @@
   "participant": {
     "welcome": {
       "title": "Bienvenue dans l'évaluation NASIJ",
-      "description": "Ce questionnaire vise à comprendre les difficultés actuelles, les objectifs, les priorités et les besoins d'accompagnement de votre organisation en lien avec la durabilité, le travail décent et le développement du réseau NASIJ.",
+      "description": "Cette évaluation aide à identifier les difficultés actuelles, les objectifs prioritaires, les besoins d’accompagnement et les ressources que chaque organisation peut mettre à disposition du réseau NASIJ. Elle permet également de recueillir les points forts de l’organisation et son impact potentiel sur le territoire.\n\nCe questionnaire est développé par le Service Design Lab de l’Université de Florence – DIDA, en collaboration avec la Fondazione PIN, dans le cadre du projet NASIJ – AID 12833.",
       "note": "Temps estimé de réponse : environ 35–45 minutes.",
       "cta": "Commencer l'évaluation"
     },

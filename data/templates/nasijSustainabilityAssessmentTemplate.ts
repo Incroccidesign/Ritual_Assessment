@@ -760,11 +760,11 @@ function buildItalianTemplate(): AssessmentTemplate {
   return {
     pickerTitle: "NASIJ — Assessment sostenibilità",
     pickerDescription:
-      "Valutazione degli obiettivi, delle criticità, delle challenge operative e delle opportunità di collaborazione per il network NASIJ.",
+      "Questa valutazione aiuta a identificare le difficoltà attuali, gli obiettivi prioritari, i bisogni di accompagnamento e le risorse che ogni organizzazione può mettere a disposizione del network NASIJ. Permette inoltre di raccogliere i punti di forza dell’organizzazione e il suo potenziale impatto sul territorio.\n\nQuesto questionario è sviluppato dal Service Design Lab dell’Università degli Studi di Firenze – DIDA, in collaborazione con Fondazione PIN, nell’ambito del progetto NASIJ – AID 12833.",
     pickerBadge: "IT",
     title: "Valutazione degli obiettivi, delle criticità, delle sfide e delle opportunità di collaborazione NASIJ",
     description:
-      "Questa valutazione aiuta a identificare le criticità attuali, gli obiettivi principali di sostenibilità ambientale, economica e sociale dei partner NASIJ nel breve e medio-lungo termine. Il template collega l'obiettivo a breve termine alle challenge operative e alle priorità; raccoglie inoltre i punti di forza dell'organizzazione, il possibile impatto positivo sul territorio, l'obiettivo principale a medio-lungo termine e le risorse o contributi che l'organizzazione può mettere a disposizione del network. Questo questionario è sviluppato dal Service Design Lab dell'Università degli Studi di Firenze - DIDA, in collaborazione con Fondazione PIN, nell'ambito del progetto NASIJ - AID 12833.",
+      "Questa valutazione aiuta a identificare le difficoltà attuali, gli obiettivi prioritari, i bisogni di accompagnamento e le risorse che ogni organizzazione può mettere a disposizione del network NASIJ. Permette inoltre di raccogliere i punti di forza dell’organizzazione e il suo potenziale impatto sul territorio.\n\nQuesto questionario è sviluppato dal Service Design Lab dell’Università degli Studi di Firenze – DIDA, in collaborazione con Fondazione PIN, nell’ambito del progetto NASIJ – AID 12833.",
     estimatedDuration: nasijEstimatedDurations.it,
     language: "it",
     status: "draft",
@@ -941,11 +941,11 @@ function buildFrenchTemplate(): AssessmentTemplate {
   return {
     pickerTitle: "NASIJ — Assessment durabilité",
     pickerDescription:
-      "Évaluation des objectifs, des difficultés, des défis opérationnels et des opportunités de collaboration pour le réseau NASIJ.",
+      "Cette évaluation aide à identifier les difficultés actuelles, les objectifs prioritaires, les besoins d’accompagnement et les ressources que chaque organisation peut mettre à disposition du réseau NASIJ. Elle permet également de recueillir les points forts de l’organisation et son impact potentiel sur le territoire.\n\nCe questionnaire est développé par le Service Design Lab de l’Université de Florence – DIDA, en collaboration avec la Fondazione PIN, dans le cadre du projet NASIJ – AID 12833.",
     pickerBadge: "FR",
     title: "Évaluation des objectifs, des difficultés, des défis et des opportunités de collaboration NASIJ",
     description:
-      "Cette évaluation aide à identifier les difficultés actuelles, les principaux objectifs de durabilité environnementale, économique et sociale des partenaires NASIJ à court et moyen-long terme. Le modèle relie l'objectif à court terme aux défis opérationnels et aux priorités ; il recueille également les points forts de l'organisation, son impact positif possible sur le territoire, l'objectif principal à moyen-long terme et les ressources ou contributions que l'organisation peut mettre à disposition du réseau. Ce questionnaire est développé par le Service Design Lab de l'Université de Florence - DIDA, en collaboration avec la Fondazione PIN, dans le cadre du projet NASIJ - AID 12833.",
+      "Cette évaluation aide à identifier les difficultés actuelles, les objectifs prioritaires, les besoins d’accompagnement et les ressources que chaque organisation peut mettre à disposition du réseau NASIJ. Elle permet également de recueillir les points forts de l’organisation et son impact potentiel sur le territoire.\n\nCe questionnaire est développé par le Service Design Lab de l’Université de Florence – DIDA, en collaboration avec la Fondazione PIN, dans le cadre du projet NASIJ – AID 12833.",
     estimatedDuration: nasijEstimatedDurations.fr,
     language: "fr",
     status: "draft",

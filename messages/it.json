@@ -441,7 +441,7 @@
   "participant": {
     "welcome": {
       "title": "Benvenuto nell'assessment NASIJ",
-      "description": "Questo questionario aiuta a comprendere le criticità, gli obiettivi, le priorità e i bisogni di supporto della vostra organizzazione in relazione alla sostenibilità, al lavoro dignitoso e allo sviluppo del network NASIJ.",
+      "description": "Questa valutazione aiuta a identificare le difficoltà attuali, gli obiettivi prioritari, i bisogni di accompagnamento e le risorse che ogni organizzazione può mettere a disposizione del network NASIJ. Permette inoltre di raccogliere i punti di forza dell’organizzazione e il suo potenziale impatto sul territorio.\n\nQuesto questionario è sviluppato dal Service Design Lab dell’Università degli Studi di Firenze – DIDA, in collaborazione con Fondazione PIN, nell’ambito del progetto NASIJ – AID 12833.",
       "note": "Tempo stimato di compilazione: circa 35–45 minuti.",
       "cta": "Inizia l'assessment"
     },
