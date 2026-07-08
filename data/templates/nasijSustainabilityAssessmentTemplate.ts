@@ -225,16 +225,18 @@ const activityAreasFr = [
 ];
 
 const currentDifficultiesIt = [
-  "Consumi energetici elevati nei processi produttivi",
-  "Consumi idrici elevati",
-  "Difficoltà nella gestione degli scarti tessili",
-  "Sprechi, rilavorazioni o difetti di produzione",
-  "Costi produttivi difficili da controllare",
-  "Mancanza di dati su consumi, costi, scarti, sicurezza o impatti",
   "Organizzazione interna dei processi poco efficiente",
   "Macchinari, impianti o tecnologie non adeguati",
+  "Consumi energetici elevati nei processi produttivi",
+  "Consumi idrici elevati",
+  "Costi produttivi difficili da controllare",
+  "Sprechi, rilavorazioni o difetti di produzione",
+  "Difficoltà nella gestione degli scarti tessili",
+  "Mancanza di dati su consumi, costi, scarti, sicurezza o impatti",
   "Difficoltà nel garantire sicurezza e condizioni di lavoro adeguate",
   "Carichi di lavoro, fatica fisica o rischi operativi elevati",
+  "Difficoltà a favorire l'inclusione di lavoratrici e lavoratori con esigenze specifiche",
+  "Difficoltà a garantire continuità e stabilità dei contratti di lavoro",
   "Bisogno di formazione tecnica del personale",
   "Bisogno di formazione su sicurezza, qualità o sostenibilità",
   "Difficoltà nel trattenere o attrarre lavoratori qualificati",
@@ -245,16 +247,18 @@ const currentDifficultiesIt = [
 ];
 
 const currentDifficultiesFr = [
-  "Consommations énergétiques élevées dans les processus de production",
-  "Consommations d'eau élevées",
-  "Difficultés dans la gestion des déchets textiles",
-  "Gaspillages, reprises ou défauts de production",
-  "Coûts de production difficiles à contrôler",
-  "Manque de données sur les consommations, les coûts, les déchets, la sécurité ou les impacts",
   "Organisation interne des processus peu efficace",
   "Machines, installations ou technologies inadéquates",
+  "Consommations énergétiques élevées dans les processus de production",
+  "Consommations d'eau élevées",
+  "Coûts de production difficiles à contrôler",
+  "Gaspillages, reprises ou défauts de production",
+  "Difficultés dans la gestion des déchets textiles",
+  "Manque de données sur les consommations, les coûts, les déchets, la sécurité ou les impacts",
   "Difficultés à garantir la sécurité et des conditions de travail adéquates",
   "Charges de travail, fatigue physique ou risques opérationnels élevés",
+  "Difficulté à favoriser l'inclusion des travailleuses et travailleurs ayant des besoins spécifiques",
+  "Difficulté à garantir la continuité et la stabilité des contrats de travail",
   "Besoin de formation technique du personnel",
   "Besoin de formation sur la sécurité, la qualité ou la durabilité",
   "Difficultés à retenir ou attirer des travailleurs qualifiés",
@@ -490,6 +494,57 @@ function groupedChallengeOptions(
   return { options, optionGroups, optionGroupAssignments };
 }
 
+function groupedOptionBlocks(blocks: Array<{ id: string; label: string; options: string[] }>) {
+  const optionGroups = blocks.map((block, index) => ({ id: block.id, label: block.label, orderIndex: index }));
+  const options = blocks.flatMap((block) => block.options);
+  const optionGroupAssignments: Record<string, string> = {};
+  let optionIndex = 0;
+  blocks.forEach((block) => {
+    block.options.forEach(() => {
+      optionGroupAssignments[String(optionIndex)] = block.id;
+      optionIndex += 1;
+    });
+  });
+
+  return { options, optionGroups, optionGroupAssignments };
+}
+
+const currentDifficultyGroupsIt = groupedOptionBlocks([
+  {
+    id: "processes-resources-impacts",
+    label: "Processi, risorse e impatti",
+    options: currentDifficultiesIt.slice(0, 8)
+  },
+  {
+    id: "work-skills-organization",
+    label: "Lavoro, competenze e organizzazione",
+    options: currentDifficultiesIt.slice(8, 16)
+  },
+  {
+    id: "markets-standards-value",
+    label: "Mercati, standard e valorizzazione",
+    options: currentDifficultiesIt.slice(16)
+  }
+]);
+
+const currentDifficultyGroupsFr = groupedOptionBlocks([
+  {
+    id: "processes-resources-impacts",
+    label: "Processus, ressources et impacts",
+    options: currentDifficultiesFr.slice(0, 8)
+  },
+  {
+    id: "work-skills-organization",
+    label: "Travail, compétences et organisation",
+    options: currentDifficultiesFr.slice(8, 16)
+  },
+  {
+    id: "markets-standards-value",
+    label: "Marchés, standards et valorisation",
+    options: currentDifficultiesFr.slice(16)
+  }
+]);
+
 const shortChallengeGroupsIt = groupedChallengeOptions(
   [
     "Migliorare la regolarità e la stabilità dei rapporti di lavoro",
@@ -656,7 +711,7 @@ function planningReport(locale: "it" | "fr"): TemplatePlanningReportActivity {
         items: [
           item("current-difficulties", isItalian ? "Criticità principali" : "Difficultés principales"),
           item("urgent-difficulty", isItalian ? "Criticità più urgente" : "Difficulté la plus urgente"),
-          item("urgent-area", isItalian ? "Area principale" : "Zone principale"),
+          item("urgent-area", isItalian ? "Area principale" : "Domaine principal"),
           item("impacted-profiles", isItalian ? "Profili coinvolti o impattati" : "Profils impliqués ou impactés"),
           item("urgent-effects", isItalian ? "Effetti della criticità" : "Effets de la difficulté"),
           item("urgent-note", isItalian ? "Nota aperta" : "Note ouverte")
@@ -709,7 +764,7 @@ function buildItalianTemplate(): AssessmentTemplate {
     pickerBadge: "IT",
     title: "Valutazione degli obiettivi, delle criticità, delle sfide e delle opportunità di collaborazione NASIJ",
     description:
-      "Questa valutazione aiuta a identificare le criticità attuali, gli obiettivi principali di sostenibilità ambientale, economica e sociale dei partner NASIJ nel breve e medio-lungo termine. Il template collega l'obiettivo a breve termine alle challenge operative e alle priorità; raccoglie inoltre i punti di forza dell'organizzazione, il possibile impatto positivo sul territorio, l'obiettivo principale a medio-lungo termine e le risorse o contributi che l'organizzazione può mettere a disposizione del network.",
+      "Questa valutazione aiuta a identificare le criticità attuali, gli obiettivi principali di sostenibilità ambientale, economica e sociale dei partner NASIJ nel breve e medio-lungo termine. Il template collega l'obiettivo a breve termine alle challenge operative e alle priorità; raccoglie inoltre i punti di forza dell'organizzazione, il possibile impatto positivo sul territorio, l'obiettivo principale a medio-lungo termine e le risorse o contributi che l'organizzazione può mettere a disposizione del network. Questo questionario è sviluppato dal Service Design Lab dell'Università degli Studi di Firenze - DIDA, in collaborazione con Fondazione PIN, nell'ambito del progetto NASIJ - AID 12833.",
     estimatedDuration: nasijEstimatedDurations.it,
     language: "it",
     status: "draft",
@@ -738,7 +793,11 @@ function buildItalianTemplate(): AssessmentTemplate {
         "current-difficulties",
         "2. Criticità attuali e contesto operativo",
         "2.1 Quali sono le principali difficoltà che la vostra organizzazione sta affrontando attualmente? Selezionare una o più criticità rilevanti. Se necessario, aggiungere una criticità specifica non presente nell'elenco.",
-        currentDifficultiesIt
+        currentDifficultyGroupsIt.options,
+        true,
+        undefined,
+        currentDifficultyGroupsIt.optionGroups,
+        currentDifficultyGroupsIt.optionGroupAssignments
       ),
       prioritization(
         "urgent-difficulty",
@@ -886,7 +945,7 @@ function buildFrenchTemplate(): AssessmentTemplate {
     pickerBadge: "FR",
     title: "Évaluation des objectifs, des difficultés, des défis et des opportunités de collaboration NASIJ",
     description:
-      "Cette évaluation aide à identifier les difficultés actuelles, les principaux objectifs de durabilité environnementale, économique et sociale des partenaires NASIJ à court et moyen-long terme. Le modèle relie l'objectif à court terme aux défis opérationnels et aux priorités ; il recueille également les points forts de l'organisation, son impact positif possible sur le territoire, l'objectif principal à moyen-long terme et les ressources ou contributions que l'organisation peut mettre à disposition du réseau.",
+      "Cette évaluation aide à identifier les difficultés actuelles, les principaux objectifs de durabilité environnementale, économique et sociale des partenaires NASIJ à court et moyen-long terme. Le modèle relie l'objectif à court terme aux défis opérationnels et aux priorités ; il recueille également les points forts de l'organisation, son impact positif possible sur le territoire, l'objectif principal à moyen-long terme et les ressources ou contributions que l'organisation peut mettre à disposition du réseau. Ce questionnaire est développé par le Service Design Lab de l'Université de Florence - DIDA, en collaboration avec la Fondazione PIN, dans le cadre du projet NASIJ - AID 12833.",
     estimatedDuration: nasijEstimatedDurations.fr,
     language: "fr",
     status: "draft",
@@ -915,7 +974,11 @@ function buildFrenchTemplate(): AssessmentTemplate {
         "current-difficulties",
         "2. Difficultés actuelles et contexte opérationnel",
         "2.1 Quelles sont les principales difficultés que votre organisation rencontre actuellement ? Sélectionner une ou plusieurs difficultés pertinentes. Si nécessaire, ajouter une difficulté spécifique qui n'est pas présente dans la liste.",
-        currentDifficultiesFr
+        currentDifficultyGroupsFr.options,
+        true,
+        undefined,
+        currentDifficultyGroupsFr.optionGroups,
+        currentDifficultyGroupsFr.optionGroupAssignments
       ),
       prioritization(
         "urgent-difficulty",
@@ -925,8 +988,8 @@ function buildFrenchTemplate(): AssessmentTemplate {
       ),
       exploration(
         "urgent-area",
-        "2.3 Zone principale de la difficulté la plus urgente",
-        "Dans quelle zone cette difficulté urgente se manifeste-t-elle principalement ? Sélectionner la zone où la difficulté urgente est la plus visible ou produit les effets principaux.",
+        "2.3 Domaine principal de la difficulté la plus urgente",
+        "Dans quel domaine cette difficulté urgente se manifeste-t-elle principalement ? Sélectionnez le domaine dans lequel cette difficulté est la plus marquée ou a les conséquences les plus importantes.",
         urgentAreasFr,
         true,
         1
