@@ -82,9 +82,9 @@ export type AssessmentTemplate = {
 };
 
 const nasijEstimatedDurations = {
-  it: "Tempo stimato di compilazione: circa 35–45 minuti.",
+  it: "Tempo stimato di compilazione: circa 25–35 minuti.",
   en: "Estimated completion time: around 35–45 minutes.",
-  fr: "Temps estimé de réponse : environ 35–45 minutes."
+  fr: "Temps estimé de réponse : environ 25–35 minutes."
 };
 
 const governorates = [
