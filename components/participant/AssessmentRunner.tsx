@@ -194,7 +194,7 @@ export function AssessmentRunner({ token }: { token: string }) {
     return (
       <ParticipantShell>
         <Card>
-          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">{messages.participant.welcome.title}</h1>
+          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">{assessment.title}</h1>
           <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{assessment.description || messages.participant.welcome.description}</p>
           {assessment.estimatedDuration ? (
             <p className="mt-5 rounded-md border border-bone/10 bg-night/35 px-4 py-3 text-sm font-semibold text-bone/58">

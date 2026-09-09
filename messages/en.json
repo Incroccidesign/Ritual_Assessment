@@ -442,8 +442,8 @@
   },
   "participant": {
     "welcome": {
-      "title": "Welcome to the NASIJ assessment",
-      "description": "This questionnaire helps identify your organization's current challenges, objectives, priorities and support needs in relation to sustainability, decent work and the development of the NASIJ network.",
+      "title": "Welcome",
+      "description": "Complete the assessment by responding to the activities provided.",
       "note": "Estimated completion time: around 35–45 minutes.",
       "cta": "Start assessment"
     },
