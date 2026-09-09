@@ -15,6 +15,51 @@ const planningReportSectionKeys: PlanningReportSectionKey[] = [
   "nextSteps"
 ];
 
+export function createBlankActivity(type: ActivityType, orderIndex: number, sourceActivityId = ""): Activity {
+  const base = {
+    id: uid("activity"),
+    type,
+    title: "",
+    prompt: "",
+    orderIndex
+  };
+
+  if (type === "profiling") return { ...base, type, fields: [] };
+
+  if (type === "exploration") {
+    return {
+      ...base,
+      type,
+      itemType: "other",
+      responseMode: "open_list",
+      options: [],
+      optionGroups: [],
+      optionGroupAssignments: {},
+      allowOther: false
+    };
+  }
+
+  if (type === "prioritization") return { ...base, type, sourceActivityId };
+
+  if (type === "framing") {
+    return {
+      ...base,
+      type,
+      sourceActivityId,
+      maxLength: 1500,
+      questions: []
+    };
+  }
+
+  return {
+    ...base,
+    type: "planning_report",
+    reportTitle: "",
+    reportSubtitle: "",
+    sections: []
+  };
+}
+
 export function createActivityPreset(type: ActivityType, orderIndex: number, sourceActivityId = "", locale: Locale = defaultLocale): Activity {
   const presetMessages = getMessages(locale).presets.activities;
   const planningReportMessages = getMessages(locale).planningReport;

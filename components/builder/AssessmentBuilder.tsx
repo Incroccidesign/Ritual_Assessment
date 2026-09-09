@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Activity, ActivityType } from "@/types/activity";
@@ -10,7 +10,7 @@ import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
 import { BuilderShell } from "@/components/layout/BuilderShell";
 import { Button, ButtonLink, Card, Field, inputClass, selectClass, StepHeader } from "@/components/ritual-ui";
-import { createActivityPreset } from "@/data/activity-presets";
+import { createBlankActivity } from "@/data/activity-presets";
 import { previousExplorationActivities, previousPrioritizationActivities } from "@/lib/activities/dependencies";
 import { locales } from "@/lib/i18n/config";
 import { useLocale } from "@/lib/i18n/useLocale";
@@ -76,6 +76,8 @@ export function AssessmentBuilder({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const assessmentRef = useRef<Assessment | null>(null);
+  const assessmentUpdateQueue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     let active = true;
@@ -85,6 +87,7 @@ export function AssessmentBuilder({
       try {
         const bundle = await fetchAssessmentBundle(assessmentId, ownerId);
         if (!active) return;
+        assessmentRef.current = bundle?.assessment ?? null;
         setAssessment(bundle?.assessment ?? null);
         const nextIsTemplate = initialTemplateMode || Boolean(bundle?.assessment && isTemplateAssessment(bundle.assessment.id, ownerId));
         setIsTemplate(nextIsTemplate);
@@ -103,6 +106,10 @@ export function AssessmentBuilder({
       active = false;
     };
   }, [assessmentId, initialTemplateMode, messages.common.empty, ownerId]);
+
+  useEffect(() => {
+    assessmentRef.current = assessment;
+  }, [assessment]);
 
   const activities = useMemo(() => reorderActivities(assessment?.activities ?? []), [assessment?.activities]);
   const estimatedDurationRange = useMemo(
@@ -128,10 +135,16 @@ export function AssessmentBuilder({
   }
 
   function updateAssessment(patch: Partial<Assessment>) {
-    if (!assessment) return;
-    const nextAssessment = { ...assessment, ...patch };
+    const currentAssessment = assessmentRef.current;
+    if (!currentAssessment) return;
+    const nextAssessment = { ...currentAssessment, ...patch };
+    assessmentRef.current = nextAssessment;
     setAssessment(nextAssessment);
-    void persist(() => updateSupabaseAssessment(nextAssessment), setAssessment);
+    assessmentUpdateQueue.current = assessmentUpdateQueue.current
+      .catch(() => undefined)
+      .then(async () => {
+        await persist(() => updateSupabaseAssessment(nextAssessment));
+      });
   }
 
   function updateTemplateMode(enabled: boolean) {
@@ -155,7 +168,7 @@ export function AssessmentBuilder({
         : type === "framing"
           ? previousPrioritizationActivities(ordered, ordered.length)[0]?.id ?? ""
           : "";
-    const nextActivity = createActivityPreset(type, ordered.length, sourceActivityId, assessment.language);
+    const nextActivity = createBlankActivity(type, ordered.length, sourceActivityId);
     void persist(
       () => insertSupabaseActivity(assessment.id, nextActivity),
       (insertedActivity) => {

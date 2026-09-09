@@ -33,9 +33,9 @@ export function FramingEditor({
         ...activity.questions,
         {
           id: uid("question"),
-          title: messages.presets.activities.framing.defaultQuestionTitle,
-          prompt: messages.presets.activities.framing.defaultQuestionPrompt,
-          placeholder: messages.presets.activities.framing.answerPlaceholder
+          title: "",
+          prompt: "",
+          placeholder: ""
         }
       ]
     });
