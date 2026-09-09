@@ -37,6 +37,7 @@ export type ProfilingActivity = BaseActivity & {
 export type ExplorationActivity = BaseActivity & {
   type: "exploration";
   itemType: ElementType;
+  itemTypeCustomLabel?: string;
   responseMode: ExplorationResponseMode;
   options: string[];
   optionGroups?: ExplorationOptionGroup[];

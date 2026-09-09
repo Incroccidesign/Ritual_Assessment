@@ -339,6 +339,7 @@ function rowToActivity(row: ActivityRow): Activity {
       ...base,
       type: "exploration",
       itemType: typeof config.itemType === "string" ? config.itemType as typeof preset.itemType : preset.itemType,
+      itemTypeCustomLabel: typeof config.itemTypeCustomLabel === "string" ? config.itemTypeCustomLabel : undefined,
       responseMode: typeof config.responseMode === "string" ? config.responseMode as typeof preset.responseMode : preset.responseMode,
       options: Array.isArray(config.options) ? config.options.filter((item): item is string => typeof item === "string") : preset.options,
       optionGroups: configOptionGroups(config.optionGroups),
@@ -383,6 +384,7 @@ function activityConfig(activity: Activity) {
   if (activity.type === "exploration") {
     return {
       itemType: activity.itemType,
+      itemTypeCustomLabel: activity.itemType === "other" ? activity.itemTypeCustomLabel ?? "" : undefined,
       responseMode: activity.responseMode,
       options: activity.options,
       optionGroups: activity.optionGroups ?? [],
@@ -595,6 +597,7 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
       ...base,
       type: "exploration",
       itemType: activity.itemType,
+      itemTypeCustomLabel: activity.itemTypeCustomLabel,
       responseMode: activity.responseMode,
       options: [...activity.options],
       optionGroups: activity.optionGroups?.map((group) => ({ ...group })) ?? [],

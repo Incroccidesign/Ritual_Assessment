@@ -32,7 +32,7 @@ export function createBlankActivity(type: ActivityType, orderIndex: number, sour
       type,
       itemType: "other",
       responseMode: "open_list",
-      options: [],
+      options: [""],
       optionGroups: [],
       optionGroupAssignments: {},
       allowOther: false

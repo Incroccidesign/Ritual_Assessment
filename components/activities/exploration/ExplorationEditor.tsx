@@ -24,7 +24,7 @@ export function ExplorationEditor({
   const [openOptionMenu, setOpenOptionMenu] = useState<number | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const groups = orderedOptionGroups(activity);
-  const groupedOptions = groupedExplorationOptions(activity, true);
+  const groupedOptions = groupedExplorationOptions(activity, true, true);
 
   function updateOptions(options: string[], assignments = activity.optionGroupAssignments ?? {}) {
     onChange({ ...activity, options, optionGroupAssignments: cleanAssignments(assignments, options.length) });
@@ -145,13 +145,26 @@ export function ExplorationEditor({
           <select
             className={selectClass}
             value={activity.itemType}
-            onChange={(event) => onChange({ ...activity, itemType: event.target.value as ElementType })}
+            onChange={(event) => {
+              const itemType = event.target.value as ElementType;
+              onChange({ ...activity, itemType, itemTypeCustomLabel: itemType === "other" ? activity.itemTypeCustomLabel ?? "" : undefined });
+            }}
           >
             {elementTypes.map((type) => (
               <option key={type} value={type}>{messages.activityTypes[type]}</option>
             ))}
           </select>
         </Field>
+        {activity.itemType === "other" ? (
+          <Field label={messages.activities.exploration.customElementType}>
+            <input
+              className={inputClass}
+              value={activity.itemTypeCustomLabel ?? ""}
+              placeholder={messages.activities.exploration.customElementTypePlaceholder}
+              onChange={(event) => onChange({ ...activity, itemTypeCustomLabel: event.target.value })}
+            />
+          </Field>
+        ) : null}
         <Field label={messages.activities.exploration.responseMode}>
           <select
             className={selectClass}
@@ -171,9 +184,14 @@ export function ExplorationEditor({
         <SubtlePanel className="space-y-5">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/45">{messages.activities.exploration.options}</p>
-            <Button type="button" variant="secondary" className="min-h-9 px-3" onClick={addGroup}>
-              <Plus size={15} /> {messages.activities.exploration.addGroup}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="secondary" className="min-h-9 px-3" onClick={() => addOption()}>
+                <Plus size={15} /> {messages.activities.exploration.addOption}
+              </Button>
+              <Button type="button" variant="secondary" className="min-h-9 px-3" onClick={addGroup}>
+                <Plus size={15} /> {messages.activities.exploration.addGroup}
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-5">
@@ -244,19 +262,11 @@ export function ExplorationEditor({
                           onDelete={() => removeOption(option.index)}
                         />
                       ))}
-                      <Button type="button" variant="secondary" className="min-h-10 px-3" onClick={() => addOption(group?.id)}>
-                        <Plus size={16} /> {group ? messages.activities.exploration.addOptionToGroup : messages.activities.exploration.addOption}
-                      </Button>
                     </div>
                   ) : null}
                 </div>
               );
             })}
-            {!activity.options.length && !groups.length ? (
-              <Button type="button" variant="secondary" onClick={() => addOption()}>
-                <Plus size={16} /> {messages.activities.exploration.addOption}
-              </Button>
-            ) : null}
           </div>
 
           <label className="block rounded-md border border-bone/10 bg-night/40 p-4">

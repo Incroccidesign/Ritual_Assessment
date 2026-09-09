@@ -34,13 +34,13 @@ export function findOptionGroupForValue(activity: ExplorationActivity, value: st
   return optionGroupLabelFor(activity, optionIndex);
 }
 
-export function groupedExplorationOptions(activity: ExplorationActivity, includeEmptyGroups = false): GroupedExplorationOptions[] {
+export function groupedExplorationOptions(activity: ExplorationActivity, includeEmptyGroups = false, includeEmptyOptions = false): GroupedExplorationOptions[] {
   const groups = orderedOptionGroups(activity);
   const grouped = new Map<string, GroupedExplorationOption[]>();
   const ungrouped: GroupedExplorationOption[] = [];
 
   activity.options.forEach((label, index) => {
-    if (!label) return;
+    if (!label && !includeEmptyOptions) return;
     const groupId = optionGroupIdFor(activity, index);
     const item = {
       index,
