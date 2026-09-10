@@ -46,7 +46,8 @@ export function TapToRank({
             onClick={() => add(item)}
             className="min-h-20 rounded-lg border border-bone/10 bg-night/55 p-4 text-left text-base font-semibold leading-6 text-bone/78 transition hover:border-mint hover:text-bone"
           >
-            {item.label}
+            {item.detail ? <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-mint/75">{item.detail}</span> : null}
+            <span className="block">{item.label}</span>
           </button>
         ))}
       </div>

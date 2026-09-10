@@ -121,16 +121,14 @@ export function ActivityList({
                   <Button type="button" variant="ghost" className="min-h-8 px-2 text-bone/46 hover:text-bone" disabled={index === 0} onClick={() => onMove(activity.id, -1)} title={messages.builder.moveUp}>
                     <ArrowUp size={15} />
                   </Button>
+                  <span className="text-sm font-semibold text-bone/52">{index + 1}</span>
                   <Button type="button" variant="ghost" className="min-h-8 px-2 text-bone/46 hover:text-bone" disabled={index === activities.length - 1} onClick={() => onMove(activity.id, 1)} title={messages.builder.moveDown}>
                     <ArrowDown size={15} />
                   </Button>
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">{messages.activities[activity.type].label}</p>
-                  <div className="mt-1 flex items-baseline gap-3">
-                    <span className="text-sm font-semibold text-bone/46">{index + 1}</span>
-                    <p className="truncate font-semibold text-bone">{activity.title}</p>
-                  </div>
+                  <p className="mt-1 text-sm leading-6 text-bone/68">{messages.activities[activity.type].purpose}</p>
                 </div>
                 <div className="flex items-center justify-center">
                   <Button

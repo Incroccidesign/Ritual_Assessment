@@ -11,6 +11,7 @@ import {
   WidthType
 } from "docx";
 import { Assessment } from "@/types/assessment";
+import { FramingAnswer } from "@/types/activity";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import type { Messages } from "@/lib/i18n/getMessages";
@@ -83,12 +84,23 @@ export async function exportAssessmentDocx(assessment: Assessment, participants:
       return [];
     })
   );
-  const framingResponses = responses.flatMap((response) =>
-    response.activityResponses
-      .filter((item) => item.activityType === "framing" && "answer" in item.answer)
-      .map((item) => ("answer" in item.answer ? item.answer.answer : ""))
-      .filter(Boolean)
-  );
+  const participantById = new Map(participants.map((participant) => [participant.id, participant]));
+  const framingResponses = responses.flatMap((response) => {
+    const participant = participantById.get(response.participantId);
+    const participantLabel = participant?.companyName || participant?.contactEmail || response.participantId;
+
+    return response.activityResponses.flatMap((item) => {
+      const activity = assessment.activities.find((candidate) => candidate.id === item.activityId);
+      if (item.activityType !== "framing" || activity?.type !== "framing" || !("answer" in item.answer)) return [];
+      const answer = item.answer as FramingAnswer;
+      const entries = answer.itemAnswers?.length
+        ? answer.itemAnswers.filter((entry) => entry.answer.trim()).map((entry) => ({ label: entry.label, value: entry.answer.trim() }))
+        : answer.answer.trim()
+          ? [{ label: "", value: answer.answer.trim() }]
+          : [];
+      return entries.length ? [{ participantLabel, activityTitle: activity.title, entries }] : [];
+    });
+  });
 
   const doc = new Document({
     creator: "Ritual Assessments",
@@ -112,7 +124,12 @@ export async function exportAssessmentDocx(assessment: Assessment, participants:
               .map((activity) => [String(activity.orderIndex + 1), activity.type, activity.title, activity.prompt])
           ),
           heading(exportMessages.qualitativeFramingResponses, 2),
-          ...(framingResponses.length ? framingResponses.map((answer) => p(answer)) : [p(exportMessages.noFramingResponsesYet)]),
+          ...(framingResponses.length
+            ? framingResponses.flatMap((response) => [
+                p(`${response.participantLabel} — ${response.activityTitle}`, true),
+                ...response.entries.flatMap((entry) => entry.label ? [p(entry.label, true), p(entry.value)] : [p(entry.value)])
+              ])
+            : [p(exportMessages.noFramingResponsesYet)]),
           heading(exportMessages.otherResponses, 2),
           ...(otherResponses.length ? otherResponses.map((answer) => p(answer)) : [p(messages.dashboard.noCustomResponses)])
         ]

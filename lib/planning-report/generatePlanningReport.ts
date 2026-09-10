@@ -89,6 +89,16 @@ function prioritizationBlock(answer: PrioritizationAnswer): Pick<PlanningReportA
 }
 
 function framingBlock(activity: FramingActivity, answer: FramingAnswer): Pick<PlanningReportActivityBlock, "fields" | "values"> {
+  if (answer.itemAnswers) {
+    return {
+      values: [],
+      fields: answer.itemAnswers.map((item) => ({
+        label: item.label,
+        value: item.answer.trim()
+      }))
+    };
+  }
+
   if (answer.questionAnswers) {
     return {
       values: [],

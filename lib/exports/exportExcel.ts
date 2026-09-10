@@ -268,6 +268,22 @@ function getRowsForActivity(activity: Activity, answer: unknown, base: SheetRow)
   }
 
   if (activity.type === "framing" && isFramingAnswer(answer)) {
+    if (answer.itemAnswers?.length) {
+      return answer.itemAnswers.map((item, itemIndex) => ({
+        ...base,
+        question_order: itemIndex + 1,
+        question_key: item.itemId,
+        question_label: item.label,
+        question_prompt: activity.prompt,
+        answer_type: "open_text",
+        answer_value: item.answer,
+        option_group: "",
+        option_order: "",
+        rank_position: "",
+        source: item.label
+      }));
+    }
+
     if (answer.questionAnswers && activity.questions.length) {
       return activity.questions.map((question, questionIndex) =>
         getFramingQuestionRow(base, question, questionIndex, answer.questionAnswers?.[question.id] ?? "", answer.sourceRanking)
@@ -651,7 +667,7 @@ function isPrioritizationAnswer(answer: unknown): answer is { rankedItems: { sou
   return Boolean(answer && typeof answer === "object" && "rankedItems" in answer);
 }
 
-function isFramingAnswer(answer: unknown): answer is { sourceRanking: string[]; answer: string; questionAnswers?: Record<string, string> } {
+function isFramingAnswer(answer: unknown): answer is { sourceRanking: string[]; answer: string; questionAnswers?: Record<string, string>; itemAnswers?: Array<{ itemId: string; label: string; answer: string }> } {
   return Boolean(answer && typeof answer === "object" && "answer" in answer && "sourceRanking" in answer);
 }
 

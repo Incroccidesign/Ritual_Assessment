@@ -1,4 +1,4 @@
-import { Activity, ActivityAnswer } from "@/types/activity";
+import { Activity, ActivityAnswer, ExplorationItem } from "@/types/activity";
 import { cleanOtherText, isOtherOptionValue, OTHER_OPTION_VALUE } from "@/lib/activities/otherOption";
 
 export function validateActivityConfig(activity: Activity) {
@@ -8,8 +8,11 @@ export function validateActivityConfig(activity: Activity) {
     return activity.responseMode === "free_input" || activity.options.some((option) => option.trim().length > 0);
   }
   if (activity.type === "prioritization") return Boolean(activity.sourceActivityId);
+  if (activity.type === "framing" && activity.mode === "per_exploration_item") {
+    return activity.maxLength > 0 && Boolean(activity.sourceActivityId) && activity.prompt.trim().length > 0;
+  }
   if (activity.type === "framing") {
-    return activity.maxLength > 0 && activity.questions.some((question) => question.prompt.trim());
+    return activity.maxLength > 0;
   }
   if (activity.type === "planning_report") {
     return Boolean(activity.reportTitle.trim()) && activity.sections.some((section) => section.visible && section.title.trim());
@@ -17,7 +20,7 @@ export function validateActivityConfig(activity: Activity) {
   return false;
 }
 
-export function validateActivityResponse(activity: Activity, answer: ActivityAnswer) {
+export function validateActivityResponse(activity: Activity, answer: ActivityAnswer, sourceItems: ExplorationItem[] = []) {
   if (activity.type === "profiling") {
     return "fields" in answer && activity.fields.every((field) => {
       const value = answer.fields[field.id];
@@ -34,6 +37,9 @@ export function validateActivityResponse(activity: Activity, answer: ActivityAns
   }
   if (activity.type === "prioritization") return "rankedItems" in answer && answer.rankedItems.length > 0;
   if (activity.type === "framing" && "answer" in answer) {
+    if (activity.mode === "per_exploration_item") {
+      return sourceItems.length > 0 && sourceItems.every((item) => Boolean(answer.itemAnswers?.find((current) => current.itemId === item.id)?.answer.trim()));
+    }
     if (!activity.questions.length) return answer.answer.trim().length > 0;
     if (!answer.questionAnswers && answer.answer.trim()) return true;
     return activity.questions.every((question) => question.required === false || Boolean(answer.questionAnswers?.[question.id]?.trim()));

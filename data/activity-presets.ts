@@ -45,6 +45,7 @@ export function createBlankActivity(type: ActivityType, orderIndex: number, sour
     return {
       ...base,
       type,
+      mode: "standard",
       sourceActivityId,
       maxLength: 1500,
       questions: []
@@ -133,6 +134,7 @@ export function createActivityPreset(type: ActivityType, orderIndex: number, sou
     type,
     title: presetMessages.framing.title,
     prompt: presetMessages.framing.prompt,
+    mode: "standard",
     sourceActivityId,
     maxLength: 1500,
     questions: [

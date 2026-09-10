@@ -256,6 +256,13 @@ function nasijFramingContent(title: string, prompt: string) {
 }
 
 function framingContentFromConfig(title: string, prompt: string, config: Record<string, unknown>) {
+  if (Array.isArray(config.questions) && (config.mode === "standard" || config.mode === "per_exploration_item")) {
+    return {
+      prompt,
+      questions: config.questions.map(configQuestionToFramingQuestion).filter((question): question is FramingQuestion => Boolean(question))
+    };
+  }
+
   const configQuestions = Array.isArray(config.questions)
     ? config.questions.map(configQuestionToFramingQuestion).filter((question): question is FramingQuestion => Boolean(question))
     : [];
@@ -358,6 +365,7 @@ function rowToActivity(row: ActivityRow): Activity {
       ...base,
       type: "framing",
       prompt: framingContent.prompt,
+      mode: config.mode === "per_exploration_item" ? "per_exploration_item" : "standard",
       sourceActivityId: typeof config.sourceActivityId === "string" ? config.sourceActivityId : "",
       maxLength: typeof config.maxLength === "number" ? config.maxLength : 1500,
       questions: framingContent.questions
@@ -394,7 +402,7 @@ function activityConfig(activity: Activity) {
     };
   }
   if (activity.type === "prioritization") return { sourceActivityId: activity.sourceActivityId };
-  if (activity.type === "framing") return { sourceActivityId: activity.sourceActivityId, maxLength: activity.maxLength, questions: activity.questions };
+  if (activity.type === "framing") return { mode: activity.mode, sourceActivityId: activity.sourceActivityId, maxLength: activity.maxLength, questions: activity.questions };
   return { reportTitle: activity.reportTitle, reportSubtitle: activity.reportSubtitle, sections: activity.sections };
 }
 
@@ -464,6 +472,7 @@ function templateActivityToActivity(
   return {
     ...base,
     type: "framing",
+    mode: "standard",
     sourceActivityId: resolveTemplateSource(sourceIds, templateActivity.sourceKey),
     maxLength: templateActivity.maxLength,
     questions: templateActivity.questions.map((question) => ({ ...question, id: uid("question") }))
@@ -619,6 +628,7 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
     return {
       ...base,
       type: "framing",
+      mode: activity.mode,
       sourceActivityId: sourceIds.get(activity.sourceActivityId) ?? "",
       maxLength: activity.maxLength,
       questions: activity.questions.map((question) => ({ ...question, id: uid("question") }))

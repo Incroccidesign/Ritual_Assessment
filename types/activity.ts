@@ -51,8 +51,11 @@ export type PrioritizationActivity = BaseActivity & {
   sourceActivityId: string;
 };
 
+export type FramingMode = "standard" | "per_exploration_item";
+
 export type FramingActivity = BaseActivity & {
   type: "framing";
+  mode: FramingMode;
   sourceActivityId: string;
   maxLength: number;
   questions: FramingQuestion[];
@@ -108,6 +111,7 @@ export type Activity =
 export type ExplorationItem = {
   id: string;
   label: string;
+  detail?: string;
   source: "predefined" | "custom" | "other";
   value?: string;
   groupId?: string;
@@ -140,6 +144,11 @@ export type FramingAnswer = {
   sourceRanking: string[];
   answer: string;
   questionAnswers?: Record<string, string>;
+  itemAnswers?: Array<{
+    itemId: string;
+    label: string;
+    answer: string;
+  }>;
 };
 
 export type PlanningReportAnswer = {

@@ -63,6 +63,7 @@ export function demoAssessment(locale: Locale = defaultLocale): Assessment {
         title: preset.activities.framing.title,
         prompt: preset.activities.framing.prompt,
         orderIndex: 3,
+        mode: "standard",
         sourceActivityId: prioritizationId,
         maxLength: 1500,
         questions: [

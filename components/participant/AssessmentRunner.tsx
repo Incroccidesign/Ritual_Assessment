@@ -15,7 +15,7 @@ import { ActivityProgress } from "@/components/participant/ActivityProgress";
 import { ActivityReview } from "@/components/participant/ActivityReview";
 import { CompletionScreen } from "@/components/participant/CompletionScreen";
 import { Button, Card } from "@/components/ritual-ui";
-import { getExplorationItems, getRankingContext } from "@/lib/activities/dependencies";
+import { getExplorationItems, getRankableItems, getRankingContext } from "@/lib/activities/dependencies";
 import { emptyAnswerForActivity } from "@/lib/activities/responseMapping";
 import { validateActivityResponse } from "@/lib/activities/validation";
 import { localizeActivityContent } from "@/lib/i18n/localizeActivityContent";
@@ -209,17 +209,24 @@ export function AssessmentRunner({ token }: { token: string }) {
     );
   }
 
-  const sourceItems = activity.type === "prioritization" ? getExplorationItems(activity.sourceActivityId, response) : [];
+  const sourceItems = activity.type === "prioritization" ? getRankableItems(activity.sourceActivityId, response) : [];
   const sourceRanking = activity.type === "framing" ? getRankingContext(activity.sourceActivityId, response) : [];
-  const canComplete = validateActivityResponse(activity, currentAnswer);
+  const framingItems = activity.type === "framing"
+    ? getExplorationItems(activity.sourceActivityId, response)
+    : [];
+  const canComplete = validateActivityResponse(activity, currentAnswer, framingItems);
   const isFinalPlanningReport = activity.type === "planning_report" && currentIndex >= activities.length - 1;
   const isFramingActivity = activity.type === "framing";
   const isMultiQuestionFraming = isFramingActivity && activity.questions.length > 1;
   const isProfilingActivity = activity.type === "profiling";
   const framingQuestionText = isFramingActivity
-    ? isMultiQuestionFraming
+    ? activity.mode === "per_exploration_item"
+      ? ""
+      : isMultiQuestionFraming
       ? activity.prompt
-      : activity.questions.map((question) => question.prompt).join("\n\n")
+      : activity.questions.length
+        ? activity.questions.map((question) => question.prompt).join("\n\n")
+        : activity.prompt
     : "";
 
   async function completeCurrentActivity() {
@@ -304,7 +311,7 @@ export function AssessmentRunner({ token }: { token: string }) {
           <h1 className={isFinalPlanningReport ? "font-heading text-4xl font-semibold leading-tight text-bone" : isFramingActivity ? "font-heading text-3xl font-semibold leading-tight text-bone" : "mt-4 font-heading text-3xl font-semibold leading-tight text-bone"}>
             {isFinalPlanningReport ? messages.planningReport.finalSubmit.title : activity.title}
           </h1>
-          {!isProfilingActivity ? (
+          {!isProfilingActivity && (isFinalPlanningReport || !isFramingActivity || framingQuestionText) ? (
             <p className={isFinalPlanningReport || isFramingActivity ? "mt-4 whitespace-pre-line text-base leading-7 text-bone/62" : "mt-3 text-base leading-7 text-bone/62"}>
               {isFinalPlanningReport ? messages.planningReport.finalSubmit.description : isFramingActivity ? framingQuestionText : activity.prompt}
             </p>
@@ -320,7 +327,7 @@ export function AssessmentRunner({ token }: { token: string }) {
               <PrioritizationParticipant activity={activity} sourceItems={sourceItems} answer={currentAnswer as PrioritizationAnswer} onChange={setCurrentAnswer} />
             ) : null}
             {activity.type === "framing" && "answer" in currentAnswer ? (
-              <FramingParticipant activity={activity} ranking={sourceRanking} answer={currentAnswer as FramingAnswer} onChange={setCurrentAnswer} />
+              <FramingParticipant activity={activity} ranking={sourceRanking} items={framingItems} answer={currentAnswer as FramingAnswer} onChange={setCurrentAnswer} />
             ) : null}
             {activity.type === "planning_report" ? (
               <PlanningReportParticipant />

@@ -2,7 +2,7 @@
 
 import { PrioritizationActivity, Activity } from "@/types/activity";
 import { Field, selectClass, SubtlePanel } from "@/components/ritual-ui";
-import { previousExplorationActivities } from "@/lib/activities/dependencies";
+import { previousRankableActivities } from "@/lib/activities/dependencies";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 export function PrioritizationEditor({
@@ -15,7 +15,7 @@ export function PrioritizationEditor({
   onChange: (activity: PrioritizationActivity) => void;
 }) {
   const { messages } = useLocale();
-  const sources = previousExplorationActivities(activities, activity.orderIndex);
+  const sources = previousRankableActivities(activities, activity.orderIndex);
 
   return (
     <SubtlePanel>
@@ -25,12 +25,13 @@ export function PrioritizationEditor({
           value={activity.sourceActivityId}
           onChange={(event) => onChange({ ...activity, sourceActivityId: event.target.value })}
         >
-          <option value="">{messages.common.empty}</option>
+          <option value="">{messages.activities.prioritization.noSource}</option>
           {sources.map((source) => (
-            <option key={source.id} value={source.id}>{source.title}</option>
+            <option key={source.id} value={source.id}>{source.title || messages.activities.prioritization.untitledSource}</option>
           ))}
         </select>
       </Field>
+      <p className="mt-3 text-sm leading-6 text-bone/56">{messages.activities.prioritization.sourceHelper}</p>
     </SubtlePanel>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Assessment } from "@/types/assessment";
-import { Activity, PlanningReportActivity, ProfilingActivity, ProfilingField } from "@/types/activity";
+import { Activity, PlanningReportActivity, PrioritizationActivity, ProfilingActivity, ProfilingField } from "@/types/activity";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import { PlanningReportPreview } from "@/components/planning-report/PlanningReportPreview";
@@ -361,7 +361,9 @@ function ExplorationResults({ assessment, responses, participants }: { assessmen
 
 function PrioritizationResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
   const { messages } = useLocale();
-  const activities = activitiesByType(assessment, "prioritization");
+  const activities = assessment.activities
+    .filter((activity): activity is PrioritizationActivity => activity.type === "prioritization")
+    .sort((left, right) => left.orderIndex - right.orderIndex);
   const codeMap = participantCodeMap(participants, responses);
 
   if (!activities.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
@@ -369,12 +371,14 @@ function PrioritizationResults({ assessment, responses, participants }: { assess
   return (
     <div className="space-y-5">
       {activities.map((activity) => {
+        const sourceActivity = assessment.activities.find((candidate) => candidate.id === activity.sourceActivityId);
+        const isFramingSource = sourceActivity?.type === "framing";
         const stats = prioritizationStats(activity, responses);
         const answers = answersForActivity(activity.id, responses);
         return (
           <SubtlePanel key={activity.id} className="overflow-x-auto">
             <p className="font-semibold text-bone">{activity.title}</p>
-            <table className="mt-4 w-full min-w-[34rem] text-left text-sm">
+            {isFramingSource ? <p className="mt-4 max-w-3xl text-sm leading-6 text-bone/58">{messages.activities.prioritization.framingResultsNotice}</p> : <table className="mt-4 w-full min-w-[34rem] text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.16em] text-bone/38">
                 <tr>
                   <th className="py-3 pe-4">{messages.dashboard.challenge}</th>
@@ -393,7 +397,7 @@ function PrioritizationResults({ assessment, responses, participants }: { assess
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table>}
             <div className="mt-5">
               <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.dashboard.participantRankings}</p>
               <div className="mt-3 grid gap-3 md:grid-cols-2">

@@ -11,7 +11,6 @@ import { LinkGenerator } from "@/components/builder/LinkGenerator";
 import { BuilderShell } from "@/components/layout/BuilderShell";
 import { Button, ButtonLink, Card, Field, inputClass, selectClass, StepHeader } from "@/components/ritual-ui";
 import { createBlankActivity } from "@/data/activity-presets";
-import { previousExplorationActivities, previousPrioritizationActivities } from "@/lib/activities/dependencies";
 import { locales } from "@/lib/i18n/config";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
@@ -162,13 +161,7 @@ export function AssessmentBuilder({
   function addActivity(type: ActivityType) {
     if (!assessment) return;
     const ordered = reorderActivities(assessment.activities);
-    const sourceActivityId =
-      type === "prioritization"
-        ? previousExplorationActivities(ordered, ordered.length)[0]?.id ?? ""
-        : type === "framing"
-          ? previousPrioritizationActivities(ordered, ordered.length)[0]?.id ?? ""
-          : "";
-    const nextActivity = createBlankActivity(type, ordered.length, sourceActivityId);
+    const nextActivity = createBlankActivity(type, ordered.length);
     void persist(
       () => insertSupabaseActivity(assessment.id, nextActivity),
       (insertedActivity) => {
