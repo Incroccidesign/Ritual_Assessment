@@ -242,6 +242,10 @@ export function AssessmentRunner({ token }: { token: string }) {
         setPhase("report-download");
         return;
       }
+      if (assessment?.hideActivitySummaries && currentIndex < activities.length - 1) {
+        setCurrentIndex((current) => current + 1);
+        return;
+      }
       setPhase("summary");
     } catch (saveError) {
       setError(getErrorMessage(saveError, messages.auth.signInError));
@@ -281,7 +285,7 @@ export function AssessmentRunner({ token }: { token: string }) {
       return;
     }
     if (phase === "intro" && currentIndex > 0) {
-      pendingPhaseRef.current = "summary";
+      pendingPhaseRef.current = assessment?.hideActivitySummaries ? "interaction" : "summary";
       setCurrentIndex((current) => current - 1);
     }
   }

@@ -352,6 +352,18 @@ export function AssessmentBuilder({
                 {messages.builder.estimatedDurationToggle}
               </label>
             </div>
+            <label className="inline-flex items-start gap-3 text-sm font-semibold text-bone/70">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={Boolean(assessment.hideActivitySummaries)}
+                onChange={(event) => updateAssessment({ hideActivitySummaries: event.target.checked })}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-bone">{messages.builder.activitySummaryToggle.label}</span>
+                <span className="mt-1 block text-sm leading-6 text-bone/56">{messages.builder.activitySummaryToggle.helper}</span>
+              </span>
+            </label>
             <Field label={messages.builder.languageLabel}>
               <select className={selectClass} value={assessment.language} onChange={(event) => updateAssessment({ language: event.target.value as Locale })}>
                 {locales.map((item) => (

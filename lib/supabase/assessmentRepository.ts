@@ -19,6 +19,7 @@ type AssessmentRow = {
   title: string;
   description: string | null;
   estimated_duration: string | null;
+  hide_activity_summaries: boolean | null;
   language: Assessment["language"];
   status: AssessmentStatus;
   public_token: string | null;
@@ -108,6 +109,7 @@ function rowToAssessment(row: AssessmentRow, activities: Activity[] = []): Asses
     title: row.title,
     description: row.description ?? undefined,
     estimatedDuration: row.estimated_duration ?? undefined,
+    hideActivitySummaries: Boolean(row.hide_activity_summaries),
     language: row.language,
     status: row.status,
     publicToken: row.public_token ?? undefined,
@@ -558,6 +560,7 @@ export async function createSupabaseAssessmentFromTemplate(template: AssessmentT
       title: template.title,
       description: template.description,
       estimated_duration: template.estimatedDuration ?? null,
+      hide_activity_summaries: false,
       language: template.language,
       status: template.status
     })
@@ -659,6 +662,7 @@ export async function createSupabaseAssessmentFromExistingTemplate(template: Ass
       title: template.title,
       description: template.description ?? null,
       estimated_duration: template.estimatedDuration ?? null,
+      hide_activity_summaries: Boolean(template.hideActivitySummaries),
       language: template.language,
       status: "draft"
     })
@@ -734,6 +738,7 @@ export async function updateSupabaseAssessment(assessment: Assessment) {
       title: assessment.title,
       description: assessment.description ?? null,
       estimated_duration: assessment.estimatedDuration?.trim() ? assessment.estimatedDuration.trim() : null,
+      hide_activity_summaries: Boolean(assessment.hideActivitySummaries),
       language: assessment.language,
       updated_at: new Date().toISOString()
     })

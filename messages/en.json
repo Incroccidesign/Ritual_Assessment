@@ -222,6 +222,10 @@
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
     "estimatedDurationToggle": "Show on welcome screen",
+    "activitySummaryToggle": {
+      "label": "Show only the final review",
+      "helper": "Participants continue directly to the next activity. The review before submitting the questionnaire remains visible."
+    },
     "languageLabel": "Assessment language",
     "promptLabel": "Guiding question",
     "noActivitySelected": "Select an activity to configure it.",

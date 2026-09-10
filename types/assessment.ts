@@ -9,6 +9,7 @@ export type Assessment = {
   title: string;
   description?: string;
   estimatedDuration?: string;
+  hideActivitySummaries?: boolean;
   language: Locale;
   status: AssessmentStatus;
   publicToken?: string;

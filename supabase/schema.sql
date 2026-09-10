@@ -13,6 +13,7 @@ create table if not exists public.assessments (
   title text not null,
   description text,
   estimated_duration text,
+  hide_activity_summaries boolean not null default false,
   language text not null default 'en' check (language in ('en', 'fr', 'it', 'ar')),
   status text not null default 'draft' check (status in ('draft', 'published', 'closed')),
   public_token text unique,
@@ -23,6 +24,9 @@ create table if not exists public.assessments (
 
 alter table public.assessments
   add column if not exists estimated_duration text;
+
+alter table public.assessments
+  add column if not exists hide_activity_summaries boolean not null default false;
 
 create table if not exists public.activities (
   id uuid primary key default gen_random_uuid(),

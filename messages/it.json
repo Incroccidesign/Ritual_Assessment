@@ -222,6 +222,10 @@
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
     "estimatedDurationToggle": "Mostra nella schermata di benvenuto",
+    "activitySummaryToggle": {
+      "label": "Mostra solo il riepilogo finale",
+      "helper": "I partecipanti passano direttamente all'attività successiva. Resta visibile il riepilogo prima dell'invio del questionario."
+    },
     "languageLabel": "Lingua assessment",
     "promptLabel": "Domanda guida",
     "noActivitySelected": "Seleziona un'attivita per configurarla.",
