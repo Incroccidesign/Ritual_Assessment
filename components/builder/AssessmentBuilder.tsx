@@ -9,9 +9,9 @@ import { ActivityEditor } from "@/components/builder/ActivityEditor";
 import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
 import { BuilderShell } from "@/components/layout/BuilderShell";
-import { Button, ButtonLink, Card, Field, inputClass, selectClass, StepHeader } from "@/components/ritual-ui";
+import { Button, ButtonLink, Card, Field, inputClass, StepHeader } from "@/components/ritual-ui";
 import { createBlankActivity } from "@/data/activity-presets";
-import { locales } from "@/lib/i18n/config";
+import { detectAssessmentLocale } from "@/lib/i18n/detectAssessmentLocale";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
   deleteSupabaseAssessment,
@@ -64,7 +64,7 @@ export function AssessmentBuilder({
   ownerId: string;
   initialTemplateMode?: boolean;
 }) {
-  const { messages, localeNames } = useLocale();
+  const { messages } = useLocale();
   const router = useRouter();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [isTemplate, setIsTemplate] = useState(initialTemplateMode);
@@ -202,7 +202,21 @@ export function AssessmentBuilder({
   function updateActivity(nextActivity: Activity) {
     if (!assessment) return;
     const nextActivities = activities.map((activity) => activity.id === nextActivity.id ? nextActivity : activity);
-    setAssessment({ ...assessment, activities: nextActivities });
+    const detectedLocale = detectAssessmentLocale(nextActivities);
+    const nextAssessment = {
+      ...assessment,
+      activities: nextActivities,
+      ...(detectedLocale ? { language: detectedLocale } : {})
+    };
+    assessmentRef.current = nextAssessment;
+    setAssessment(nextAssessment);
+    if (detectedLocale && detectedLocale !== assessment.language) {
+      assessmentUpdateQueue.current = assessmentUpdateQueue.current
+        .catch(() => undefined)
+        .then(async () => {
+          await persist(() => updateSupabaseAssessment(nextAssessment));
+        });
+    }
     void persist(
       () => updateSupabaseActivity(nextActivity),
       (savedActivity) => {
@@ -307,7 +321,17 @@ export function AssessmentBuilder({
               <textarea className={`${inputClass} min-h-28 resize-y`} value={assessment.description ?? ""} onChange={(event) => updateAssessment({ description: event.target.value })} />
             </Field>
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">{messages.builder.estimatedDurationLabel}</p>
+              <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
+                <input
+                  type="checkbox"
+                  checked={Boolean(assessment.estimatedDuration)}
+                  onChange={(event) => {
+                    if (event.target.checked) updateEstimatedDuration(estimatedDurationRange.min, estimatedDurationRange.max);
+                    else updateAssessment({ estimatedDuration: undefined });
+                  }}
+                />
+                {messages.builder.estimatedDurationToggle}
+              </label>
               {assessment.estimatedDuration ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label={messages.builder.estimatedDurationMin}>
@@ -340,49 +364,23 @@ export function AssessmentBuilder({
                   </Field>
                 </div>
               ) : null}
-              <label className="inline-flex items-center gap-3 text-sm font-semibold text-bone/70">
-                <input
-                  type="checkbox"
-                  checked={Boolean(assessment.estimatedDuration)}
-                  onChange={(event) => {
-                    if (event.target.checked) updateEstimatedDuration(estimatedDurationRange.min, estimatedDurationRange.max);
-                    else updateAssessment({ estimatedDuration: undefined });
-                  }}
-                />
-                {messages.builder.estimatedDurationToggle}
-              </label>
             </div>
-            <label className="inline-flex items-start gap-3 text-sm font-semibold text-bone/70">
+            <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
               <input
                 type="checkbox"
-                className="mt-1"
                 checked={Boolean(assessment.hideActivitySummaries)}
                 onChange={(event) => updateAssessment({ hideActivitySummaries: event.target.checked })}
               />
-              <span>
-                <span className="block text-sm font-semibold text-bone">{messages.builder.activitySummaryToggle.label}</span>
-                <span className="mt-1 block text-sm leading-6 text-bone/56">{messages.builder.activitySummaryToggle.helper}</span>
-              </span>
+              <span>{messages.builder.activitySummaryToggle.label}</span>
             </label>
-            <Field label={messages.builder.languageLabel}>
-              <select className={selectClass} value={assessment.language} onChange={(event) => updateAssessment({ language: event.target.value as Locale })}>
-                {locales.map((item) => (
-                  <option key={item} value={item}>{localeNames[item]}</option>
-                ))}
-              </select>
-            </Field>
-            <label className="flex items-start gap-3 rounded-md border border-bone/10 bg-night/45 p-4">
+            <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
               <input
                 type="checkbox"
-                className="mt-1"
                 checked={isTemplate}
                 disabled={assessment.status === "published" && !isTemplate}
                 onChange={(event) => updateTemplateMode(event.target.checked)}
               />
-              <span>
-                <span className="block text-sm font-semibold text-bone">{messages.builder.templateToggle.label}</span>
-                <span className="mt-1 block text-sm leading-6 text-bone/56">{messages.builder.templateToggle.helper}</span>
-              </span>
+              <span>{messages.builder.templateToggle.label}</span>
             </label>
           </Card>
           <Card>
@@ -399,6 +397,7 @@ export function AssessmentBuilder({
               onAdd={addActivity}
               onMove={moveActivity}
               onRemove={removeActivity}
+              onUpdate={updateActivity}
               renderActivityEditor={(activity) => (
                 <ActivityEditor activity={activity} activities={activities} onChange={updateActivity} embedded />
               )}

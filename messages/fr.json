@@ -221,9 +221,9 @@
     "estimatedDurationLabel": "Durée estimée",
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
-    "estimatedDurationToggle": "Afficher sur l'écran d'accueil",
+    "estimatedDurationToggle": "Afficher la durée estimée sur l'écran d'accueil",
     "activitySummaryToggle": {
-      "label": "Afficher uniquement le récapitulatif final",
+      "label": "Passer le récapitulatif entre les activités",
       "helper": "Les participants passent directement à l'activité suivante. Le récapitulatif avant l'envoi du questionnaire reste visible."
     },
     "languageLabel": "Langue de l'evaluation",
@@ -244,7 +244,7 @@
     "moveUp": "Monter",
     "moveDown": "Descendre",
     "templateToggle": {
-      "label": "Enregistrer cet assessment comme modele",
+      "label": "Enregistrer comme modèle réutilisable",
       "helper": "Les modeles sont des structures reutilisables. Ils ne peuvent pas etre publies ni partages directement."
     },
     "template": {

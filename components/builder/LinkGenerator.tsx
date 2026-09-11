@@ -19,15 +19,15 @@ export function LinkGenerator({
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const { messages, href } = useLocale();
+  const { messages } = useLocale();
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const publicPath = assessment.publicToken ? `/participate/${assessment.publicToken}` : "";
   const publicLink = useMemo(() => {
     if (!assessment.publicToken || typeof window === "undefined") return "";
-    return `${window.location.origin}${href(publicPath)}`;
-  }, [assessment.publicToken, href, publicPath]);
+    return `${window.location.origin}${publicPath}`;
+  }, [assessment.publicToken, publicPath]);
 
   async function publish() {
     setPublishing(true);
@@ -63,7 +63,7 @@ export function LinkGenerator({
               {copied ? <Check size={17} /> : <Copy size={17} />}
               {copied ? messages.builder.copied : messages.common.copyPublicLink}
             </Button>
-            <ButtonLink href={href(publicPath)} variant="ghost">
+            <ButtonLink href={publicPath} variant="ghost">
               {messages.common.open} <ExternalLink size={17} />
             </ButtonLink>
           </>
@@ -98,7 +98,7 @@ export function LinkGenerator({
               {copied ? <Check size={17} /> : <Copy size={17} />}
               {copied ? messages.builder.copied : messages.common.copyPublicLink}
             </Button>
-            <ButtonLink href={href(publicPath)} variant="ghost">
+            <ButtonLink href={publicPath} variant="ghost">
               {messages.common.open} <ExternalLink size={17} />
             </ButtonLink>
           </div>

@@ -23,6 +23,7 @@ export function ActivityList({
   onAdd,
   onMove,
   onRemove,
+  onUpdate,
   renderActivityEditor
 }: {
   activities: Activity[];
@@ -31,6 +32,7 @@ export function ActivityList({
   onAdd: (type: ActivityType) => void;
   onMove: (activityId: string, direction: -1 | 1) => void;
   onRemove: (activityId: string) => void;
+  onUpdate: (activity: Activity) => void;
   renderActivityEditor?: (activity: Activity) => ReactNode;
 }) {
   const { messages } = useLocale();
@@ -112,12 +114,13 @@ export function ActivityList({
             <article
               key={activity.id}
               className={cn(
-                "group rounded-lg border p-4 transition",
+                "group rounded-lg border transition",
+                isExpanded ? "p-4" : "p-3",
                 isExpanded ? "border-mint bg-mint/10" : "border-bone/10 bg-night/45 hover:border-violet/45 hover:bg-bone/[0.04]"
               )}
             >
-              <div className="grid grid-cols-[2.25rem_1fr_2.75rem] items-center gap-4">
-                <div className="flex flex-col items-center justify-center gap-2">
+              <div className={cn("grid grid-cols-[2.25rem_1fr] items-center", isExpanded ? "gap-4" : "gap-3")}>
+                <div className={cn("flex flex-col items-center justify-center", isExpanded ? "gap-2" : "gap-1")}>
                   <Button type="button" variant="ghost" className="min-h-8 px-2 text-bone/46 hover:text-bone" disabled={index === 0} onClick={() => onMove(activity.id, -1)} title={messages.builder.moveUp}>
                     <ArrowUp size={15} />
                   </Button>
@@ -127,19 +130,35 @@ export function ActivityList({
                   </Button>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">{messages.activities[activity.type].label}</p>
-                  <p className="mt-1 text-sm leading-6 text-bone/68">{messages.activities[activity.type].purpose}</p>
-                </div>
-                <div className="flex items-center justify-center">
-                  <Button
-                    type="button"
-                    variant="danger"
-                    className="min-h-9 px-3 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"
-                    onClick={() => onRemove(activity.id)}
-                    title={messages.common.remove}
-                  >
-                    <Trash2 size={15} />
-                  </Button>
+                  <span className="group/type relative inline-flex">
+                    <span className="cursor-help text-xs font-semibold uppercase tracking-[0.16em] text-mint">
+                      {messages.activities[activity.type].label}
+                    </span>
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute left-0 top-full z-20 mt-2 w-72 rounded-md border border-bone/12 bg-night px-3 py-2 text-sm font-medium leading-5 text-bone/78 opacity-0 shadow-xl shadow-black/30 transition group-hover/type:opacity-100"
+                    >
+                      {messages.activities[activity.type].purpose}
+                    </span>
+                  </span>
+                  <div className="mt-1 grid grid-cols-[minmax(0,1fr)_2.75rem] items-center gap-4">
+                    <input
+                      aria-label={messages.builder.activityTitleLabel}
+                      className="block min-h-11 w-full rounded-md border border-transparent bg-transparent px-3 py-2 text-base font-semibold leading-6 text-bone outline-none transition placeholder:text-bone/42 hover:border-bone/12 hover:bg-night/70 focus:border-mint focus:bg-night/70"
+                      value={activity.title}
+                      placeholder={messages.builder.activityTitleLabel}
+                      onChange={(event) => onUpdate({ ...activity, title: event.target.value } as Activity)}
+                    />
+                    <Button
+                      type="button"
+                      variant="danger"
+                      className="h-11 min-h-11 w-11 min-w-11 !gap-0 !p-0 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 [&_svg]:shrink-0"
+                      onClick={() => onRemove(activity.id)}
+                      title={messages.common.remove}
+                    >
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -149,7 +168,7 @@ export function ActivityList({
                 </div>
               ) : null}
 
-              <div className="mt-4 flex justify-center border-t border-bone/10 pt-3">
+              <div className={cn("flex justify-center border-t border-bone/10", isExpanded ? "mt-4 pt-3" : "mt-2 pt-2")}>
                 <Button type="button" variant="ghost" className="min-h-9 px-4 text-bone/60 hover:text-bone" onClick={() => onSelect(isExpanded ? null : activity.id)}>
                   {isExpanded ? messages.builder.collapse : messages.builder.expand}
                   <ChevronDown className={cn("transition", isExpanded ? "rotate-180" : "")} size={16} />

@@ -221,9 +221,9 @@
     "estimatedDurationLabel": "Estimated duration",
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
-    "estimatedDurationToggle": "Show on welcome screen",
+    "estimatedDurationToggle": "Show estimated duration on welcome screen",
     "activitySummaryToggle": {
-      "label": "Show only the final review",
+      "label": "Skip recap between activities",
       "helper": "Participants continue directly to the next activity. The review before submitting the questionnaire remains visible."
     },
     "languageLabel": "Assessment language",
@@ -244,7 +244,7 @@
     "moveUp": "Move up",
     "moveDown": "Move down",
     "templateToggle": {
-      "label": "Save this assessment as a template",
+      "label": "Save as reusable template",
       "helper": "Templates are reusable structures. They cannot be published or shared directly."
     },
     "template": {

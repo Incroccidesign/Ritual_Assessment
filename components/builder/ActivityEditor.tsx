@@ -34,16 +34,11 @@ export function ActivityEditor({
 
   const content = (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={messages.builder.activityTitleLabel}>
-          <input className={inputClass} value={activity.title} onChange={(event) => onChange({ ...activity, title: event.target.value } as Activity)} />
+      {activity.type === "framing" ? <FramingResponseLengthField activity={activity} onChange={onChange} /> : (
+        <Field label={promptLabel}>
+          <input className={inputClass} value={activity.prompt} onChange={(event) => onChange({ ...activity, prompt: event.target.value } as Activity)} />
         </Field>
-        {activity.type === "framing" ? <FramingResponseLengthField activity={activity} onChange={onChange} /> : (
-          <Field label={promptLabel}>
-            <input className={inputClass} value={activity.prompt} onChange={(event) => onChange({ ...activity, prompt: event.target.value } as Activity)} />
-          </Field>
-        )}
-      </div>
+      )}
       {activity.type === "framing" ? <Field label={promptLabel}>
         <input className={inputClass} value={activity.prompt} onChange={(event) => onChange({ ...activity, prompt: event.target.value } as Activity)} />
       </Field> : null}

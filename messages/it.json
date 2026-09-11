@@ -221,9 +221,9 @@
     "estimatedDurationLabel": "Durata stimata",
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
-    "estimatedDurationToggle": "Mostra nella schermata di benvenuto",
+    "estimatedDurationToggle": "Mostra la durata stimata nella schermata iniziale",
     "activitySummaryToggle": {
-      "label": "Mostra solo il riepilogo finale",
+      "label": "Salta il riepilogo tra un'attività e l'altra",
       "helper": "I partecipanti passano direttamente all'attività successiva. Resta visibile il riepilogo prima dell'invio del questionario."
     },
     "languageLabel": "Lingua assessment",
@@ -244,7 +244,7 @@
     "moveUp": "Sposta su",
     "moveDown": "Sposta giu",
     "templateToggle": {
-      "label": "Salva questo assessment come modello",
+      "label": "Salva come modello riutilizzabile",
       "helper": "I modelli sono strutture riutilizzabili. Non possono essere pubblicati o condivisi direttamente."
     },
     "template": {
