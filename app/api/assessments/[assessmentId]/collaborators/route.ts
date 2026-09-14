@@ -4,6 +4,12 @@ import { createSupabaseAdminClient, isUuid, requireRequestUser } from "@/lib/ser
 type RouteContext = { params: Promise<{ assessmentId: string }> };
 type CollaborationRole = "editor" | "co_owner";
 
+function collaboratorName(user: { email?: string; user_metadata?: Record<string, unknown> } | null | undefined) {
+  const fullName = user?.user_metadata?.full_name;
+  if (typeof fullName === "string" && fullName.trim()) return fullName.trim();
+  return user?.email?.split("@")[0] ?? "Collaborator";
+}
+
 async function requireCollaborationManager(request: Request, assessmentId: string) {
   const user = await requireRequestUser(request);
   if (!isUuid(assessmentId)) throw new Response("Assessment not found.", { status: 404 });
@@ -51,6 +57,7 @@ export async function GET(request: Request, props: RouteContext) {
       return {
         userId: collaborator.user_id,
         email: data.user?.email ?? "Unavailable user",
+        name: collaboratorName(data.user),
         role: collaborator.role,
         createdAt: collaborator.created_at
       };
@@ -101,7 +108,12 @@ export async function POST(request: Request, props: RouteContext) {
         updated_at: new Date().toISOString()
       }, { onConflict: "assessment_id,user_id" });
     if (collaborationError) throw collaborationError;
-    return NextResponse.json({ userId: profile.id, email: target.user.email, role }, { status: 201 });
+    return NextResponse.json({
+      userId: profile.id,
+      email: target.user.email,
+      name: collaboratorName(target.user),
+      role
+    }, { status: 201 });
   } catch (error) {
     return responseForError(error);
   }

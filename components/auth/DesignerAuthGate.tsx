@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Designer, getCurrentDesigner, signOutDesigner } from "@/lib/auth/designerAuth";
 import { Button } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { supabase } from "@/lib/supabase/client";
 
 export function DesignerAuthGate({ children }: { children: (designer: Designer) => React.ReactNode }) {
   const { messages, href } = useLocale();
@@ -26,9 +27,20 @@ export function DesignerAuthGate({ children }: { children: (designer: Designer) 
     }
     void refresh();
     window.addEventListener("ritual-designer-auth", refresh);
+    const authSubscription = supabase?.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      const user = session?.user;
+      setDesigner(user ? { id: user.id, email: user.email ?? "designer" } : null);
+      setLoading(false);
+      if (!user) {
+        const next = `${window.location.pathname}${window.location.search}`;
+        router.replace(href(`/login?next=${encodeURIComponent(next)}`));
+      }
+    }).data.subscription;
     return () => {
       active = false;
       window.removeEventListener("ritual-designer-auth", refresh);
+      authSubscription?.unsubscribe();
     };
   }, [href, router]);
 

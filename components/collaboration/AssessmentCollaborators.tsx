@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Share2, UserPlus, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { CheckCircle2, ChevronDown, Info, Share2, UserMinus, UserPlus, X } from "lucide-react";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { supabase } from "@/lib/supabase/client";
@@ -11,6 +11,7 @@ type ManagerRole = "owner" | "co_owner";
 
 type Collaborator = {
   userId: string;
+  name: string;
   email: string;
   role: CollaborationRole;
 };
@@ -34,6 +35,91 @@ function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+function RoleHelp({ description, label }: { description: string; label: string }) {
+  return (
+    <span className="group relative inline-flex items-center gap-1.5 text-bone/55 transition hover:text-bone">
+      <Info size={15} aria-hidden="true" className="text-bone/45 transition group-hover:text-mint" />
+      <span>{label}</span>
+      <span role="tooltip" className="pointer-events-none absolute bottom-[calc(100%+0.6rem)] left-1/2 z-[120] w-60 -translate-x-1/2 rounded-md border border-bone/15 bg-night px-3 py-2 text-xs font-normal leading-5 text-bone/75 opacity-0 shadow-live transition group-hover:opacity-100">
+        {description}
+      </span>
+    </span>
+  );
+}
+
+function RoleSelector({
+  value,
+  onChange,
+  disabled,
+  ariaLabel,
+  editorLabel,
+  coOwnerLabel,
+  editorDescription,
+  coOwnerDescription,
+  compact = false
+}: {
+  value: CollaborationRole;
+  onChange: (role: CollaborationRole) => void;
+  disabled: boolean;
+  ariaLabel: string;
+  editorLabel: string;
+  coOwnerLabel: string;
+  editorDescription: string;
+  coOwnerDescription: string;
+  compact?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const options: Array<{ value: CollaborationRole; label: string; description: string }> = [
+    { value: "editor", label: editorLabel, description: editorDescription },
+    { value: "co_owner", label: coOwnerLabel, description: coOwnerDescription }
+  ];
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  function choose(nextRole: CollaborationRole) {
+    setOpen(false);
+    if (nextRole !== value) onChange(nextRole);
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className={compact
+          ? "group inline-flex min-h-9 items-center gap-2 rounded-md px-2 text-sm font-semibold text-bone/72 transition hover:bg-bone/[0.07] hover:text-bone focus:bg-bone/[0.07] focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50"
+          : "flex min-h-12 w-full items-center justify-between rounded-md border border-bone/12 bg-night/70 px-4 text-left text-sm font-semibold text-bone outline-none transition hover:border-bone/28 hover:bg-bone/5 focus:border-mint focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50"}
+      >
+        <span>{selected.label}</span>
+        <ChevronDown size={compact ? 15 : 17} aria-hidden="true" className={compact ? "opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" : "text-bone/65"} />
+      </button>
+      {open ? (
+        <div role="listbox" aria-label={ariaLabel} className="absolute right-0 z-[130] mt-2 w-72 overflow-hidden rounded-md border border-bone/15 bg-[#171A20] p-1 shadow-live">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              onClick={() => choose(option.value)}
+              className="flex w-full items-start gap-3 rounded px-3 py-3 text-left transition hover:bg-bone/10 focus:bg-bone/10 focus:outline-none"
+            >
+              <span className={option.value === value ? "mt-1 size-2 shrink-0 rounded-full bg-mint" : "mt-1 size-2 shrink-0 rounded-full border border-bone/35"} />
+              <span>
+                <span className="block text-sm font-semibold text-bone">{option.label}</span>
+                <span className="mt-1 block text-xs leading-5 text-bone/58">{option.description}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function AssessmentCollaborators({
   assessmentId,
   onManagerRoleChange
@@ -49,12 +135,12 @@ export function AssessmentCollaborators({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<Collaborator | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const response = await authorisedRequest(`/api/assessments/${assessmentId}/collaborators`);
       if (response.status === 403) {
         setManagerRole(null);
@@ -70,7 +156,7 @@ export function AssessmentCollaborators({
       setManagerRole(null);
       onManagerRoleChange?.(null);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [assessmentId, onManagerRoleChange]);
 
@@ -81,40 +167,46 @@ export function AssessmentCollaborators({
 
   useEffect(() => {
     if (!open) return;
-    function closeOnOutsidePointer(event: PointerEvent) {
-      if (!popoverRef.current?.contains(event.target as Node)) setOpen(false);
-    }
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") setOpen(false);
     }
-    document.addEventListener("pointerdown", closeOnOutsidePointer);
     document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsidePointer);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
+    return () => document.removeEventListener("keydown", closeOnEscape);
   }, [open]);
+
+  function close() {
+    setOpen(false);
+    setError(null);
+    setConfirmation(null);
+  }
+
+  function openDialog() {
+    setError(null);
+    setConfirmation(null);
+    setOpen(true);
+  }
 
   async function addCollaborator() {
     if (!validEmail(email) || saving) return;
     try {
       setSaving(true);
-      setNotice(null);
+      setError(null);
       const response = await authorisedRequest(`/api/assessments/${assessmentId}/collaborators`, {
         method: "POST",
         body: JSON.stringify({ email: email.trim(), role })
       });
       if (!response.ok) {
         const responseText = await response.text();
-        setNotice(response.status === 400 ? messages.collaboration.emailUnavailable : responseText || messages.collaboration.error);
+        setError(response.status === 400 ? messages.collaboration.emailUnavailable : responseText || messages.collaboration.error);
         return;
       }
+      const collaborator = await response.json() as Collaborator;
       setEmail("");
       setRole("editor");
-      setNotice(messages.collaboration.added);
-      await load();
+      setConfirmation(collaborator);
+      await load(false);
     } catch {
-      setNotice(messages.collaboration.error);
+      setError(messages.collaboration.error);
     } finally {
       setSaving(false);
     }
@@ -124,16 +216,15 @@ export function AssessmentCollaborators({
     if (saving) return;
     try {
       setSaving(true);
-      setNotice(null);
+      setError(null);
       const response = await authorisedRequest(`/api/assessments/${assessmentId}/collaborators`, {
         method: "PUT",
         body: JSON.stringify({ userId, role: nextRole })
       });
       if (!response.ok) throw new Error(await response.text());
-      setNotice(messages.collaboration.roleUpdated);
-      await load();
+      await load(false);
     } catch {
-      setNotice(messages.collaboration.error);
+      setError(messages.collaboration.error);
     } finally {
       setSaving(false);
     }
@@ -143,14 +234,14 @@ export function AssessmentCollaborators({
     if (saving) return;
     try {
       setSaving(true);
-      setNotice(null);
+      setError(null);
       const response = await authorisedRequest(`/api/assessments/${assessmentId}/collaborators?userId=${encodeURIComponent(userId)}`, {
         method: "DELETE"
       });
       if (!response.ok) throw new Error(await response.text());
-      await load();
+      await load(false);
     } catch {
-      setNotice(messages.collaboration.error);
+      setError(messages.collaboration.error);
     } finally {
       setSaving(false);
     }
@@ -159,90 +250,110 @@ export function AssessmentCollaborators({
   if (loading || !managerRole) return null;
   const emailHasValue = Boolean(email.trim());
   const emailIsValid = validEmail(email);
+  const roleDetails = role === "co_owner" ? messages.collaboration.coOwnerDescription : messages.collaboration.editorDescription;
 
   return (
-    <div ref={popoverRef} className="relative">
-      <Button
-        type="button"
-        variant="secondary"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-      >
+    <>
+      <Button type="button" variant="secondary" aria-haspopup="dialog" aria-expanded={open} onClick={openDialog}>
         <Share2 size={16} /> {messages.collaboration.share}
       </Button>
       {open ? (
-        <Card role="dialog" aria-label={messages.collaboration.title} className="absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-2rem))] space-y-5 shadow-live">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="font-heading text-2xl font-semibold text-bone">{messages.collaboration.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-bone/60">{messages.collaboration.body}</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-night/75 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+          <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border-bone/15 bg-[#10131a] p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <h2 className="font-heading text-2xl font-semibold text-bone">{confirmation ? messages.collaboration.successTitle : messages.collaboration.title}</h2>
+                <p className="mt-2 max-w-lg text-sm leading-6 text-bone/62">{confirmation ? messages.collaboration.successBody : messages.collaboration.body}</p>
+              </div>
+              <button type="button" onClick={close} aria-label={messages.common.cancel} className="rounded-md p-2 text-bone/65 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint">
+                <X size={18} />
+              </button>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label={messages.common.cancel} className="rounded-md p-2 text-bone/65 hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint">
-              <X size={18} />
-            </button>
-          </div>
 
-          <div className="space-y-3 rounded-md border border-bone/10 bg-night/35 p-4">
-            <Field label={messages.collaboration.email}>
-              <input
-                className={inputClass}
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                disabled={saving}
-                aria-invalid={emailHasValue && !emailIsValid}
-              />
-            </Field>
-            {emailHasValue && !emailIsValid ? <p className="text-sm text-orange">{messages.collaboration.emailFormat}</p> : null}
-            {managerRole === "owner" ? (
-              <Field label={messages.collaboration.role}>
-                <select className={inputClass} value={role} onChange={(event) => setRole(event.target.value as CollaborationRole)} disabled={saving}>
-                  <option value="editor">{messages.collaboration.editor}</option>
-                  <option value="co_owner">{messages.collaboration.coOwner}</option>
-                </select>
-              </Field>
-            ) : null}
-            <Button type="button" onClick={() => void addCollaborator()} disabled={saving || !emailIsValid} className="w-full">
-              <UserPlus size={16} /> {messages.collaboration.add}
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {!collaborators.length ? <p className="text-sm text-bone/50">{messages.collaboration.empty}</p> : null}
-            {collaborators.map((collaborator) => {
-              const canManageThisCollaborator = managerRole === "owner" || collaborator.role === "editor";
-              return (
-                <div key={collaborator.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-bone/10 bg-night/35 px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-bone">{collaborator.email}</p>
-                    {managerRole === "owner" ? (
-                      <select
-                        className="mt-1 bg-transparent text-xs font-semibold text-bone/60 outline-none focus:text-bone"
-                        value={collaborator.role}
-                        onChange={(event) => void updateRole(collaborator.userId, event.target.value as CollaborationRole)}
+            {confirmation ? (
+              <div className="py-12 text-center">
+                <CheckCircle2 size={40} aria-hidden="true" className="mx-auto text-mint" />
+                <p className="mt-5 text-lg font-semibold text-bone">{confirmation.name}</p>
+                <p className="mt-1 text-sm text-bone/55">{confirmation.email}</p>
+                <div className="mt-7 flex flex-wrap justify-center gap-3">
+                  <Button type="button" variant="secondary" onClick={() => setConfirmation(null)}>{messages.collaboration.manageAccess}</Button>
+                  <Button type="button" onClick={close}>{messages.collaboration.close}</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-7 space-y-7">
+                <div className="space-y-4 border-b border-bone/10 pb-7">
+                  <Field label={messages.collaboration.email}>
+                    <input className={inputClass} type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} aria-invalid={emailHasValue && !emailIsValid} />
+                  </Field>
+                  {emailHasValue && !emailIsValid ? <p className="text-sm text-orange">{messages.collaboration.emailFormat}</p> : null}
+                  {managerRole === "owner" ? (
+                    <Field label={messages.collaboration.role}>
+                      <RoleSelector
+                        value={role}
+                        onChange={setRole}
                         disabled={saving}
-                        aria-label={`${messages.collaboration.role}: ${collaborator.email}`}
-                      >
-                        <option value="editor">{messages.collaboration.editor}</option>
-                        <option value="co_owner">{messages.collaboration.coOwner}</option>
-                      </select>
-                    ) : (
-                      <p className="mt-1 text-xs text-bone/55">{collaborator.role === "co_owner" ? messages.collaboration.coOwner : messages.collaboration.editor}</p>
-                    )}
-                  </div>
-                  {canManageThisCollaborator ? (
-                    <Button type="button" variant="ghost" onClick={() => void revokeCollaborator(collaborator.userId)} disabled={saving} className="min-h-9 px-3 text-xs">
-                      <X size={15} /> {messages.collaboration.revoke}
-                    </Button>
+                        ariaLabel={messages.collaboration.role}
+                        editorLabel={messages.collaboration.editor}
+                        coOwnerLabel={messages.collaboration.coOwner}
+                        editorDescription={messages.collaboration.editorDescription}
+                        coOwnerDescription={messages.collaboration.coOwnerDescription}
+                      />
+                    </Field>
+                  ) : null}
+                  {managerRole === "owner" ? <RoleHelp description={roleDetails} label={messages.collaboration.roleDetails} /> : null}
+                  <Button type="button" onClick={() => void addCollaborator()} disabled={saving || !emailIsValid} className="w-full">
+                    <UserPlus size={16} /> {messages.collaboration.add}
+                  </Button>
+                  {error ? <p role="alert" className="text-sm text-orange">{error}</p> : null}
+                </div>
+
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/52">{messages.collaboration.peopleWithAccess}</h3>
+                  {!collaborators.length ? <p className="mt-4 text-sm text-bone/50">{messages.collaboration.empty}</p> : null}
+                  {collaborators.length ? (
+                    <div className="mt-3 divide-y divide-bone/10 border-y border-bone/10">
+                      {collaborators.map((collaborator) => {
+                        const canManageThisCollaborator = managerRole === "owner" || collaborator.role === "editor";
+                        return (
+                          <div key={collaborator.userId} className="group flex min-h-20 items-center gap-4 py-4">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-base font-semibold text-bone">{collaborator.name}</p>
+                              <p className="mt-1 truncate text-sm text-bone/52">{collaborator.email}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {managerRole === "owner" ? (
+                                <RoleSelector
+                                  compact
+                                  value={collaborator.role}
+                                  onChange={(nextRole) => void updateRole(collaborator.userId, nextRole)}
+                                  disabled={saving}
+                                  ariaLabel={`${messages.collaboration.role}: ${collaborator.email}`}
+                                  editorLabel={messages.collaboration.editor}
+                                  coOwnerLabel={messages.collaboration.coOwner}
+                                  editorDescription={messages.collaboration.editorDescription}
+                                  coOwnerDescription={messages.collaboration.coOwnerDescription}
+                                />
+                              ) : (
+                                <span className="text-sm font-semibold text-bone/62">{collaborator.role === "co_owner" ? messages.collaboration.coOwner : messages.collaboration.editor}</span>
+                              )}
+                              {canManageThisCollaborator ? (
+                                <button type="button" onClick={() => void revokeCollaborator(collaborator.userId)} disabled={saving} aria-label={`${messages.collaboration.revoke}: ${collaborator.email}`} className="inline-flex size-9 items-center justify-center rounded-md text-bone/48 opacity-100 transition hover:bg-orange/10 hover:text-orange focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-orange disabled:cursor-not-allowed disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100">
+                                  <UserMinus size={17} />
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : null}
                 </div>
-              );
-            })}
-          </div>
-          {notice ? <p className="text-sm text-mint">{notice}</p> : null}
-        </Card>
+              </div>
+            )}
+          </Card>
+        </div>
       ) : null}
-    </div>
+    </>
   );
 }
