@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { DesignerSignOutButton } from "@/components/auth/DesignerAuthGate";
+import { AccountMenu } from "@/components/dashboard/AccountMenu";
+import { Designer } from "@/lib/auth/designerAuth";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
-  return <AppShell headerAction={<DesignerSignOutButton />}>{children}</AppShell>;
+export function DashboardShell({ children, designer }: { children: React.ReactNode; designer: Designer }) {
+  return <AppShell showLanguageSwitcher={false} headerAction={<AccountMenu designer={designer} />}>{children}</AppShell>;
 }

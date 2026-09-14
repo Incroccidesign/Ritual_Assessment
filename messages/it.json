@@ -11,6 +11,9 @@
     "newAssessment": "Nuovo assessment"
   },
   "account": {
+    "menuLabel": "Menu account",
+    "language": "Lingua",
+    "close": "Chiudi",
     "dangerZone": "Impostazioni account",
     "deleteTitle": "Elimina account",
     "deleteBody": "L'operazione elimina definitivamente l'account e tutti gli assessment, le risposte e gli export associati. Non puo essere annullata.",

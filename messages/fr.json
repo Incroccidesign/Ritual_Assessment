@@ -11,6 +11,9 @@
     "newAssessment": "Nouvelle evaluation"
   },
   "account": {
+    "menuLabel": "Menu du compte",
+    "language": "Langue",
+    "close": "Fermer",
     "dangerZone": "Parametres du compte",
     "deleteTitle": "Supprimer le compte",
     "deleteBody": "Cette action supprime definitivement votre compte et tous les assessments, reponses et exports associes. Elle ne peut pas etre annulee.",

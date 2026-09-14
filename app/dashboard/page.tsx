@@ -7,7 +7,6 @@ import { Designer } from "@/lib/auth/designerAuth";
 import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreationCard";
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
-import { AccountDeletionCard } from "@/components/dashboard/AccountDeletionCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Button, Card, EmptyState, StepHeader } from "@/components/ritual-ui";
 import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessmentTemplate";
@@ -27,11 +26,13 @@ import { getErrorMessage } from "@/lib/utils/errors";
 export default function DashboardPage() {
   return (
     <Suspense fallback={null}>
-      <DashboardShell>
-        <DesignerAuthGate>
-          {(designer) => <DashboardContent designer={designer} />}
-        </DesignerAuthGate>
-      </DashboardShell>
+      <DesignerAuthGate>
+        {(designer) => (
+          <DashboardShell designer={designer}>
+            <DashboardContent designer={designer} />
+          </DashboardShell>
+        )}
+      </DesignerAuthGate>
     </Suspense>
   );
 }
@@ -253,9 +254,6 @@ function DashboardContent({ designer }: { designer: Designer }) {
             action={<Button type="button" onClick={() => setCreationOpen(true)}>{messages.assessmentCreate.newAssessment}</Button>}
           />
         )}
-      </div>
-      <div className="mt-10">
-        <AccountDeletionCard />
       </div>
     </>
   );

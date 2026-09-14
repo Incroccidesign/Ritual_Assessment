@@ -47,7 +47,7 @@ export function ResultsDashboard({ assessmentId, designer }: { assessmentId: str
 
   if (loading) {
     return (
-      <DashboardShell>
+      <DashboardShell designer={designer}>
         <Card><p className="text-bone/50">{messages.app.loading}</p></Card>
       </DashboardShell>
     );
@@ -55,14 +55,14 @@ export function ResultsDashboard({ assessmentId, designer }: { assessmentId: str
 
   if (!assessment) {
     return (
-      <DashboardShell>
+      <DashboardShell designer={designer}>
         <Card><p className={error ? "text-orange" : "text-bone/50"}>{error ?? messages.common.empty}</p></Card>
       </DashboardShell>
     );
   }
 
   return (
-    <DashboardShell>
+    <DashboardShell designer={designer}>
       <div className="flex flex-wrap items-start justify-between gap-5">
         <StepHeader title={messages.reports.title} body={assessment.title} />
         <div className="flex flex-wrap gap-3">

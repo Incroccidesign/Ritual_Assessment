@@ -11,12 +11,14 @@ export function AppShell({
   compact = false,
   wide = false,
   showHeaderDivider = true,
+  showLanguageSwitcher = true,
   headerAction
 }: {
   children: React.ReactNode;
   compact?: boolean;
   wide?: boolean;
   showHeaderDivider?: boolean;
+  showLanguageSwitcher?: boolean;
   headerAction?: React.ReactNode;
 }) {
   const { href, direction } = useLocale();
@@ -42,9 +44,11 @@ export function AppShell({
             <img src="/ritual-logo-white.svg" alt="Ritual" className="h-auto w-28 sm:w-32 md:w-36" />
           </Link>
           <div className="flex items-center gap-3">
-            <Suspense fallback={null}>
-              <LanguageSwitcher />
-            </Suspense>
+            {showLanguageSwitcher ? (
+              <Suspense fallback={null}>
+                <LanguageSwitcher />
+              </Suspense>
+            ) : null}
             {headerAction}
           </div>
         </header>

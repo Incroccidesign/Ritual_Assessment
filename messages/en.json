@@ -11,6 +11,9 @@
     "newAssessment": "New assessment"
   },
   "account": {
+    "menuLabel": "Account menu",
+    "language": "Language",
+    "close": "Close",
     "dangerZone": "Account settings",
     "deleteTitle": "Delete account",
     "deleteBody": "This permanently deletes your account and every assessment, response and export associated with it. This action cannot be undone.",
