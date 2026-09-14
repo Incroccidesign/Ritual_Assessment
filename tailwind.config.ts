@@ -11,7 +11,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        night: "#0F1115",
+        night: "#01060E",
         bone: "#F3EFE6",
         graphite: "#2A2F38",
         violet: "#6F5BFF",
