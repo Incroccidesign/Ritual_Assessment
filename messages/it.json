@@ -10,6 +10,15 @@
     "results": "Risultati",
     "newAssessment": "Nuovo assessment"
   },
+  "account": {
+    "dangerZone": "Impostazioni account",
+    "deleteTitle": "Elimina account",
+    "deleteBody": "L'operazione elimina definitivamente l'account e tutti gli assessment, le risposte e gli export associati. Non puo essere annullata.",
+    "deleteAction": "Elimina account",
+    "deleteConfirmLabel": "Digita DELETE per confermare l'eliminazione definitiva",
+    "deleteConfirmAction": "Elimina definitivamente l'account",
+    "deletionError": "Impossibile eliminare l'account. Contatta l'amministratore della piattaforma."
+  },
   "common": {
     "add": "Aggiungi",
     "actions": "Azioni",

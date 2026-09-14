@@ -10,6 +10,15 @@
     "results": "Resultats",
     "newAssessment": "Nouvelle evaluation"
   },
+  "account": {
+    "dangerZone": "Parametres du compte",
+    "deleteTitle": "Supprimer le compte",
+    "deleteBody": "Cette action supprime definitivement votre compte et tous les assessments, reponses et exports associes. Elle ne peut pas etre annulee.",
+    "deleteAction": "Supprimer le compte",
+    "deleteConfirmLabel": "Saisissez DELETE pour confirmer la suppression definitive",
+    "deleteConfirmAction": "Supprimer definitivement le compte",
+    "deletionError": "Impossible de supprimer le compte. Contactez l'administrateur de la plateforme."
+  },
   "common": {
     "add": "Ajouter",
     "actions": "Actions",

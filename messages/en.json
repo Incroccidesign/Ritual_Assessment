@@ -10,6 +10,15 @@
     "results": "Results",
     "newAssessment": "New assessment"
   },
+  "account": {
+    "dangerZone": "Account settings",
+    "deleteTitle": "Delete account",
+    "deleteBody": "This permanently deletes your account and every assessment, response and export associated with it. This action cannot be undone.",
+    "deleteAction": "Delete account",
+    "deleteConfirmLabel": "Type DELETE to confirm permanent deletion",
+    "deleteConfirmAction": "Permanently delete account",
+    "deletionError": "Unable to delete the account. Please contact the platform administrator."
+  },
   "common": {
     "add": "Add",
     "actions": "Actions",
