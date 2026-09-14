@@ -164,6 +164,8 @@
     "usernameInvalid": "Enter a username between 2 and 60 characters.",
     "email": "Email",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "continueAsDesigner": "Continue as designer",
     "mockNote": "Supabase Auth is not configured, so this local build uses a mock designer session.",
     "signIn": "Sign in",

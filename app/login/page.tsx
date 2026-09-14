@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
@@ -58,6 +58,7 @@ function LoginContent() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(() => emailConfirmed ? messages.auth.emailConfirmed : null);
@@ -319,20 +320,32 @@ function LoginContent() {
             </Field> : null}
             {mode !== "reset-request" ? <Field label={mode === "new-password" ? messages.auth.newPassword : messages.auth.password}>
               <>
-                <input
-                  className={inputClass}
-                  type="password"
-                  value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    setFieldErrors((current) => ({ ...current, password: undefined }));
-                    setFormError(null);
-                    setNotice(null);
-                  }}
-                  required
-                  minLength={mode === "sign-up" || mode === "new-password" ? PASSWORD_MIN_LENGTH : 1}
-                  aria-invalid={Boolean(fieldErrors.password)}
-                />
+                <div className="relative">
+                  <input
+                    className={`${inputClass} pr-12`}
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setFieldErrors((current) => ({ ...current, password: undefined }));
+                      setFormError(null);
+                      setNotice(null);
+                    }}
+                    required
+                    minLength={mode === "sign-up" || mode === "new-password" ? PASSWORD_MIN_LENGTH : 1}
+                    autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                    aria-invalid={Boolean(fieldErrors.password)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 grid w-12 place-items-center text-bone/55 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
+                    aria-label={showPassword ? messages.auth.hidePassword : messages.auth.showPassword}
+                    title={showPassword ? messages.auth.hidePassword : messages.auth.showPassword}
+                    onClick={() => setShowPassword((current) => !current)}
+                  >
+                    {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                  </button>
+                </div>
                 {(mode === "sign-up" || mode === "new-password") ? <p className="mt-2 text-xs leading-5 text-bone/52">{messages.auth.passwordRequirements.replace("{min}", String(PASSWORD_MIN_LENGTH))}</p> : null}
                 {fieldErrors.password ? <p className="mt-2 text-sm text-orange">{fieldErrors.password}</p> : null}
               </>

@@ -164,6 +164,8 @@
     "usernameInvalid": "Saisissez un nom d'utilisateur entre 2 et 60 caracteres.",
     "email": "Email",
     "password": "Mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "continueAsDesigner": "Continuer",
     "mockNote": "Supabase Auth n'est pas configure, cette version locale utilise donc une session de test.",
     "signIn": "Se connecter",
