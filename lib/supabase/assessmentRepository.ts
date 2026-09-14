@@ -102,6 +102,13 @@ function requireSupabase() {
   return supabase;
 }
 
+async function requireAuthenticatedOwnerId() {
+  const client = requireSupabase();
+  const { data, error } = await client.auth.getUser();
+  if (error || !data.user) throw new Error("Sign in is required to create an assessment.");
+  return data.user.id;
+}
+
 function rowToAssessment(row: AssessmentRow, activities: Activity[] = []): Assessment {
   return {
     id: row.id,
@@ -542,10 +549,11 @@ function payloadToResponse(payload: ResponsePayload | null): AssessmentResponse 
 
 export async function createSupabaseAssessment(language: Assessment["language"]) {
   const client = requireSupabase();
+  const ownerId = await requireAuthenticatedOwnerId();
   const messages = getMessages(language);
   const { data, error } = await client
     .from("assessments")
-    .insert({ title: messages.presets.assessment.draftTitle, language, status: "draft" })
+    .insert({ owner_id: ownerId, title: messages.presets.assessment.draftTitle, language, status: "draft" })
     .select("*")
     .single();
   if (error) throw error;
@@ -554,9 +562,11 @@ export async function createSupabaseAssessment(language: Assessment["language"])
 
 export async function createSupabaseAssessmentFromTemplate(template: AssessmentTemplate) {
   const client = requireSupabase();
+  const ownerId = await requireAuthenticatedOwnerId();
   const { data, error } = await client
     .from("assessments")
     .insert({
+      owner_id: ownerId,
       title: template.title,
       description: template.description,
       estimated_duration: template.estimatedDuration ?? null,
@@ -656,9 +666,11 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
 
 export async function createSupabaseAssessmentFromExistingTemplate(template: Assessment) {
   const client = requireSupabase();
+  const ownerId = await requireAuthenticatedOwnerId();
   const { data, error } = await client
     .from("assessments")
     .insert({
+      owner_id: ownerId,
       title: template.title,
       description: template.description ?? null,
       estimated_duration: template.estimatedDuration ?? null,
