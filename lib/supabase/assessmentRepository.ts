@@ -102,11 +102,15 @@ function requireSupabase() {
   return supabase;
 }
 
-async function requireAuthenticatedOwnerId() {
+async function requireAuthenticatedOwner() {
   const client = requireSupabase();
-  const { data, error } = await client.auth.getUser();
+  const { data: sessionData, error: sessionError } = await client.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (sessionError || !accessToken) throw new Error("Sign in is required to create an assessment.");
+
+  const { data, error } = await client.auth.getUser(accessToken);
   if (error || !data.user) throw new Error("Sign in is required to create an assessment.");
-  return data.user.id;
+  return { ownerId: data.user.id, accessToken };
 }
 
 function rowToAssessment(row: AssessmentRow, activities: Activity[] = []): Assessment {
@@ -549,21 +553,22 @@ function payloadToResponse(payload: ResponsePayload | null): AssessmentResponse 
 
 export async function createSupabaseAssessment(language: Assessment["language"]) {
   const client = requireSupabase();
-  const ownerId = await requireAuthenticatedOwnerId();
+  const { ownerId, accessToken } = await requireAuthenticatedOwner();
   const messages = getMessages(language);
-  const { data, error } = await client
+  const request = client
     .from("assessments")
     .insert({ owner_id: ownerId, title: messages.presets.assessment.draftTitle, language, status: "draft" })
-    .select("*")
-    .single();
+    .select("*");
+  request.setHeader("Authorization", `Bearer ${accessToken}`);
+  const { data, error } = await request.single();
   if (error) throw error;
   return rowToAssessment(data as AssessmentRow);
 }
 
 export async function createSupabaseAssessmentFromTemplate(template: AssessmentTemplate) {
   const client = requireSupabase();
-  const ownerId = await requireAuthenticatedOwnerId();
-  const { data, error } = await client
+  const { ownerId, accessToken } = await requireAuthenticatedOwner();
+  const request = client
     .from("assessments")
     .insert({
       owner_id: ownerId,
@@ -574,8 +579,9 @@ export async function createSupabaseAssessmentFromTemplate(template: AssessmentT
       language: template.language,
       status: template.status
     })
-    .select("*")
-    .single();
+    .select("*");
+  request.setHeader("Authorization", `Bearer ${accessToken}`);
+  const { data, error } = await request.single();
   if (error) throw error;
 
   const assessment = rowToAssessment(data as AssessmentRow);
@@ -586,12 +592,12 @@ export async function createSupabaseAssessmentFromTemplate(template: AssessmentT
     for (let orderIndex = 0; orderIndex < template.activities.length; orderIndex += 1) {
       const templateActivity = template.activities[orderIndex];
       const activity = templateActivityToActivity(templateActivity, orderIndex, sourceIds);
-      const insertedActivity = await insertSupabaseActivity(assessment.id, activity);
+      const insertedActivity = await insertSupabaseActivity(assessment.id, activity, accessToken);
       sourceIds.set(templateActivity.key, insertedActivity.id);
       activities.push(insertedActivity);
     }
   } catch (templateError) {
-    await client.from("assessments").delete().eq("id", assessment.id);
+    await client.from("assessments").delete().eq("id", assessment.id).setHeader("Authorization", `Bearer ${accessToken}`);
     throw templateError;
   }
 
@@ -666,8 +672,8 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
 
 export async function createSupabaseAssessmentFromExistingTemplate(template: Assessment) {
   const client = requireSupabase();
-  const ownerId = await requireAuthenticatedOwnerId();
-  const { data, error } = await client
+  const { ownerId, accessToken } = await requireAuthenticatedOwner();
+  const request = client
     .from("assessments")
     .insert({
       owner_id: ownerId,
@@ -678,8 +684,9 @@ export async function createSupabaseAssessmentFromExistingTemplate(template: Ass
       language: template.language,
       status: "draft"
     })
-    .select("*")
-    .single();
+    .select("*");
+  request.setHeader("Authorization", `Bearer ${accessToken}`);
+  const { data, error } = await request.single();
   if (error) throw error;
 
   const assessment = rowToAssessment(data as AssessmentRow);
@@ -691,12 +698,12 @@ export async function createSupabaseAssessmentFromExistingTemplate(template: Ass
     for (let orderIndex = 0; orderIndex < ordered.length; orderIndex += 1) {
       const sourceActivity = ordered[orderIndex];
       const activity = cloneActivityForAssessment(sourceActivity, orderIndex, sourceIds);
-      const insertedActivity = await insertSupabaseActivity(assessment.id, activity);
+      const insertedActivity = await insertSupabaseActivity(assessment.id, activity, accessToken);
       sourceIds.set(sourceActivity.id, insertedActivity.id);
       activities.push(insertedActivity);
     }
   } catch (templateError) {
-    await client.from("assessments").delete().eq("id", assessment.id);
+    await client.from("assessments").delete().eq("id", assessment.id).setHeader("Authorization", `Bearer ${accessToken}`);
     throw templateError;
   }
 
@@ -708,6 +715,7 @@ export async function createSupabaseNasijAssessment() {
 }
 
 export async function fetchAssessmentBundle(assessmentId: string, _ownerId?: string): Promise<AssessmentBundle | null> {
+  void _ownerId;
   const client = requireSupabase();
   const assessmentQuery = client.from("assessments").select("*").eq("id", assessmentId);
   const [assessmentResult, activitiesResult, participantsResult, responsesResult] = await Promise.all([
@@ -760,9 +768,9 @@ export async function updateSupabaseAssessment(assessment: Assessment) {
   return rowToAssessment(data as AssessmentRow, assessment.activities);
 }
 
-export async function insertSupabaseActivity(assessmentId: string, activity: Activity) {
+export async function insertSupabaseActivity(assessmentId: string, activity: Activity, accessToken?: string) {
   const client = requireSupabase();
-  const { data, error } = await client
+  const request = client
     .from("activities")
     .insert({
       assessment_id: assessmentId,
@@ -772,8 +780,9 @@ export async function insertSupabaseActivity(assessmentId: string, activity: Act
       order_index: activity.orderIndex,
       config_json: activityConfig(activity)
     })
-    .select("*")
-    .single();
+    .select("*");
+  if (accessToken) request.setHeader("Authorization", `Bearer ${accessToken}`);
+  const { data, error } = await request.single();
   if (error) throw error;
   return rowToActivity(data as ActivityRow);
 }
