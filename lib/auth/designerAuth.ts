@@ -41,13 +41,14 @@ export async function signInDesigner(email: string, password: string, captchaTok
   return designer;
 }
 
-export async function signUpDesigner(email: string, password: string, captchaToken?: string) {
+export async function signUpDesigner(email: string, password: string, fullName: string, captchaToken?: string) {
   if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
+      data: { full_name: fullName },
       ...(captchaToken ? { captchaToken } : {})
     }
   });
@@ -66,6 +67,19 @@ export async function signUpDesigner(email: string, password: string, captchaTok
     designer,
     requiresEmailConfirmation: true
   };
+}
+
+export async function resendDesignerEmailConfirmation(email: string, captchaToken?: string) {
+  if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
+      ...(captchaToken ? { captchaToken } : {})
+    }
+  });
+  if (error) throw error;
 }
 
 export async function requestDesignerPasswordReset(email: string, captchaToken?: string) {
