@@ -97,12 +97,21 @@ type ResponsePayload = {
   }>;
 };
 
+type AssessmentCreationInput = {
+  language: Assessment["language"];
+  title: string;
+  description?: string;
+  estimatedDuration?: string;
+  hideActivitySummaries?: boolean;
+  activities?: Activity[];
+};
+
 function requireSupabase() {
   if (!supabase) throw new Error("Supabase is not configured.");
   return supabase;
 }
 
-async function requireAuthenticatedOwner() {
+async function requireAuthenticatedSession() {
   const client = requireSupabase();
   const { data: sessionData, error: sessionError } = await client.auth.getSession();
   const accessToken = sessionData.session?.access_token;
@@ -110,7 +119,7 @@ async function requireAuthenticatedOwner() {
 
   const { data, error } = await client.auth.getUser(accessToken);
   if (error || !data.user) throw new Error("Sign in is required to create an assessment.");
-  return { ownerId: data.user.id, accessToken };
+  return accessToken;
 }
 
 function rowToAssessment(row: AssessmentRow, activities: Activity[] = []): Assessment {
@@ -419,6 +428,37 @@ function activityConfig(activity: Activity) {
   return { reportTitle: activity.reportTitle, reportSubtitle: activity.reportSubtitle, sections: activity.sections };
 }
 
+async function createAssessmentThroughApi(input: AssessmentCreationInput) {
+  const accessToken = await requireAuthenticatedSession();
+  const response = await fetch("/api/assessments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      language: input.language,
+      title: input.title,
+      description: input.description ?? null,
+      estimatedDuration: input.estimatedDuration ?? null,
+      hideActivitySummaries: Boolean(input.hideActivitySummaries),
+      activities: (input.activities ?? []).map((activity) => ({
+        clientId: activity.id,
+        type: activity.type,
+        title: activity.title,
+        prompt: activity.prompt,
+        orderIndex: activity.orderIndex,
+        configJson: activityConfig(activity)
+      }))
+    })
+  });
+  const body = await response.json().catch(() => null) as { assessment?: AssessmentRow; activities?: ActivityRow[]; error?: string } | null;
+  if (!response.ok || !body?.assessment) {
+    throw new Error(body?.error ?? "Unable to create assessment.");
+  }
+  return rowToAssessment(body.assessment, (body.activities ?? []).map(rowToActivity));
+}
+
 function requireTemplateSource(sourceIds: Map<string, string>, sourceKey: string) {
   const sourceActivityId = sourceIds.get(sourceKey);
   if (!sourceActivityId) throw new Error(`Template source activity "${sourceKey}" was not created.`);
@@ -552,56 +592,29 @@ function payloadToResponse(payload: ResponsePayload | null): AssessmentResponse 
 }
 
 export async function createSupabaseAssessment(language: Assessment["language"]) {
-  const client = requireSupabase();
-  const { ownerId, accessToken } = await requireAuthenticatedOwner();
   const messages = getMessages(language);
-  const request = client
-    .from("assessments")
-    .insert({ owner_id: ownerId, title: messages.presets.assessment.draftTitle, language, status: "draft" })
-    .select("*");
-  request.setHeader("Authorization", `Bearer ${accessToken}`);
-  const { data, error } = await request.single();
-  if (error) throw error;
-  return rowToAssessment(data as AssessmentRow);
+  return createAssessmentThroughApi({
+    language,
+    title: messages.presets.assessment.draftTitle
+  });
 }
 
 export async function createSupabaseAssessmentFromTemplate(template: AssessmentTemplate) {
-  const client = requireSupabase();
-  const { ownerId, accessToken } = await requireAuthenticatedOwner();
-  const request = client
-    .from("assessments")
-    .insert({
-      owner_id: ownerId,
-      title: template.title,
-      description: template.description,
-      estimated_duration: template.estimatedDuration ?? null,
-      hide_activity_summaries: false,
-      language: template.language,
-      status: template.status
-    })
-    .select("*");
-  request.setHeader("Authorization", `Bearer ${accessToken}`);
-  const { data, error } = await request.single();
-  if (error) throw error;
-
-  const assessment = rowToAssessment(data as AssessmentRow);
   const sourceIds = new Map<string, string>();
   const activities: Activity[] = [];
-
-  try {
-    for (let orderIndex = 0; orderIndex < template.activities.length; orderIndex += 1) {
-      const templateActivity = template.activities[orderIndex];
-      const activity = templateActivityToActivity(templateActivity, orderIndex, sourceIds);
-      const insertedActivity = await insertSupabaseActivity(assessment.id, activity, accessToken);
-      sourceIds.set(templateActivity.key, insertedActivity.id);
-      activities.push(insertedActivity);
-    }
-  } catch (templateError) {
-    await client.from("assessments").delete().eq("id", assessment.id).setHeader("Authorization", `Bearer ${accessToken}`);
-    throw templateError;
+  for (let orderIndex = 0; orderIndex < template.activities.length; orderIndex += 1) {
+    const templateActivity = template.activities[orderIndex];
+    const activity = templateActivityToActivity(templateActivity, orderIndex, sourceIds);
+    sourceIds.set(templateActivity.key, activity.id);
+    activities.push(activity);
   }
-
-  return { ...assessment, activities };
+  return createAssessmentThroughApi({
+    language: template.language,
+    title: template.title,
+    description: template.description,
+    estimatedDuration: template.estimatedDuration,
+    activities
+  });
 }
 
 function cloneActivityForAssessment(activity: Activity, orderIndex: number, sourceIds: Map<string, string>): Activity {
@@ -671,43 +684,23 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
 }
 
 export async function createSupabaseAssessmentFromExistingTemplate(template: Assessment) {
-  const client = requireSupabase();
-  const { ownerId, accessToken } = await requireAuthenticatedOwner();
-  const request = client
-    .from("assessments")
-    .insert({
-      owner_id: ownerId,
-      title: template.title,
-      description: template.description ?? null,
-      estimated_duration: template.estimatedDuration ?? null,
-      hide_activity_summaries: Boolean(template.hideActivitySummaries),
-      language: template.language,
-      status: "draft"
-    })
-    .select("*");
-  request.setHeader("Authorization", `Bearer ${accessToken}`);
-  const { data, error } = await request.single();
-  if (error) throw error;
-
-  const assessment = rowToAssessment(data as AssessmentRow);
   const sourceIds = new Map<string, string>();
   const activities: Activity[] = [];
   const ordered = template.activities.slice().sort((a, b) => a.orderIndex - b.orderIndex);
-
-  try {
-    for (let orderIndex = 0; orderIndex < ordered.length; orderIndex += 1) {
-      const sourceActivity = ordered[orderIndex];
-      const activity = cloneActivityForAssessment(sourceActivity, orderIndex, sourceIds);
-      const insertedActivity = await insertSupabaseActivity(assessment.id, activity, accessToken);
-      sourceIds.set(sourceActivity.id, insertedActivity.id);
-      activities.push(insertedActivity);
-    }
-  } catch (templateError) {
-    await client.from("assessments").delete().eq("id", assessment.id).setHeader("Authorization", `Bearer ${accessToken}`);
-    throw templateError;
+  for (let orderIndex = 0; orderIndex < ordered.length; orderIndex += 1) {
+    const sourceActivity = ordered[orderIndex];
+    const activity = cloneActivityForAssessment(sourceActivity, orderIndex, sourceIds);
+    sourceIds.set(sourceActivity.id, activity.id);
+    activities.push(activity);
   }
-
-  return { ...assessment, activities };
+  return createAssessmentThroughApi({
+    language: template.language,
+    title: template.title,
+    description: template.description,
+    estimatedDuration: template.estimatedDuration,
+    hideActivitySummaries: template.hideActivitySummaries,
+    activities
+  });
 }
 
 export async function createSupabaseNasijAssessment() {
