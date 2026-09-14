@@ -338,7 +338,7 @@ function LoginContent() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 grid w-12 place-items-center text-bone/55 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
+                    className="absolute inset-y-1 right-1 grid w-9 place-items-center rounded border border-bone/25 bg-night/90 text-bone shadow-sm transition hover:border-mint hover:bg-mint hover:text-night focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
                     aria-label={showPassword ? messages.auth.hidePassword : messages.auth.showPassword}
                     title={showPassword ? messages.auth.hidePassword : messages.auth.showPassword}
                     onClick={() => setShowPassword((current) => !current)}
