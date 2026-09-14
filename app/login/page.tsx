@@ -1,11 +1,19 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
-import { getCurrentDesigner, isSupabaseConfigured, signInDesigner, signUpDesigner } from "@/lib/auth/designerAuth";
+import {
+  getCurrentDesigner,
+  isSupabaseConfigured,
+  requestDesignerPasswordReset,
+  signInDesigner,
+  signUpDesigner,
+  updateDesignerPassword
+} from "@/lib/auth/designerAuth";
 import { mapSignInError, mapSignUpError } from "@/lib/auth/authErrorMessages";
 import { useLocale } from "@/lib/i18n/useLocale";
 
@@ -31,7 +39,7 @@ export default function LoginPage() {
 function LoginContent() {
   const router = useRouter();
   const { messages, href } = useLocale();
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up" | "reset-request" | "new-password">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -39,12 +47,18 @@ function LoginContent() {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [next, setNext] = useState("/dashboard");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const requiresCaptcha = Boolean(turnstileSiteKey) && mode !== "new-password";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const passwordReset = params.get("reset") === "1";
     setNext(params.get("next") || "/dashboard");
     const requestedMode = params.get("mode");
-    setMode(requestedMode === "sign-up" ? "sign-up" : "sign-in");
+    setMode(passwordReset ? "new-password" : requestedMode === "sign-up" ? "sign-up" : "sign-in");
+    if (passwordReset) return;
     void getCurrentDesigner().then((designer) => {
       if (designer) router.replace(params.get("next") || href("/dashboard"));
     });
@@ -54,15 +68,15 @@ function LoginContent() {
     const nextErrors: FieldErrors = {};
     const trimmedEmail = email.trim();
 
-    if (!trimmedEmail) {
+    if (mode !== "new-password" && !trimmedEmail) {
       nextErrors.email = messages.auth.enterEmail;
-    } else if (!isValidEmail(trimmedEmail)) {
+    } else if (mode !== "new-password" && !isValidEmail(trimmedEmail)) {
       nextErrors.email = messages.auth.validEmail;
     }
 
-    if (!password) {
+    if (mode !== "reset-request" && !password) {
       nextErrors.password = mode === "sign-in" ? messages.auth.enterPassword : messages.auth.createPassword;
-    } else if (mode === "sign-up" && password.length < PASSWORD_MIN_LENGTH) {
+    } else if (mode !== "reset-request" && password.length < PASSWORD_MIN_LENGTH) {
       nextErrors.password = messages.auth.passwordMin.replace("{min}", String(PASSWORD_MIN_LENGTH));
     }
 
@@ -73,16 +87,32 @@ function LoginContent() {
   async function submit() {
     if (pending) return;
     if (!validate()) return;
+    if (requiresCaptcha && !captchaToken) {
+      setFormError(messages.auth.captchaRequired);
+      return;
+    }
 
     try {
       setPending(true);
       setFormError(null);
       setNotice(null);
+      if (mode === "reset-request") {
+        await requestDesignerPasswordReset(email.trim(), captchaToken ?? undefined);
+        setNotice(messages.auth.resetPasswordSuccess);
+        setMode("sign-in");
+        return;
+      }
+      if (mode === "new-password") {
+        await updateDesignerPassword(password);
+        setNotice(messages.auth.passwordUpdated);
+        router.replace(href(next));
+        return;
+      }
       if (mode === "sign-in") {
-        await signInDesigner(email.trim(), password);
+        await signInDesigner(email.trim(), password, captchaToken ?? undefined);
         router.replace(href(next));
       } else {
-        const result = await signUpDesigner(email.trim(), password);
+        const result = await signUpDesigner(email.trim(), password, captchaToken ?? undefined);
         if (result.requiresEmailConfirmation) {
           setMode("sign-in");
           setPassword("");
@@ -99,6 +129,10 @@ function LoginContent() {
       );
     } finally {
       setPending(false);
+      if (requiresCaptcha) {
+        setCaptchaToken(null);
+        turnstileRef.current?.reset();
+      }
     }
   }
 
@@ -126,7 +160,7 @@ function LoginContent() {
             }}
           >
             {formError ? <p className="text-sm text-orange">{formError}</p> : null}
-            <Field label={messages.auth.email}>
+            {mode !== "new-password" ? <Field label={messages.auth.email}>
               <>
                 <input
                   className={inputClass}
@@ -143,8 +177,8 @@ function LoginContent() {
                 />
                 {fieldErrors.email ? <p className="mt-2 text-sm text-orange">{fieldErrors.email}</p> : null}
               </>
-            </Field>
-            <Field label={messages.auth.password}>
+            </Field> : null}
+            {mode !== "reset-request" ? <Field label={mode === "new-password" ? messages.auth.newPassword : messages.auth.password}>
               <>
                 <input
                   className={inputClass}
@@ -162,18 +196,50 @@ function LoginContent() {
                 />
                 {fieldErrors.password ? <p className="mt-2 text-sm text-orange">{fieldErrors.password}</p> : null}
               </>
-            </Field>
+            </Field> : null}
+            {requiresCaptcha && turnstileSiteKey ? <div className="flex justify-center pt-1">
+              <Turnstile
+                key={mode}
+                ref={turnstileRef}
+                siteKey={turnstileSiteKey}
+                options={{ theme: "dark", language: "auto", size: "flexible" }}
+                onSuccess={(token) => {
+                  setCaptchaToken(token);
+                  setFormError(null);
+                }}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
+              />
+            </div> : null}
             {notice ? <p className="text-sm text-mint">{notice}</p> : null}
             <Button className="w-full min-h-12" disabled={pending}>
               {pending
                 ? mode === "sign-in"
                   ? messages.auth.signInLoading
-                  : messages.auth.signUpLoading
+                  : mode === "sign-up"
+                    ? messages.auth.signUpLoading
+                    : messages.app.loading
                 : mode === "sign-in"
                   ? messages.auth.signIn
-                  : messages.auth.signUp}
+                  : mode === "sign-up"
+                    ? messages.auth.signUp
+                    : messages.auth.resetPassword}
             </Button>
-            <button
+            {mode === "sign-in" ? <button
+              type="button"
+              disabled={pending}
+              className="w-full text-sm font-medium text-bone/62 transition hover:text-bone"
+              onClick={() => {
+                setFieldErrors({});
+                setFormError(null);
+                setNotice(null);
+                setPassword("");
+                setMode("reset-request");
+              }}
+            >
+              {messages.auth.forgotPassword}
+            </button> : null}
+            {mode === "sign-in" || mode === "sign-up" ? <button
               type="button"
               disabled={pending}
               className="w-full text-sm font-medium text-bone/62 transition hover:text-bone"
@@ -185,7 +251,7 @@ function LoginContent() {
               }}
             >
               {mode === "sign-in" ? messages.auth.switchToSignUp : messages.auth.switchToSignIn}
-            </button>
+            </button> : null}
           </form>
         )}
       </Card>

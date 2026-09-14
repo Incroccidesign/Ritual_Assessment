@@ -1,9 +1,9 @@
+@import "../styles/tokens.css";
+@import "../styles/ritual-theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "../styles/tokens.css";
-@import "../styles/ritual-theme.css";
 
 * {
   box-sizing: border-box;

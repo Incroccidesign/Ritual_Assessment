@@ -18,7 +18,7 @@ import {
   deleteSupabaseAssessment,
   fetchDesignerAssessmentBundles
 } from "@/lib/supabase/assessmentRepository";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
 import { markAssessmentAsTemplate, templateAssessmentIdsForOwner, unmarkAssessmentAsTemplate } from "@/lib/templates/templateStore";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { getErrorMessage } from "@/lib/utils/errors";
@@ -80,6 +80,20 @@ function DashboardContent({ designer }: { designer: Designer }) {
       active = false;
     };
   }, [designer.id, messages.auth.signInError]);
+
+  useEffect(() => {
+    async function bootstrapPlatformAdmin() {
+      if (!supabase) return;
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) return;
+      await fetch("/api/admin/bootstrap", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => undefined);
+    }
+    void bootstrapPlatformAdmin();
+  }, [designer.id]);
 
   useEffect(() => {
     if (!creationOpen) return;

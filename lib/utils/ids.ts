@@ -1,6 +1,7 @@
 export function uid(prefix = "id") {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}_${crypto.randomUUID().slice(0, 8)}`;
+    return `${prefix}_${crypto.randomUUID().replace(/-/g, "")}`;
   }
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+  const fallback = Array.from({ length: 4 }, () => Math.random().toString(36).slice(2)).join("");
+  return `${prefix}_${fallback}`;
 }

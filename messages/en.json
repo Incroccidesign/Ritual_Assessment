@@ -147,6 +147,12 @@
     "signInLoading": "Signing in...",
     "signUpLoading": "Creating account...",
     "signUpSuccess": "Check your email to confirm your account.",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "resetPasswordSuccess": "Check your email for a password reset link.",
+    "captchaRequired": "Complete the security check before continuing.",
+    "newPassword": "New password",
+    "passwordUpdated": "Password updated. You can continue.",
     "switchToSignUp": "Need an account? Create one",
     "switchToSignIn": "Already have an account? Sign in",
     "signInError": "Unable to sign in.",
@@ -161,6 +167,17 @@
     "signOut": "Sign out",
     "redirecting": "Redirecting to login.",
     "supabaseRequired": "Supabase Auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable designer access."
+  },
+  "collaboration": {
+    "title": "Shared access",
+    "body": "Add a registered user as an editor. Editors can work on the assessment and view complete results, but cannot delete it or manage access.",
+    "email": "Editor email address",
+    "add": "Add editor",
+    "empty": "No editors have access yet.",
+    "editor": "Editor",
+    "revoke": "Remove access",
+    "added": "Editor access added.",
+    "error": "Unable to update shared access."
   },
   "home": {
     "title": "Build a guided visual assessment",

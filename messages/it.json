@@ -147,6 +147,12 @@
     "signInLoading": "Accesso in corso...",
     "signUpLoading": "Creazione account...",
     "signUpSuccess": "Controlla la tua email per confermare l'account.",
+    "forgotPassword": "Password dimenticata?",
+    "resetPassword": "Reimposta password",
+    "resetPasswordSuccess": "Controlla la tua email per il link di reimpostazione.",
+    "captchaRequired": "Completa il controllo di sicurezza prima di continuare.",
+    "newPassword": "Nuova password",
+    "passwordUpdated": "Password aggiornata. Puoi continuare.",
     "switchToSignUp": "Ti serve un account? Registrati",
     "switchToSignIn": "Hai gia un account? Accedi",
     "signInError": "Impossibile accedere.",
@@ -161,6 +167,17 @@
     "signOut": "Esci",
     "redirecting": "Reindirizzamento al login.",
     "supabaseRequired": "Supabase Auth non e configurato. Aggiungi NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY per abilitare l'accesso designer."
+  },
+  "collaboration": {
+    "title": "Accesso condiviso",
+    "body": "Aggiungi un utente gia registrato come editor. L'editor puo lavorare sull'assessment e vedere tutti i risultati, ma non puo eliminarlo ne gestire gli accessi.",
+    "email": "Email dell'editor",
+    "add": "Aggiungi editor",
+    "empty": "Nessun editor ha ancora accesso.",
+    "editor": "Editor",
+    "revoke": "Rimuovi accesso",
+    "added": "Accesso editor aggiunto.",
+    "error": "Impossibile aggiornare gli accessi condivisi."
   },
   "home": {
     "title": "Costruisci un assessment visuale guidato",

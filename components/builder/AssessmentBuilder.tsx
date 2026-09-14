@@ -8,6 +8,7 @@ import { Assessment } from "@/types/assessment";
 import { ActivityEditor } from "@/components/builder/ActivityEditor";
 import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
+import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { BuilderShell } from "@/components/layout/BuilderShell";
 import { Button, ButtonLink, Card, Field, inputClass, StepHeader } from "@/components/ritual-ui";
 import { createBlankActivity } from "@/data/activity-presets";
@@ -111,6 +112,7 @@ export function AssessmentBuilder({
   }, [assessment]);
 
   const activities = useMemo(() => reorderActivities(assessment?.activities ?? []), [assessment?.activities]);
+  const isOwner = assessment?.ownerId === ownerId;
   const estimatedDurationRange = useMemo(
     () => durationRangeFromText(assessment?.estimatedDuration),
     [assessment?.estimatedDuration]
@@ -304,7 +306,7 @@ export function AssessmentBuilder({
               {saving ? messages.builder.saving : saved ? messages.builder.savedAutomatically : messages.builder.savedAutomatically}
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              {assessment.status === "draft" ? (
+              {assessment.status === "draft" && isOwner ? (
                 <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)} disabled={deleting}>
                   {messages.builder.deleteDraft}
                 </Button>
@@ -383,6 +385,7 @@ export function AssessmentBuilder({
               <span>{messages.builder.templateToggle.label}</span>
             </label>
           </Card>
+          {isOwner ? <AssessmentCollaborators assessmentId={assessment.id} /> : null}
           <Card>
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="space-y-2">

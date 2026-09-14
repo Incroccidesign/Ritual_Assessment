@@ -26,9 +26,13 @@ export async function getCurrentDesigner(): Promise<Designer | null> {
   return user ? { id: user.id, email: user.email ?? "designer" } : null;
 }
 
-export async function signInDesigner(email: string, password: string) {
+export async function signInDesigner(email: string, password: string, captchaToken?: string) {
   if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: captchaToken ? { captchaToken } : undefined
+  });
   if (error) throw error;
   if (!data.user) throw new Error("No user returned by Supabase Auth.");
   const designer = { id: data.user.id, email: data.user.email ?? email };
@@ -37,9 +41,13 @@ export async function signInDesigner(email: string, password: string) {
   return designer;
 }
 
-export async function signUpDesigner(email: string, password: string) {
+export async function signUpDesigner(email: string, password: string, captchaToken?: string) {
   if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: captchaToken ? { captchaToken } : undefined
+  });
   if (error) throw error;
   if (!data.user) throw new Error("No user returned by Supabase Auth.");
   const designer = { id: data.user.id, email: data.user.email ?? email };
@@ -55,6 +63,23 @@ export async function signUpDesigner(email: string, password: string) {
     designer,
     requiresEmailConfirmation: true
   };
+}
+
+export async function requestDesignerPasswordReset(email: string, captchaToken?: string) {
+  if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
+  const redirectTo = `${window.location.origin}/login?reset=1`;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+    ...(captchaToken ? { captchaToken } : {})
+  });
+  if (error) throw error;
+}
+
+export async function updateDesignerPassword(password: string) {
+  if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error || !data.user) throw error ?? new Error("Unable to update password.");
+  window.dispatchEvent(new Event("ritual-designer-auth"));
 }
 
 export async function signOutDesigner() {

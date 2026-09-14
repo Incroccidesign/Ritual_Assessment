@@ -147,6 +147,12 @@
     "signInLoading": "Connexion en cours...",
     "signUpLoading": "Creation du compte...",
     "signUpSuccess": "Verifiez votre e-mail pour confirmer votre compte.",
+    "forgotPassword": "Mot de passe oublie ?",
+    "resetPassword": "Reinitialiser le mot de passe",
+    "resetPasswordSuccess": "Verifiez votre e-mail pour le lien de reinitialisation.",
+    "captchaRequired": "Terminez le controle de securite avant de continuer.",
+    "newPassword": "Nouveau mot de passe",
+    "passwordUpdated": "Mot de passe mis a jour. Vous pouvez continuer.",
     "switchToSignUp": "Besoin d'un compte ? Creer un compte",
     "switchToSignIn": "Vous avez deja un compte ? Se connecter",
     "signInError": "Connexion impossible.",
@@ -161,6 +167,17 @@
     "signOut": "Se deconnecter",
     "redirecting": "Redirection vers la connexion.",
     "supabaseRequired": "Supabase Auth n'est pas configure. Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer l'acces."
+  },
+  "collaboration": {
+    "title": "Acces partage",
+    "body": "Ajoutez un utilisateur deja inscrit comme editeur. Il peut modifier l'evaluation et consulter tous les resultats, mais ne peut ni la supprimer ni gerer les acces.",
+    "email": "Adresse e-mail de l'editeur",
+    "add": "Ajouter un editeur",
+    "empty": "Aucun editeur n'a encore acces.",
+    "editor": "Editeur",
+    "revoke": "Retirer l'acces",
+    "added": "Acces editeur ajoute.",
+    "error": "Impossible de mettre a jour les acces partages."
   },
   "home": {
     "title": "Construire une evaluation visuelle guidee",

@@ -695,10 +695,9 @@ export async function createSupabaseNasijAssessment() {
   return createSupabaseAssessmentFromTemplate(nasijSustainabilityAssessmentTemplate);
 }
 
-export async function fetchAssessmentBundle(assessmentId: string, ownerId?: string): Promise<AssessmentBundle | null> {
+export async function fetchAssessmentBundle(assessmentId: string, _ownerId?: string): Promise<AssessmentBundle | null> {
   const client = requireSupabase();
-  let assessmentQuery = client.from("assessments").select("*").eq("id", assessmentId);
-  if (ownerId) assessmentQuery = assessmentQuery.eq("owner_id", ownerId);
+  const assessmentQuery = client.from("assessments").select("*").eq("id", assessmentId);
   const [assessmentResult, activitiesResult, participantsResult, responsesResult] = await Promise.all([
     assessmentQuery.single(),
     client.from("activities").select("*").eq("assessment_id", assessmentId).order("order_index"),
@@ -724,7 +723,7 @@ export async function fetchAssessmentBundle(assessmentId: string, ownerId?: stri
 
 export async function fetchDesignerAssessmentBundles(ownerId: string): Promise<AssessmentBundle[]> {
   const client = requireSupabase();
-  const { data, error } = await client.from("assessments").select("id").eq("owner_id", ownerId).order("updated_at", { ascending: false });
+  const { data, error } = await client.from("assessments").select("id").order("updated_at", { ascending: false });
   if (error) throw error;
   const bundles = await Promise.all((data ?? []).map((row) => fetchAssessmentBundle(row.id, ownerId)));
   return bundles.filter((bundle): bundle is AssessmentBundle => Boolean(bundle));
@@ -821,20 +820,38 @@ export async function deleteSupabaseAssessment(assessmentId: string) {
 
 export async function fetchPublishedAssessmentByToken(publicToken: string) {
   const client = requireSupabase();
-  const { data, error } = await client
-    .from("assessments")
-    .select("*")
-    .eq("public_token", publicToken)
-    .eq("status", "published")
-    .single();
+  const { data, error } = await client.rpc("get_public_assessment", {
+    target_public_token: publicToken
+  });
+  if (!error && data) {
+    const publicAssessment = data as AssessmentRow & { activities?: ActivityRow[] };
+    return rowToAssessment(
+      publicAssessment,
+      (publicAssessment.activities ?? []).map(rowToActivity)
+    );
+  }
+
+  // The migration is deployed immediately after this release. Until then, the
+  // existing token-scoped public policy keeps live questionnaires available.
+  // Once the RPC exists, this fallback is never reached.
+  if (error?.code === "PGRST202") {
+    const { data: fallbackData, error: fallbackError } = await client
+      .from("assessments")
+      .select("*, activities(*)")
+      .eq("public_token", publicToken)
+      .eq("status", "published")
+      .single();
+    if (fallbackError || !fallbackData) return null;
+    const assessment = fallbackData as AssessmentRow & { activities?: ActivityRow[] };
+    return rowToAssessment(assessment, (assessment.activities ?? []).map(rowToActivity));
+  }
+
   if (error || !data) return null;
-  const { data: activityRows, error: activitiesError } = await client
-    .from("activities")
-    .select("*")
-    .eq("assessment_id", data.id)
-    .order("order_index");
-  if (activitiesError) throw activitiesError;
-  return rowToAssessment(data as AssessmentRow, ((activityRows ?? []) as ActivityRow[]).map(rowToActivity));
+  const publicAssessment = data as AssessmentRow & { activities?: ActivityRow[] };
+  return rowToAssessment(
+    publicAssessment,
+    (publicAssessment.activities ?? []).map(rowToActivity)
+  );
 }
 
 export async function startSupabaseParticipantResponse(publicToken: string, participantToken: string) {
