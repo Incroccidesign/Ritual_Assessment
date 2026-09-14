@@ -147,6 +147,7 @@
     "signInLoading": "Connexion en cours...",
     "signUpLoading": "Creation du compte...",
     "signUpSuccess": "Verifiez votre e-mail pour confirmer votre compte.",
+    "emailConfirmed": "Votre adresse e-mail a été confirmée. Vous pouvez maintenant vous connecter.",
     "forgotPassword": "Mot de passe oublie ?",
     "resetPassword": "Reinitialiser le mot de passe",
     "resetPasswordSuccess": "Verifiez votre e-mail pour le lien de reinitialisation.",

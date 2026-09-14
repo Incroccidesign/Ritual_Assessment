@@ -147,6 +147,7 @@
     "signInLoading": "Signing in...",
     "signUpLoading": "Creating account...",
     "signUpSuccess": "Check your email to confirm your account.",
+    "emailConfirmed": "Your email has been confirmed. You can now sign in.",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset password",
     "resetPasswordSuccess": "Check your email for a password reset link.",

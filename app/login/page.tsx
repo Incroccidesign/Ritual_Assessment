@@ -55,9 +55,11 @@ function LoginContent() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const passwordReset = params.get("reset") === "1";
+    const emailConfirmed = params.get("confirmed") === "1";
     setNext(params.get("next") || "/dashboard");
     const requestedMode = params.get("mode");
     setMode(passwordReset ? "new-password" : requestedMode === "sign-up" ? "sign-up" : "sign-in");
+    if (emailConfirmed) setNotice(messages.auth.emailConfirmed);
     if (passwordReset) return;
     void getCurrentDesigner().then((designer) => {
       if (designer) router.replace(params.get("next") || href("/dashboard"));

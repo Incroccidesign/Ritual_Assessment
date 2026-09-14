@@ -147,6 +147,7 @@
     "signInLoading": "Accesso in corso...",
     "signUpLoading": "Creazione account...",
     "signUpSuccess": "Controlla la tua email per confermare l'account.",
+    "emailConfirmed": "La tua email è stata confermata. Ora puoi accedere.",
     "forgotPassword": "Password dimenticata?",
     "resetPassword": "Reimposta password",
     "resetPasswordSuccess": "Controlla la tua email per il link di reimpostazione.",

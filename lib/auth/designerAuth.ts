@@ -46,7 +46,10 @@ export async function signUpDesigner(email: string, password: string, captchaTok
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: captchaToken ? { captchaToken } : undefined
+    options: {
+      emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
+      ...(captchaToken ? { captchaToken } : {})
+    }
   });
   if (error) throw error;
   if (!data.user) throw new Error("No user returned by Supabase Auth.");
