@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { AccountDeletionDialog } from "@/components/dashboard/AccountDeletionDialog";
 import { Designer, signOutDesigner } from "@/lib/auth/designerAuth";
 import { useLocale } from "@/lib/i18n/useLocale";
