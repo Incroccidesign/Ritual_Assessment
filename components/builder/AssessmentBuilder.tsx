@@ -8,7 +8,6 @@ import { Assessment } from "@/types/assessment";
 import { ActivityEditor } from "@/components/builder/ActivityEditor";
 import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
-import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { BuilderShell } from "@/components/layout/BuilderShell";
 import { Button, ButtonLink, Card, Field, inputClass, StepHeader } from "@/components/ritual-ui";
 import { createBlankActivity } from "@/data/activity-presets";
@@ -36,12 +35,6 @@ function reorderActivities(activities: Activity[]) {
 
 function orderedFromCurrentOrder(activities: Activity[]) {
   return activities.map((activity, orderIndex) => ({ ...activity, orderIndex }) as Activity);
-}
-
-function defaultEstimatedDuration(locale: Locale) {
-  if (locale === "it") return "35–45 minuti";
-  if (locale === "fr") return "35–45 minutes";
-  return "35–45 minutes";
 }
 
 function durationRangeFromText(value?: string) {
@@ -385,7 +378,6 @@ export function AssessmentBuilder({
               <span>{messages.builder.templateToggle.label}</span>
             </label>
           </Card>
-          {isOwner ? <AssessmentCollaborators assessmentId={assessment.id} /> : null}
           <Card>
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="space-y-2">

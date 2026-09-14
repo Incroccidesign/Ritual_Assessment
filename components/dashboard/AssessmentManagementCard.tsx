@@ -7,6 +7,7 @@ import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import { ExportMenuButton } from "@/components/reports/ExportMenuButton";
 import { GroupedActivityResults } from "@/components/reports/GroupedActivityResults";
+import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { deleteSupabaseAssessment, publishSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
@@ -31,6 +32,7 @@ export function AssessmentManagementCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [managerRole, setManagerRole] = useState<"owner" | "co_owner" | null>(null);
   const submittedResponses = responses.filter((response) => response.status === "submitted").length;
   const publicLink = useMemo(() => {
     if (!assessment.publicToken || typeof window === "undefined") return "";
@@ -128,9 +130,12 @@ export function AssessmentManagementCard({
           </Button>
         )}
         <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
-        <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)}>
-          <Trash2 size={16} /> {messages.dashboard.delete}
-        </Button>
+        <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} />
+        {managerRole ? (
+          <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)}>
+            <Trash2 size={16} /> {messages.dashboard.delete}
+          </Button>
+        ) : null}
         {!expanded ? (
           <Button type="button" variant="ghost" onClick={() => setExpanded(true)}>
             {messages.dashboard.viewResults}
