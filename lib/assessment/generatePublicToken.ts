@@ -1,6 +1,7 @@
 export function generatePublicToken() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-  }
-  return Math.random().toString(36).slice(2, 18);
+  const cryptoApi = globalThis.crypto;
+  if (!cryptoApi?.getRandomValues) throw new Error("Secure random number generation is unavailable.");
+
+  const bytes = cryptoApi.getRandomValues(new Uint8Array(24));
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
 }
