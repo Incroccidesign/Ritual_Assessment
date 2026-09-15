@@ -25,6 +25,7 @@ export function LinkGenerator({
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasPrivacyDetails = Boolean(assessment.dataControllerName?.trim() && assessment.dataControllerContact?.trim());
   const publicPath = assessment.publicToken ? `/participate/${assessment.publicToken}` : "";
   const publicLink = useMemo(() => {
     if (!assessment.publicToken || typeof window === "undefined") return "";
@@ -32,6 +33,10 @@ export function LinkGenerator({
   }, [assessment.publicToken, publicPath]);
 
   async function publish() {
+    if (!hasPrivacyDetails) {
+      setError(messages.builder.privacyDetailsRequired);
+      return;
+    }
     setPublishing(true);
     setError(null);
     try {

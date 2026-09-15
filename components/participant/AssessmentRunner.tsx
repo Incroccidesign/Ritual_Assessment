@@ -235,6 +235,12 @@ export function AssessmentRunner({ token }: { token: string }) {
               {assessment.estimatedDuration}
             </p>
           ) : null}
+          {assessment.dataControllerName && assessment.dataControllerContact ? (
+            <div className="mt-5 rounded-md border border-bone/10 bg-night/35 px-4 py-3 text-xs leading-5 text-bone/62">
+              <p className="font-semibold uppercase tracking-[0.14em] text-bone/72">{messages.participant.dataProtection}</p>
+              <p className="mt-1">{messages.participant.dataProtectionBody.replace("{controller}", assessment.dataControllerName).replace("{contact}", assessment.dataControllerContact)}</p>
+            </div>
+          ) : null}
           <Button type="button" className="mt-7 w-full min-h-14 text-base" onClick={() => setPhase("intro")}>
             {messages.participant.welcome.cta}
           </Button>

@@ -298,6 +298,11 @@
       "titleLabel": "Assessment title",
       "activityTitleLabel": "Activity name",
       "descriptionLabel": "Description",
+      "privacyDetailsTitle": "Privacy contact for participants",
+      "privacyDetailsHelper": "Who publishes the assessment is responsible for processing responses. These details are shown before participation and are required to publish.",
+      "dataControllerNameLabel": "Organization or responsible person",
+      "dataControllerContactLabel": "Privacy contact",
+      "privacyDetailsRequired": "Enter the organization or responsible person and a privacy contact before publishing.",
     "estimatedDurationLabel": "Estimated duration",
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
@@ -573,7 +578,9 @@
     "closedTitle": "Collection concluded",
     "closedBody": "Response collection for this assessment has concluded.",
     "progress": "Activity {current} of {total}",
-    "startActivity": "Start activity"
+    "startActivity": "Start activity",
+    "dataProtection": "Data protection",
+    "dataProtectionBody": "This assessment is managed by {controller}. For questions about personal-data processing, contact {contact}. Ritual provides the technical service."
   },
   "reports": {
     "title": "Results dashboard",

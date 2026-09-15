@@ -390,6 +390,18 @@ export function AssessmentBuilder({
             <Field label={messages.builder.descriptionLabel}>
               <textarea className={`${inputClass} min-h-28 resize-y`} value={assessment.description ?? ""} onChange={(event) => updateAssessment({ description: event.target.value })} />
             </Field>
+            <div className="rounded-md border border-bone/10 bg-night/35 p-4">
+              <h3 className="text-sm font-semibold text-bone">{messages.builder.privacyDetailsTitle}</h3>
+              <p className="mt-1 text-xs leading-5 text-bone/56">{messages.builder.privacyDetailsHelper}</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field label={messages.builder.dataControllerNameLabel}>
+                  <input className={inputClass} value={assessment.dataControllerName ?? ""} onChange={(event) => updateAssessment({ dataControllerName: event.target.value })} />
+                </Field>
+                <Field label={messages.builder.dataControllerContactLabel}>
+                  <input className={inputClass} type="email" value={assessment.dataControllerContact ?? ""} onChange={(event) => updateAssessment({ dataControllerContact: event.target.value })} />
+                </Field>
+              </div>
+            </div>
             <div className="space-y-3">
               <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
                 <input

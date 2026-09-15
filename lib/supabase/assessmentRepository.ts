@@ -18,6 +18,8 @@ type AssessmentRow = {
   owner_id: string;
   title: string;
   description: string | null;
+  data_controller_name: string | null;
+  data_controller_contact: string | null;
   estimated_duration: string | null;
   hide_activity_summaries: boolean | null;
   language: Assessment["language"];
@@ -101,6 +103,8 @@ type AssessmentCreationInput = {
   language: Assessment["language"];
   title: string;
   description?: string;
+  dataControllerName?: string;
+  dataControllerContact?: string;
   estimatedDuration?: string;
   hideActivitySummaries?: boolean;
   activities?: Activity[];
@@ -128,6 +132,8 @@ function rowToAssessment(row: AssessmentRow, activities: Activity[] = []): Asses
     ownerId: row.owner_id,
     title: row.title,
     description: row.description ?? undefined,
+    dataControllerName: row.data_controller_name ?? undefined,
+    dataControllerContact: row.data_controller_contact ?? undefined,
     estimatedDuration: row.estimated_duration ?? undefined,
     hideActivitySummaries: Boolean(row.hide_activity_summaries),
     language: row.language,
@@ -749,6 +755,8 @@ export async function updateSupabaseAssessment(assessment: Assessment) {
     .update({
       title: assessment.title,
       description: assessment.description ?? null,
+      data_controller_name: assessment.dataControllerName?.trim() ? assessment.dataControllerName.trim() : null,
+      data_controller_contact: assessment.dataControllerContact?.trim() ? assessment.dataControllerContact.trim() : null,
       estimated_duration: assessment.estimatedDuration?.trim() ? assessment.estimatedDuration.trim() : null,
       hide_activity_summaries: Boolean(assessment.hideActivitySummaries),
       language: assessment.language,
@@ -809,6 +817,9 @@ export async function deleteSupabaseActivity(activityId: string) {
 }
 
 export async function publishSupabaseAssessment(assessment: Assessment) {
+  if (!assessment.dataControllerName?.trim() || !assessment.dataControllerContact?.trim()) {
+    throw new Error("Add the assessment organizer and privacy contact before publishing.");
+  }
   const client = requireSupabase();
   const publicToken = assessment.publicToken ?? generatePublicToken();
   const { data, error } = await client

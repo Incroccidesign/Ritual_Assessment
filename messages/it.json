@@ -298,6 +298,11 @@
       "titleLabel": "Titolo assessment",
       "activityTitleLabel": "Nome dell'attività",
       "descriptionLabel": "Descrizione",
+      "privacyDetailsTitle": "Referente privacy per i partecipanti",
+      "privacyDetailsHelper": "Chi pubblica l’assessment è responsabile del trattamento delle risposte. Questi dati saranno mostrati prima della compilazione e sono richiesti per pubblicare.",
+      "dataControllerNameLabel": "Organizzazione o responsabile",
+      "dataControllerContactLabel": "Contatto privacy",
+      "privacyDetailsRequired": "Inserisci organizzazione o responsabile e un contatto privacy prima di pubblicare.",
     "estimatedDurationLabel": "Durata stimata",
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
@@ -573,7 +578,9 @@
     "closedTitle": "Raccolta conclusa",
     "closedBody": "La raccolta delle risposte per questo assessment e conclusa.",
     "progress": "Attivita {current} di {total}",
-    "startActivity": "Inizia attivita"
+    "startActivity": "Inizia attivita",
+    "dataProtection": "Protezione dei dati",
+    "dataProtectionBody": "Questo assessment è gestito da {controller}. Per domande sul trattamento dei dati, contatta {contact}. Ritual fornisce il servizio tecnico."
   },
   "reports": {
     "title": "Dashboard risultati",

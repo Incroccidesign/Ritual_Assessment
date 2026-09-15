@@ -8,6 +8,8 @@ export type Assessment = {
   ownerId?: string;
   title: string;
   description?: string;
+  dataControllerName?: string;
+  dataControllerContact?: string;
   estimatedDuration?: string;
   hideActivitySummaries?: boolean;
   language: Locale;
