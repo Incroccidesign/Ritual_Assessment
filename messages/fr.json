@@ -299,7 +299,7 @@
       "activityTitleLabel": "Nom de l'activité",
       "descriptionLabel": "Description",
       "privacyDetailsTitle": "Contact confidentialité pour les participants",
-      "privacyDetailsHelper": "La personne qui publie l’évaluation est responsable du traitement des réponses. Ces informations sont affichées avant la participation et sont requises pour publier.",
+      "privacyDetailsHelper": "La personne qui publie l’évaluation est responsable du traitement des réponses. Ces informations sont affichées avant la participation ; si elles sont vides, le nom et l’email du compte sont utilisés.",
       "dataControllerNameLabel": "Organisation ou personne responsable",
       "dataControllerContactLabel": "Contact confidentialité",
       "privacyDetailsRequired": "Indiquez l’organisation ou la personne responsable et un contact confidentialité avant de publier.",

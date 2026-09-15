@@ -299,7 +299,7 @@
       "activityTitleLabel": "Nome dell'attività",
       "descriptionLabel": "Descrizione",
       "privacyDetailsTitle": "Referente privacy per i partecipanti",
-      "privacyDetailsHelper": "Chi pubblica l’assessment è responsabile del trattamento delle risposte. Questi dati saranno mostrati prima della compilazione e sono richiesti per pubblicare.",
+      "privacyDetailsHelper": "Chi pubblica l’assessment è responsabile del trattamento delle risposte. Questi dati saranno mostrati prima della compilazione; se li lasci vuoti, verranno usati nome utente ed email dell’account.",
       "dataControllerNameLabel": "Organizzazione o responsabile",
       "dataControllerContactLabel": "Contatto privacy",
       "privacyDetailsRequired": "Inserisci organizzazione o responsabile e un contatto privacy prima di pubblicare.",

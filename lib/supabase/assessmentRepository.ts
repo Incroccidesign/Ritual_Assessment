@@ -817,16 +817,21 @@ export async function deleteSupabaseActivity(activityId: string) {
 }
 
 export async function publishSupabaseAssessment(assessment: Assessment) {
-  if (!assessment.dataControllerName?.trim() || !assessment.dataControllerContact?.trim()) {
-    throw new Error("Add the assessment organizer and privacy contact before publishing.");
-  }
   const client = requireSupabase();
+  const { data: userData, error: userError } = await client.auth.getUser();
+  const user = userData.user;
+  if (userError || !user?.email) throw userError ?? new Error("Sign in is required to publish an assessment.");
+  const profileName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name.trim() : "";
+  const dataControllerName = assessment.dataControllerName?.trim() || profileName || user.email;
+  const dataControllerContact = assessment.dataControllerContact?.trim() || user.email;
   const publicToken = assessment.publicToken ?? generatePublicToken();
   const { data, error } = await client
     .from("assessments")
     .update({
       status: "published",
       public_token: publicToken,
+      data_controller_name: dataControllerName,
+      data_controller_contact: dataControllerContact,
       published_at: assessment.publishedAt ?? new Date().toISOString(),
       updated_at: new Date().toISOString()
     })

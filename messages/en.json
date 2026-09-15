@@ -299,7 +299,7 @@
       "activityTitleLabel": "Activity name",
       "descriptionLabel": "Description",
       "privacyDetailsTitle": "Privacy contact for participants",
-      "privacyDetailsHelper": "Who publishes the assessment is responsible for processing responses. These details are shown before participation and are required to publish.",
+      "privacyDetailsHelper": "Who publishes the assessment is responsible for processing responses. These details are shown before participation; if left empty, the account name and email are used.",
       "dataControllerNameLabel": "Organization or responsible person",
       "dataControllerContactLabel": "Privacy contact",
       "privacyDetailsRequired": "Enter the organization or responsible person and a privacy contact before publishing.",
