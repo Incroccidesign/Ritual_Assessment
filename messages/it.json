@@ -580,7 +580,11 @@
     "progress": "Attivita {current} di {total}",
     "startActivity": "Inizia attivita",
     "dataProtection": "Protezione dei dati",
-    "dataProtectionBody": "Questo assessment è gestito da {controller}. Per domande sul trattamento dei dati, contatta {contact}. Ritual fornisce il servizio tecnico."
+    "dataProtectionBody": "Questo assessment è gestito da {controller}. Per domande sul trattamento dei dati, contatta {contact}. Ritual fornisce il servizio tecnico.",
+    "privacyLink": "Informativa sul trattamento dei dati",
+    "privacyModalTitle": "Informativa sul trattamento dei dati",
+    "privacyModalBody": "Questo assessment è gestito da {controller}. Per domande sul trattamento dei dati personali, contatta {contact}. Ritual fornisce il servizio tecnico.",
+    "privacyModalClose": "Torna all’assessment"
   },
   "reports": {
     "title": "Dashboard risultati",

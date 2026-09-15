@@ -580,7 +580,11 @@
     "progress": "Activity {current} of {total}",
     "startActivity": "Start activity",
     "dataProtection": "Data protection",
-    "dataProtectionBody": "This assessment is managed by {controller}. For questions about personal-data processing, contact {contact}. Ritual provides the technical service."
+    "dataProtectionBody": "This assessment is managed by {controller}. For questions about personal-data processing, contact {contact}. Ritual provides the technical service.",
+    "privacyLink": "Privacy information",
+    "privacyModalTitle": "Privacy information",
+    "privacyModalBody": "This assessment is managed by {controller}. For questions about personal-data processing, contact {contact}. Ritual provides the technical service.",
+    "privacyModalClose": "Back to assessment"
   },
   "reports": {
     "title": "Results dashboard",

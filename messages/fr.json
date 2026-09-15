@@ -580,7 +580,11 @@
     "progress": "Activite {current} sur {total}",
     "startActivity": "Commencer l'activite",
     "dataProtection": "Protection des données",
-    "dataProtectionBody": "Cette évaluation est gérée par {controller}. Pour toute question sur le traitement des données personnelles, contactez {contact}. Ritual fournit le service technique."
+    "dataProtectionBody": "Cette évaluation est gérée par {controller}. Pour toute question sur le traitement des données personnelles, contactez {contact}. Ritual fournit le service technique.",
+    "privacyLink": "Informations sur les données personnelles",
+    "privacyModalTitle": "Informations sur les données personnelles",
+    "privacyModalBody": "Cette évaluation est gérée par {controller}. Pour toute question sur le traitement des données personnelles, contactez {contact}. Ritual fournit le service technique.",
+    "privacyModalClose": "Retour à l’évaluation"
   },
   "reports": {
     "title": "Tableau de bord des resultats",

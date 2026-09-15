@@ -63,6 +63,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -235,15 +236,33 @@ export function AssessmentRunner({ token }: { token: string }) {
               {assessment.estimatedDuration}
             </p>
           ) : null}
-          {assessment.dataControllerName && assessment.dataControllerContact ? (
-            <div className="mt-5 rounded-md border border-bone/10 bg-night/35 px-4 py-3 text-xs leading-5 text-bone/62">
-              <p className="font-semibold uppercase tracking-[0.14em] text-bone/72">{messages.participant.dataProtection}</p>
-              <p className="mt-1">{messages.participant.dataProtectionBody.replace("{controller}", assessment.dataControllerName).replace("{contact}", assessment.dataControllerContact)}</p>
-            </div>
-          ) : null}
           <Button type="button" className="mt-7 w-full min-h-14 text-base" onClick={() => setPhase("intro")}>
             {messages.participant.welcome.cta}
           </Button>
+          {assessment.dataControllerName && assessment.dataControllerContact ? (
+            <button
+              type="button"
+              className="mt-4 w-full text-center text-xs font-medium text-bone/48 underline underline-offset-4 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
+              onClick={() => setPrivacyOpen(true)}
+            >
+              {messages.participant.privacyLink}
+            </button>
+          ) : null}
+          {privacyOpen ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
+              <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+                <h2 className="font-heading text-2xl font-semibold text-bone">{messages.participant.privacyModalTitle}</h2>
+                <p className="mt-3 text-sm leading-6 text-bone/68">
+                  {messages.participant.privacyModalBody
+                    .replace("{controller}", assessment.dataControllerName ?? "")
+                    .replace("{contact}", assessment.dataControllerContact ?? "")}
+                </p>
+                <Button type="button" variant="secondary" className="mt-6 w-full" onClick={() => setPrivacyOpen(false)}>
+                  {messages.participant.privacyModalClose}
+                </Button>
+              </Card>
+            </div>
+          ) : null}
         </Card>
       </ParticipantShell>
     );
