@@ -6,12 +6,15 @@ import { Designer, getCurrentDesigner, signOutDesigner } from "@/lib/auth/design
 import { Button } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { supabase } from "@/lib/supabase/client";
+import { getLegalAcceptanceStatus } from "@/lib/legal/acceptance";
+import { LegalAcceptanceGate } from "@/components/legal/LegalAcceptanceGate";
 
 export function DesignerAuthGate({ children }: { children: (designer: Designer) => React.ReactNode }) {
   const { messages, href } = useLocale();
   const router = useRouter();
   const [designer, setDesigner] = useState<Designer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [legalAccepted, setLegalAccepted] = useState<boolean | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -23,6 +26,13 @@ export function DesignerAuthGate({ children }: { children: (designer: Designer) 
       if (!current) {
         const next = `${window.location.pathname}${window.location.search}`;
         router.replace(href(`/login?next=${encodeURIComponent(next)}`));
+        return;
+      }
+      try {
+        const acceptance = await getLegalAcceptanceStatus();
+        if (active) setLegalAccepted(acceptance.accepted);
+      } catch {
+        if (active) setLegalAccepted(false);
       }
     }
     void refresh();
@@ -33,9 +43,18 @@ export function DesignerAuthGate({ children }: { children: (designer: Designer) 
       setDesigner(user ? { id: user.id, email: user.email ?? "designer" } : null);
       setLoading(false);
       if (!user) {
+        setLegalAccepted(null);
         const next = `${window.location.pathname}${window.location.search}`;
         router.replace(href(`/login?next=${encodeURIComponent(next)}`));
+        return;
       }
+      void getLegalAcceptanceStatus()
+        .then((acceptance) => {
+          if (active) setLegalAccepted(acceptance.accepted);
+        })
+        .catch(() => {
+          if (active) setLegalAccepted(false);
+        });
     }).data.subscription;
     return () => {
       active = false;
@@ -44,8 +63,9 @@ export function DesignerAuthGate({ children }: { children: (designer: Designer) 
     };
   }, [href, router]);
 
-  if (loading) return null;
-  if (designer) return <>{children(designer)}</>;
+  if (loading || (designer && legalAccepted === null)) return null;
+  if (designer && legalAccepted === false) return <LegalAcceptanceGate onAccepted={() => setLegalAccepted(true)} />;
+  if (designer && legalAccepted) return <>{children(designer)}</>;
   return <p className="text-bone/50">{messages.auth.redirecting}</p>;
 }
 

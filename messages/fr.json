@@ -208,7 +208,14 @@
     "unexpectedError": "Un probleme est survenu. Veuillez reessayer.",
     "signOut": "Se deconnecter",
     "redirecting": "Redirection vers la connexion.",
-    "supabaseRequired": "Supabase Auth n'est pas configure. Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer l'acces."
+    "supabaseRequired": "Supabase Auth n'est pas configure. Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer l'acces.",
+    "legalAcceptancePrefix": "J’ai lu et j’accepte les",
+    "legalAcceptanceJoin": "et l’",
+    "terms": "Conditions de service",
+    "dataProcessingAgreement": "Accord de traitement des données",
+    "legalAcceptanceRequired": "Vous devez accepter les Conditions et l’Accord de traitement des données pour vous inscrire.",
+    "privacyNoticePrefix": "Consultez également l’",
+    "privacyNotice": "Avis de confidentialité"
   },
   "collaboration": {
     "title": "Partager l'evaluation",

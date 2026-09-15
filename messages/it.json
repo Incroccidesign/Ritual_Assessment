@@ -208,7 +208,14 @@
     "unexpectedError": "Qualcosa e andato storto. Riprova.",
     "signOut": "Esci",
     "redirecting": "Reindirizzamento al login.",
-    "supabaseRequired": "Supabase Auth non e configurato. Aggiungi NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY per abilitare l'accesso designer."
+    "supabaseRequired": "Supabase Auth non e configurato. Aggiungi NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY per abilitare l'accesso designer.",
+    "legalAcceptancePrefix": "Ho letto e accetto i",
+    "legalAcceptanceJoin": "e l’",
+    "terms": "Termini di servizio",
+    "dataProcessingAgreement": "Accordo sul trattamento dei dati",
+    "legalAcceptanceRequired": "Devi accettare i Termini e l’Accordo sul trattamento dei dati per registrarti.",
+    "privacyNoticePrefix": "Consulta anche l’",
+    "privacyNotice": "Informativa privacy"
   },
   "collaboration": {
     "title": "Condividi assessment",

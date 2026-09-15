@@ -208,7 +208,14 @@
     "unexpectedError": "Something went wrong. Please try again.",
     "signOut": "Sign out",
     "redirecting": "Redirecting to login.",
-    "supabaseRequired": "Supabase Auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable designer access."
+    "supabaseRequired": "Supabase Auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable designer access.",
+    "legalAcceptancePrefix": "I have read and accept the",
+    "legalAcceptanceJoin": "and the",
+    "terms": "Terms of Service",
+    "dataProcessingAgreement": "Data Processing Agreement",
+    "legalAcceptanceRequired": "You must accept the Terms and Data Processing Agreement to register.",
+    "privacyNoticePrefix": "Please also read the",
+    "privacyNotice": "Privacy Notice"
   },
   "collaboration": {
     "title": "Share assessment",

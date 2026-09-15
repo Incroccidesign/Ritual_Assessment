@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { LegalFooter } from "@/components/legal/LegalFooter";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils/cn";
 
@@ -53,6 +54,7 @@ export function AppShell({
           </div>
         </header>
         {children}
+        <LegalFooter />
       </div>
     </main>
   );

@@ -26,6 +26,7 @@ type FieldErrors = {
   email?: string;
   password?: string;
   username?: string;
+  legal?: string;
 };
 
 type AuthMode = "sign-in" | "sign-up" | "reset-request" | "new-password" | "verification-pending";
@@ -59,6 +60,7 @@ function LoginContent() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(() => emailConfirmed ? messages.auth.emailConfirmed : null);
@@ -106,6 +108,10 @@ function LoginContent() {
 
     if (mode === "sign-up" && (!trimmedUsername || trimmedUsername.length < USERNAME_MIN_LENGTH || trimmedUsername.length > USERNAME_MAX_LENGTH)) {
       nextErrors.username = messages.auth.usernameInvalid;
+    }
+
+    if (mode === "sign-up" && !acceptedLegal) {
+      nextErrors.legal = messages.auth.legalAcceptanceRequired;
     }
 
     if (mode !== "reset-request" && mode !== "verification-pending" && !password) {
@@ -350,6 +356,24 @@ function LoginContent() {
                 {fieldErrors.password ? <p className="mt-2 text-sm text-orange">{fieldErrors.password}</p> : null}
               </>
             </Field> : null}
+            {mode === "sign-up" ? <div>
+              <label className="flex cursor-pointer items-start gap-3 rounded-md border border-bone/10 bg-night/45 p-3 text-xs leading-5 text-bone/68">
+                <input
+                  checked={acceptedLegal}
+                  onChange={(event) => {
+                    setAcceptedLegal(event.target.checked);
+                    setFieldErrors((current) => ({ ...current, legal: undefined }));
+                  }}
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#6ef2c2]"
+                />
+                <span>
+                  {messages.auth.legalAcceptancePrefix} <a href={href("/terms")} target="_blank" className="text-mint underline underline-offset-2">{messages.auth.terms}</a> {messages.auth.legalAcceptanceJoin} <a href={href("/data-processing")} target="_blank" className="text-mint underline underline-offset-2">{messages.auth.dataProcessingAgreement}</a>.
+                </span>
+              </label>
+              {fieldErrors.legal ? <p className="mt-2 text-sm text-orange">{fieldErrors.legal}</p> : null}
+              <p className="mt-2 text-xs leading-5 text-bone/48">{messages.auth.privacyNoticePrefix} <a href={href("/privacy")} target="_blank" className="underline underline-offset-2 hover:text-bone">{messages.auth.privacyNotice}</a>.</p>
+            </div> : null}
             {requiresCaptcha && turnstileSiteKey ? <div className="flex justify-center pt-1">
               <Turnstile
                 key={mode}
