@@ -258,7 +258,7 @@ export function AssessmentCollaborators({
         <Share2 size={16} /> {messages.collaboration.share}
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-night/75 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-md" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
           <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border-bone/15 bg-[#10131a] p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-5">
               <div>
