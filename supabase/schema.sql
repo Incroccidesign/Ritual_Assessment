@@ -15,7 +15,7 @@ create table if not exists public.assessments (
   estimated_duration text,
   hide_activity_summaries boolean not null default false,
   language text not null default 'en' check (language in ('en', 'fr', 'it', 'ar')),
-  status text not null default 'draft' check (status in ('draft', 'published', 'closed')),
+  status text not null default 'draft' check (status in ('draft', 'published', 'paused', 'closed')),
   public_token text unique,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

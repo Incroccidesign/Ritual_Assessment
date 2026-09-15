@@ -53,7 +53,7 @@ export function LinkGenerator({
   if (compact) {
     return (
       <div className="flex flex-wrap items-center gap-3">
-        {!disabled && (assessment.status !== "published" || !assessment.publicToken) ? (
+        {!disabled && !assessment.publicToken ? (
           <Button type="button" onClick={() => void publish()} disabled={publishing}>
             {publishing ? messages.app.loading : messages.common.publish}
           </Button>
@@ -66,6 +66,11 @@ export function LinkGenerator({
             <ButtonLink href={publicPath} variant="ghost">
               {messages.common.open} <ExternalLink size={17} />
             </ButtonLink>
+            {assessment.status !== "published" ? (
+              <Button type="button" onClick={() => void publish()} disabled={publishing}>
+                {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
+              </Button>
+            ) : null}
           </>
         ) : null}
         {error ? <p className="w-full text-sm text-orange">{error}</p> : null}
@@ -84,7 +89,7 @@ export function LinkGenerator({
           {messages.builder.templateSaveHint}
         </p>
       ) : null}
-      {!disabled && (assessment.status !== "published" || !assessment.publicToken) ? (
+      {!disabled && !assessment.publicToken ? (
         <Button type="button" onClick={() => void publish()} disabled={publishing}>
           {publishing ? messages.app.loading : messages.common.publish}
         </Button>
@@ -101,6 +106,11 @@ export function LinkGenerator({
             <ButtonLink href={publicPath} variant="ghost">
               {messages.common.open} <ExternalLink size={17} />
             </ButtonLink>
+            {assessment.status !== "published" ? (
+              <Button type="button" onClick={() => void publish()} disabled={publishing}>
+                {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
+              </Button>
+            ) : null}
           </div>
         </>
       ) : null}

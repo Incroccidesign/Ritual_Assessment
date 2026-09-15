@@ -67,6 +67,8 @@ export function AssessmentBuilder({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [activityPendingDeletion, setActivityPendingDeletion] = useState<Activity | null>(null);
+  const [activityResponseCounts, setActivityResponseCounts] = useState<Record<string, number>>({});
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const assessmentRef = useRef<Assessment | null>(null);
@@ -82,6 +84,15 @@ export function AssessmentBuilder({
         if (!active) return;
         assessmentRef.current = bundle?.assessment ?? null;
         setAssessment(bundle?.assessment ?? null);
+        setActivityResponseCounts(() => {
+          const counts: Record<string, number> = {};
+          for (const response of bundle?.responses ?? []) {
+            for (const activityResponse of response.activityResponses) {
+              counts[activityResponse.activityId] = (counts[activityResponse.activityId] ?? 0) + 1;
+            }
+          }
+          return counts;
+        });
         const nextIsTemplate = initialTemplateMode || Boolean(bundle?.assessment && isTemplateAssessment(bundle.assessment.id, ownerId));
         setIsTemplate(nextIsTemplate);
         if (initialTemplateMode && bundle?.assessment) markAssessmentAsTemplate(bundle.assessment.id, ownerId);
@@ -183,6 +194,11 @@ export function AssessmentBuilder({
     void persist(() => reorderSupabaseActivities(nextActivities));
   }
 
+  function requestActivityRemoval(activityId: string) {
+    const activity = activities.find((item) => item.id === activityId);
+    if (activity) setActivityPendingDeletion(activity);
+  }
+
   function removeActivity(activityId: string) {
     if (!assessment) return;
     const nextActivities = orderedFromCurrentOrder(activities.filter((activity) => activity.id !== activityId));
@@ -192,6 +208,12 @@ export function AssessmentBuilder({
       await deleteSupabaseActivity(activityId);
       await reorderSupabaseActivities(nextActivities);
     });
+    setActivityResponseCounts((current) => {
+      const next = { ...current };
+      delete next[activityId];
+      return next;
+    });
+    setActivityPendingDeletion(null);
   }
 
   function updateActivity(nextActivity: Activity) {
@@ -286,6 +308,26 @@ export function AssessmentBuilder({
               </Button>
               <Button type="button" variant="danger" onClick={() => void deleteDraft()} disabled={deleting}>
                 {deleting ? messages.app.loading : messages.builder.deleteDraft}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+      {activityPendingDeletion ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <Card className="w-full max-w-md">
+            <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteActivityTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-bone/62">
+              {(activityResponseCounts[activityPendingDeletion.id] ?? 0) > 0
+                ? messages.builder.deleteActivityWithResponses.replace("{count}", String(activityResponseCounts[activityPendingDeletion.id]))
+                : messages.builder.deleteActivityWithoutResponses}
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setActivityPendingDeletion(null)} disabled={saving}>
+                {messages.common.cancel}
+              </Button>
+              <Button type="button" variant="danger" onClick={() => removeActivity(activityPendingDeletion.id)} disabled={saving}>
+                {messages.builder.deleteActivityConfirm}
               </Button>
             </div>
           </Card>
@@ -391,7 +433,7 @@ export function AssessmentBuilder({
               onSelect={setSelectedActivityId}
               onAdd={addActivity}
               onMove={moveActivity}
-              onRemove={removeActivity}
+              onRemove={requestActivityRemoval}
               onUpdate={updateActivity}
               renderActivityEditor={(activity) => (
                 <ActivityEditor activity={activity} activities={activities} onChange={updateActivity} embedded />

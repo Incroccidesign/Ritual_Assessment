@@ -1,7 +1,7 @@
 import { Activity } from "@/types/activity";
 import { Locale } from "@/types/locale";
 
-export type AssessmentStatus = "draft" | "published" | "closed";
+export type AssessmentStatus = "draft" | "published" | "paused" | "closed";
 
 export type Assessment = {
   id: string;

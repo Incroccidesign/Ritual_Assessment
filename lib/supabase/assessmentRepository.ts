@@ -868,6 +868,21 @@ export async function fetchPublishedAssessmentByToken(publicToken: string) {
   );
 }
 
+export async function setSupabaseAssessmentStatus(assessment: Assessment, status: Extract<AssessmentStatus, "paused" | "closed">) {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("assessments")
+    .update({
+      status,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", assessment.id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return rowToAssessment(data as AssessmentRow, assessment.activities);
+}
+
 export async function startSupabaseParticipantResponse(publicToken: string, participantToken: string) {
   const client = requireSupabase();
   const { data, error } = await client.rpc("start_public_response", {

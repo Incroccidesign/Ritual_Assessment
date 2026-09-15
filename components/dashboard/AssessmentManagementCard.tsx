@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Copy, ExternalLink, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, Pause, Play, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
@@ -10,7 +10,7 @@ import { GroupedActivityResults } from "@/components/reports/GroupedActivityResu
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
-import { deleteSupabaseAssessment, publishSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
+import { deleteSupabaseAssessment, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 
 export function AssessmentManagementCard({
   assessment,
@@ -32,6 +32,7 @@ export function AssessmentManagementCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
   const [managerRole, setManagerRole] = useState<"owner" | "co_owner" | null>(null);
   const submittedResponses = responses.filter((response) => response.status === "submitted").length;
   const publicLink = useMemo(() => {
@@ -48,6 +49,7 @@ export function AssessmentManagementCard({
   function statusLabel() {
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
+    if (assessment.status === "paused") return messages.dashboard.paused;
     return messages.dashboard.closed;
   }
 
@@ -59,7 +61,7 @@ export function AssessmentManagementCard({
   }
 
   async function copyPublicLink() {
-    if (!assessment.publicToken || assessment.status !== "published") {
+    if (!assessment.publicToken) {
       setNotice(messages.dashboard.publishToGenerateLink);
       return;
     }
@@ -80,6 +82,21 @@ export function AssessmentManagementCard({
       setNotice(messages.auth.signInError);
     } finally {
       setPublishing(false);
+    }
+  }
+
+  async function updateCollectionStatus(status: "paused" | "closed") {
+    try {
+      setPublishing(true);
+      setNotice(null);
+      const updated = await setSupabaseAssessmentStatus(assessment, status);
+      onUpdate?.(updated);
+      window.dispatchEvent(new Event("ritual-assessment-storage"));
+    } catch {
+      setNotice(messages.auth.signInError);
+    } finally {
+      setPublishing(false);
+      setStatusAction(null);
     }
   }
 
@@ -120,7 +137,7 @@ export function AssessmentManagementCard({
         <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="secondary">
           {messages.dashboard.edit} <ExternalLink size={16} />
         </ButtonLink>
-        {assessment.status === "published" && assessment.publicToken ? (
+        {assessment.publicToken ? (
           <Button type="button" variant="secondary" onClick={() => void copyPublicLink()}>
             <Copy size={16} /> {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
           </Button>
@@ -129,6 +146,27 @@ export function AssessmentManagementCard({
             {publishing ? messages.app.loading : messages.common.publish}
           </Button>
         )}
+        {assessment.status === "published" ? (
+          <>
+            <Button type="button" variant="secondary" onClick={() => setStatusAction("pause")} disabled={publishing}>
+              <Pause size={16} /> {messages.dashboard.pauseCollection}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setStatusAction("close")} disabled={publishing}>
+              <Square size={16} /> {messages.dashboard.endCollection}
+            </Button>
+          </>
+        ) : assessment.status === "paused" || assessment.status === "closed" ? (
+          <>
+            <Button type="button" onClick={() => void publishAssessment()} disabled={publishing}>
+              <Play size={16} /> {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
+            </Button>
+            {assessment.status === "paused" ? (
+              <Button type="button" variant="secondary" onClick={() => setStatusAction("close")} disabled={publishing}>
+                <Square size={16} /> {messages.dashboard.endCollection}
+              </Button>
+            ) : null}
+          </>
+        ) : null}
         <ExportMenuButton assessment={assessment} participants={participants} responses={responses} disabled={!responses.length} />
         <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} />
         {managerRole ? (
@@ -160,7 +198,28 @@ export function AssessmentManagementCard({
         </div>
       ) : null}
 
-      {assessment.status === "published" && publicLink ? <p className="break-all text-xs text-bone/38">{publicLink}</p> : null}
+      {statusAction ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <Card className="w-full max-w-md">
+            <h3 className="font-heading text-2xl font-semibold text-bone">
+              {statusAction === "pause" ? messages.dashboard.pauseTitle : messages.dashboard.closeTitle}
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-bone/62">
+              {statusAction === "pause" ? messages.dashboard.pauseBody : messages.dashboard.closeBody}
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setStatusAction(null)} disabled={publishing}>
+                {messages.common.cancel}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => void updateCollectionStatus(statusAction === "pause" ? "paused" : "closed")} disabled={publishing}>
+                {statusAction === "pause" ? messages.dashboard.pauseConfirm : messages.dashboard.closeConfirm}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
+      {assessment.publicToken && publicLink ? <p className="break-all text-xs text-bone/38">{publicLink}</p> : null}
       {notice ? <p className="text-sm text-orange">{notice}</p> : null}
 
       {expanded ? (

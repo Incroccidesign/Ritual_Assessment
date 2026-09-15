@@ -91,6 +91,7 @@ export function AssessmentRunner({ token }: { token: string }) {
         }
         setRawAssessment(found);
         if (!found) return;
+        if (found.status !== "published") return;
         const nextResponse = await startSupabaseParticipantResponse(token, participantTokenFor(token));
         if (!active) return;
         setResponse(nextResponse);
@@ -161,9 +162,17 @@ export function AssessmentRunner({ token }: { token: string }) {
   }
 
   if (assessment.status !== "published") {
+    const isPaused = assessment.status === "paused";
     return (
       <ParticipantShell>
-        <Card><p className="text-bone/56">{messages.participant.notPublished}</p></Card>
+        <Card>
+          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
+            {isPaused ? messages.participant.pausedTitle : messages.participant.closedTitle}
+          </h1>
+          <p className="mt-4 text-base leading-7 text-bone/62">
+            {isPaused ? messages.participant.pausedBody : messages.participant.closedBody}
+          </p>
+        </Card>
       </ParticipantShell>
     );
   }
