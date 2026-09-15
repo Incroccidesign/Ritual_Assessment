@@ -181,8 +181,8 @@ export function AssessmentCreationCard({
       </div>
 
       {deleteTemplate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
+          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h3 className="font-heading text-2xl font-semibold text-bone">{messages.template.delete.title}</h3>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.template.delete.body}</p>
             <div className="mt-6 flex justify-end gap-3">

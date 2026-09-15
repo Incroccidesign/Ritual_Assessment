@@ -244,7 +244,7 @@ export function AssessmentCollaborators({
         <Share2 size={16} /> {messages.collaboration.share}
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
           <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border-bone/15 bg-[#10131a] p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
             <div>
               <h2 className="font-heading text-2xl font-semibold text-bone">{confirmation ? messages.collaboration.successTitle : messages.collaboration.title}</h2>

@@ -235,12 +235,11 @@ function DashboardContent({ designer }: { designer: Designer }) {
         ) : error ? (
           <Card><p className="text-orange">{error}</p></Card>
         ) : assessmentBundles.length ? (
-          <div className="space-y-5">
+          <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
             {assessmentBundles.map((bundle) => (
               <AssessmentManagementCard
                 key={bundle.assessment.id}
                 assessment={bundle.assessment}
-                participants={bundle.participants}
                 responses={bundle.responses}
                 onDelete={handleDeleteAssessment}
                 onUpdate={handleUpdateAssessment}

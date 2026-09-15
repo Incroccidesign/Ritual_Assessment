@@ -47,10 +47,10 @@ export function AccountDeletionDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-night/80 p-5" role="presentation" onMouseDown={(event) => {
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.94] p-5 backdrop-blur-[64px]" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget && !pending) onClose();
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="delete-account-title" className="w-full max-w-lg rounded-lg border border-orange/35 bg-night p-6 shadow-live">
+      <section role="dialog" aria-modal="true" aria-labelledby="delete-account-title" className="w-full max-w-lg rounded-lg border border-orange/35 bg-[#10131a] p-6 shadow-live">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="eyebrow text-orange">{messages.account.dangerZone}</p>

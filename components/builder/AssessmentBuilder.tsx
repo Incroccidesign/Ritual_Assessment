@@ -310,7 +310,7 @@ export function AssessmentBuilder({
       </div>
       {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
       {assessment.status === "published" ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.pauseToEditTitle}</h2>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.builder.pauseToEditBody}</p>
@@ -326,7 +326,7 @@ export function AssessmentBuilder({
         </div>
       ) : null}
       {deleteOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteDraftTitle}</h2>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.builder.deleteDraftBody}</p>
@@ -342,7 +342,7 @@ export function AssessmentBuilder({
         </div>
       ) : null}
       {activityPendingDeletion ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteActivityTitle}</h2>
             <p className="mt-3 text-sm leading-6 text-bone/62">
