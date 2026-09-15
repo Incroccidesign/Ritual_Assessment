@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, ActivityAnswer, ExplorationAnswer, FramingAnswer, PrioritizationAnswer, ProfilingAnswer } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
 import { AssessmentResponse } from "@/types/response";
@@ -126,6 +126,31 @@ export function AssessmentRunner({ token }: { token: string }) {
   const activities = useMemo(() => assessment?.activities.slice().sort((a, b) => a.orderIndex - b.orderIndex) ?? [], [assessment]);
   const activity = activities[currentIndex] ?? null;
   const hasPlanningReport = activities.some((candidate) => candidate.type === "planning_report");
+
+  const showCollectionStatusIfChanged = useCallback(async () => {
+    try {
+      const latestAssessment = await fetchPublishedAssessmentByToken(token);
+      if (!latestAssessment || latestAssessment.status === "published") return false;
+      setRawAssessment(latestAssessment);
+      setResponse(null);
+      setCurrentAnswer(null);
+      setError(null);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (rawAssessment?.status !== "published") return;
+    const checkCollectionStatus = () => void showCollectionStatusIfChanged();
+    const interval = window.setInterval(checkCollectionStatus, 15_000);
+    window.addEventListener("focus", checkCollectionStatus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", checkCollectionStatus);
+    };
+  }, [rawAssessment?.status, showCollectionStatusIfChanged]);
 
   useEffect(() => {
     if (!activity) return;
@@ -257,7 +282,9 @@ export function AssessmentRunner({ token }: { token: string }) {
       }
       setPhase("summary");
     } catch (saveError) {
-      setError(getErrorMessage(saveError, messages.auth.signInError));
+      if (!await showCollectionStatusIfChanged()) {
+        setError(getErrorMessage(saveError, messages.auth.signInError));
+      }
     } finally {
       setSaving(false);
     }
@@ -273,7 +300,9 @@ export function AssessmentRunner({ token }: { token: string }) {
         if (submitted) setResponse(submitted);
         setPhase("complete");
       } catch (submitError) {
-        setError(getErrorMessage(submitError, messages.auth.signInError));
+        if (!await showCollectionStatusIfChanged()) {
+          setError(getErrorMessage(submitError, messages.auth.signInError));
+        }
       } finally {
         setSaving(false);
       }

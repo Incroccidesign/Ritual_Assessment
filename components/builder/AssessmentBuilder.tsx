@@ -19,6 +19,7 @@ import {
   fetchAssessmentBundle,
   insertSupabaseActivity,
   reorderSupabaseActivities,
+  setSupabaseAssessmentStatus,
   updateSupabaseActivity,
   updateSupabaseAssessment
 } from "@/lib/supabase/assessmentRepository";
@@ -265,6 +266,17 @@ export function AssessmentBuilder({
     }
   }
 
+  async function pauseCollectionForEditing() {
+    if (!assessment) return;
+    await persist(
+      () => setSupabaseAssessmentStatus(assessment, "paused"),
+      (updatedAssessment) => {
+        assessmentRef.current = updatedAssessment;
+        setAssessment(updatedAssessment);
+      }
+    );
+  }
+
   if (loading) {
     return (
       <BuilderShell>
@@ -297,9 +309,25 @@ export function AssessmentBuilder({
         </div>
       </div>
       {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
+      {assessment.status === "published" ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+            <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.pauseToEditTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-bone/62">{messages.builder.pauseToEditBody}</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <ButtonLink href="/dashboard" variant="ghost" className="min-h-11">
+                {messages.builder.backToDashboard}
+              </ButtonLink>
+              <Button type="button" onClick={() => void pauseCollectionForEditing()} disabled={saving}>
+                {saving ? messages.app.loading : messages.builder.pauseToEditConfirm}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
       {deleteOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteDraftTitle}</h2>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.builder.deleteDraftBody}</p>
             <div className="mt-6 flex justify-end gap-3">
@@ -314,8 +342,8 @@ export function AssessmentBuilder({
         </div>
       ) : null}
       {activityPendingDeletion ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl">
+          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.deleteActivityTitle}</h2>
             <p className="mt-3 text-sm leading-6 text-bone/62">
               {(activityResponseCounts[activityPendingDeletion.id] ?? 0) > 0
@@ -349,6 +377,11 @@ export function AssessmentBuilder({
               <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} compact />
             </div>
           </div>
+          {assessment.status === "paused" ? (
+            <p className="rounded-lg border border-mint/20 bg-mint/10 px-5 py-4 text-sm leading-6 text-bone/76">
+              {messages.builder.collectionPausedNotice}
+            </p>
+          ) : null}
           <Card className="space-y-5">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentDetails}</h2>
             <Field label={messages.builder.titleLabel}>
