@@ -2,6 +2,7 @@
 
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Assessment } from "@/types/assessment";
 import { Button, ButtonLink, SubtlePanel } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
@@ -19,7 +20,8 @@ export function LinkGenerator({
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const { messages } = useLocale();
+  const router = useRouter();
+  const { messages, href } = useLocale();
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,9 +35,16 @@ export function LinkGenerator({
     setPublishing(true);
     setError(null);
     try {
+      const resumesCollection = Boolean(assessment.publicToken && assessment.status !== "published");
       const published = await publishSupabaseAssessment(assessment);
-      onPublish(published);
       window.dispatchEvent(new Event("ritual-assessment-storage"));
+
+      if (resumesCollection) {
+        router.replace(href("/dashboard"));
+        return;
+      }
+
+      onPublish(published);
     } catch (publishError) {
       setError(getErrorMessage(publishError, messages.auth.signInError));
     } finally {
