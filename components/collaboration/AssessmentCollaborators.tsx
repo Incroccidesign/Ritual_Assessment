@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, ChevronDown, Info, Share2, UserMinus, UserPlus, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Share2, UserMinus, UserPlus } from "lucide-react";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { supabase } from "@/lib/supabase/client";
@@ -33,18 +33,6 @@ async function authorisedRequest(url: string, init?: RequestInit) {
 
 function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function RoleHelp({ description, label }: { description: string; label: string }) {
-  return (
-    <span className="group relative inline-flex items-center gap-1.5 text-bone/55 transition hover:text-bone">
-      <Info size={15} aria-hidden="true" className="text-bone/45 transition group-hover:text-mint" />
-      <span>{label}</span>
-      <span role="tooltip" className="pointer-events-none absolute bottom-[calc(100%+0.6rem)] left-1/2 z-[120] w-60 -translate-x-1/2 rounded-md border border-bone/15 bg-night px-3 py-2 text-xs font-normal leading-5 text-bone/75 opacity-0 shadow-live transition group-hover:opacity-100">
-        {description}
-      </span>
-    </span>
-  );
 }
 
 function RoleSelector({
@@ -250,24 +238,17 @@ export function AssessmentCollaborators({
   if (loading || !managerRole) return null;
   const emailHasValue = Boolean(email.trim());
   const emailIsValid = validEmail(email);
-  const roleDetails = role === "co_owner" ? messages.collaboration.coOwnerDescription : messages.collaboration.editorDescription;
-
   return (
     <>
       <Button type="button" variant="secondary" aria-haspopup="dialog" aria-expanded={open} onClick={openDialog}>
         <Share2 size={16} /> {messages.collaboration.share}
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-md" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.92] p-4 backdrop-blur-2xl" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
           <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border-bone/15 bg-[#10131a] p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <h2 className="font-heading text-2xl font-semibold text-bone">{confirmation ? messages.collaboration.successTitle : messages.collaboration.title}</h2>
-                <p className="mt-2 max-w-lg text-sm leading-6 text-bone/62">{confirmation ? messages.collaboration.successBody : messages.collaboration.body}</p>
-              </div>
-              <button type="button" onClick={close} aria-label={messages.common.cancel} className="rounded-md p-2 text-bone/65 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint">
-                <X size={18} />
-              </button>
+            <div>
+              <h2 className="font-heading text-2xl font-semibold text-bone">{confirmation ? messages.collaboration.successTitle : messages.collaboration.title}</h2>
+              <p className="mt-2 max-w-lg text-sm leading-6 text-bone/62">{confirmation ? messages.collaboration.successBody : messages.collaboration.body}</p>
             </div>
 
             {confirmation ? (
@@ -283,25 +264,26 @@ export function AssessmentCollaborators({
             ) : (
               <div className="mt-7 space-y-7">
                 <div className="space-y-4 border-b border-bone/10 pb-7">
-                  <Field label={messages.collaboration.email}>
-                    <input className={inputClass} type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} aria-invalid={emailHasValue && !emailIsValid} />
-                  </Field>
-                  {emailHasValue && !emailIsValid ? <p className="text-sm text-orange">{messages.collaboration.emailFormat}</p> : null}
-                  {managerRole === "owner" ? (
-                    <Field label={messages.collaboration.role}>
-                      <RoleSelector
-                        value={role}
-                        onChange={setRole}
-                        disabled={saving}
-                        ariaLabel={messages.collaboration.role}
-                        editorLabel={messages.collaboration.editor}
-                        coOwnerLabel={messages.collaboration.coOwner}
-                        editorDescription={messages.collaboration.editorDescription}
-                        coOwnerDescription={messages.collaboration.coOwnerDescription}
-                      />
+                  <div className={managerRole === "owner" ? "grid gap-4 sm:grid-cols-[minmax(0,1fr)_9.4rem]" : undefined}>
+                    <Field label={messages.collaboration.email}>
+                      <input className={inputClass} type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} aria-invalid={emailHasValue && !emailIsValid} />
                     </Field>
-                  ) : null}
-                  {managerRole === "owner" ? <RoleHelp description={roleDetails} label={messages.collaboration.roleDetails} /> : null}
+                    {managerRole === "owner" ? (
+                      <Field label={messages.collaboration.role}>
+                        <RoleSelector
+                          value={role}
+                          onChange={setRole}
+                          disabled={saving}
+                          ariaLabel={messages.collaboration.role}
+                          editorLabel={messages.collaboration.editor}
+                          coOwnerLabel={messages.collaboration.coOwner}
+                          editorDescription={messages.collaboration.editorDescription}
+                          coOwnerDescription={messages.collaboration.coOwnerDescription}
+                        />
+                      </Field>
+                    ) : null}
+                  </div>
+                  {emailHasValue && !emailIsValid ? <p className="text-sm text-orange">{messages.collaboration.emailFormat}</p> : null}
                   <Button type="button" onClick={() => void addCollaborator()} disabled={saving || !emailIsValid} className="w-full">
                     <UserPlus size={16} /> {messages.collaboration.add}
                   </Button>
