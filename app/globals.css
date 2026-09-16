@@ -30,6 +30,15 @@ select {
   font: inherit;
 }
 
+/* Shared opaque surface for menus, popovers and dialogs. It intentionally
+   matches the assessment-creation panel rather than the translucent content cards. */
+.ritual-popover-surface,
+.ritual-overlay-surface {
+  background-color: #15181f;
+  border-color: rgb(243 239 230 / 0.16);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 0.72);
+}
+
 select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23F4F0E8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");

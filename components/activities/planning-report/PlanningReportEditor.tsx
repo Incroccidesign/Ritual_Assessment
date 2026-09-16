@@ -91,7 +91,7 @@ function ActionMenu({ children }: { children: React.ReactNode }) {
       <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-bone/10 text-bone/68 transition hover:border-bone/25 hover:bg-bone/8">
         <MoreHorizontal size={18} />
       </summary>
-      <div className="absolute right-0 top-10 z-20 min-w-44 rounded-md border border-bone/12 bg-[#15181f] p-1 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
+      <div className="ritual-popover-surface absolute right-0 top-10 z-20 min-w-44 rounded-md border p-1">
         {children}
       </div>
     </details>

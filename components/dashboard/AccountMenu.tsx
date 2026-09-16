@@ -43,7 +43,7 @@ export function AccountMenu({ designer }: { designer: Designer }) {
           <UserRound size={23} strokeWidth={2.1} />
         </button>
         {open ? (
-          <div role="menu" className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 rounded-lg border border-bone/15 bg-night p-2 shadow-live">
+          <div role="menu" className="ritual-popover-surface absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 rounded-lg border p-2">
             <p className="truncate px-3 py-2 text-xs font-semibold text-bone/70">{designer.email}</p>
             <div className="my-1 border-t border-bone/10" />
             <div className="px-3 pb-2 pt-1">

@@ -114,8 +114,8 @@ export function AssessmentCreationCard({
   }
 
   return (
-    <Card className="relative z-30 w-[min(calc(100vw-2rem),42rem)] border-bone/16 !bg-[#15181f] p-0 shadow-[0_28px_80px_rgba(0,0,0,0.72)]">
-      <div className="space-y-5 rounded-lg bg-[#15181f] p-4">
+    <Card className="ritual-popover-surface relative z-30 w-[min(calc(100vw-2rem),42rem)] border p-0">
+      <div className="space-y-5 rounded-lg p-4">
         <div>
           <h2 className="font-heading text-2xl font-semibold text-bone">
             {mode === "choices" ? messages.assessmentCreate.title : messages.assessmentCreate.templates.title}
@@ -182,7 +182,7 @@ export function AssessmentCreationCard({
 
       {deleteTemplate ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
-          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+          <Card className="ritual-overlay-surface w-full max-w-md border">
             <h3 className="font-heading text-2xl font-semibold text-bone">{messages.template.delete.title}</h3>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.template.delete.body}</p>
             <div className="mt-6 flex justify-end gap-3">

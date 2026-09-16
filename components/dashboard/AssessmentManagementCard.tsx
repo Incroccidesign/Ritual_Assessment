@@ -127,7 +127,7 @@ export function AssessmentManagementCard({
             <MoreHorizontal size={19} />
           </Button>
           {menuOpen ? (
-            <div className="absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border border-bone/15 bg-[#171A20] p-1 shadow-live">
+            <div className="ritual-popover-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border p-1">
               {assessment.status !== "draft" ? (
                 <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="w-full justify-start px-3">
                   {messages.dashboard.edit}
@@ -195,7 +195,7 @@ export function AssessmentManagementCard({
 
       {deleteOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
-          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+          <Card className="ritual-overlay-surface w-full max-w-md border">
             <h3 className="font-heading text-2xl font-semibold text-bone">{messages.dashboard.deleteTitle}</h3>
             <p className="mt-3 text-sm leading-6 text-bone/62">{messages.dashboard.deleteBody}</p>
             <div className="mt-6 flex justify-end gap-3">
@@ -212,7 +212,7 @@ export function AssessmentManagementCard({
 
       {statusAction ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
-          <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+          <Card className="ritual-overlay-surface w-full max-w-md border">
             <h3 className="font-heading text-2xl font-semibold text-bone">
               {statusAction === "pause" ? messages.dashboard.pauseTitle : messages.dashboard.closeTitle}
             </h3>

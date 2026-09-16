@@ -85,7 +85,7 @@ function RoleSelector({
         <ChevronDown size={compact ? 15 : 17} aria-hidden="true" className={compact ? "opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" : "text-bone/65"} />
       </button>
       {open ? (
-        <div role="listbox" aria-label={ariaLabel} className="absolute right-0 z-[130] mt-2 w-72 overflow-hidden rounded-md border border-bone/15 bg-[#171A20] p-1 shadow-live">
+        <div role="listbox" aria-label={ariaLabel} className="ritual-popover-surface absolute right-0 z-[130] mt-2 w-72 overflow-hidden rounded-md border p-1">
           {options.map((option) => (
             <button
               key={option.value}
@@ -245,7 +245,7 @@ export function AssessmentCollaborators({
       </Button>
       {open ? (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-          <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border-bone/15 bg-[#10131a] p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
+          <Card role="dialog" aria-modal="true" aria-label={messages.collaboration.title} className="ritual-overlay-surface max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border p-6 sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
             <div>
               <h2 className="font-heading text-2xl font-semibold text-bone">{confirmation ? messages.collaboration.successTitle : messages.collaboration.title}</h2>
               <p className="mt-2 max-w-lg text-sm leading-6 text-bone/62">{confirmation ? messages.collaboration.successBody : messages.collaboration.body}</p>

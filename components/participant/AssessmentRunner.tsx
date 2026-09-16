@@ -250,7 +250,7 @@ export function AssessmentRunner({ token }: { token: string }) {
           ) : null}
           {privacyOpen ? (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
-              <Card className="w-full max-w-md border-bone/15 bg-[#10131a]">
+              <Card className="ritual-overlay-surface w-full max-w-md border">
                 <h2 className="font-heading text-2xl font-semibold text-bone">{messages.participant.privacyModalTitle}</h2>
                 <p className="mt-3 text-sm leading-6 text-bone/68">
                   {messages.participant.privacyModalBody
