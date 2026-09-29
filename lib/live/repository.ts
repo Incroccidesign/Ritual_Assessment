@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { generateLiveToken, liveClient, storeLiveJoinToken, storeLiveParticipantAccess } from "@/lib/live/access";
-import type { CreateLiveSessionInput, LiveActivity, LiveAdhesionLevel, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
+import type { CreateLiveSessionInput, LiveActivity, LiveAdhesionLevel, LiveJoinAccess, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
 
 type Client = ReturnType<typeof liveClient>;
 const fail = (stage: string, error: unknown) => { throw new Error(`${stage}: ${error instanceof Error ? error.message : String(error)}`); };
 const now = () => new Date().toISOString();
+const liveSessionColumns = "id,title,facilitator_name,context_label,participant_details_mode,status,ritual_started_at,ritual_ended_at,export_docx_count,export_excel_count,error_count,created_at,updated_at";
 
 export async function createLiveSession(input: CreateLiveSessionInput) {
   if (!supabase) throw new Error("Supabase is not configured.");
@@ -23,15 +24,15 @@ export async function createLiveSession(input: CreateLiveSessionInput) {
 
 export async function listLiveSessions() {
   const client = liveClient();
-  const { data, error } = await client.from("live_sessions").select("*").order("created_at", { ascending: false });
+  const { data, error } = await client.from("live_sessions").select(liveSessionColumns).order("created_at", { ascending: false });
   if (error) fail("live_sessions:list", error);
   return data ?? [];
 }
 
-export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | null): Promise<LiveSessionSnapshot | null> {
+export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | LiveJoinAccess | null): Promise<LiveSessionSnapshot | null> {
   const client = liveClient(access);
   const [session, activities, roles, participants, responses, priorityItems, priorityVotes, pacts, pactVotes] = await Promise.all([
-    client.from("live_sessions").select("*").eq("id", sessionId).maybeSingle(),
+    client.from("live_sessions").select(liveSessionColumns).eq("id", sessionId).maybeSingle(),
     client.from("live_activities").select("*").eq("live_session_id", sessionId).order("order_index"),
     client.from("live_session_roles").select("*").eq("live_session_id", sessionId).order("role_name"),
     client.from("live_participants").select("*").eq("live_session_id", sessionId).order("joined_at"),
@@ -111,4 +112,4 @@ export function getLiveExportData(snapshot: LiveSessionSnapshot) { return { gene
 export async function recordLiveExport(sessionId: string, kind: "docx" | "excel") { const snapshot = await fetchLiveSnapshot(sessionId); if (!snapshot) return; await updateLiveSession(sessionId, { [kind === "docx" ? "export_docx_count" : "export_excel_count"]: (kind === "docx" ? snapshot.session.export_docx_count : snapshot.session.export_excel_count) + 1 }); }
 
 export function subscribeToLiveSession(client: Client, sessionId: string, refresh: () => void): RealtimeChannel { let channel = client.channel(`live:${sessionId}`); for (const table of ["live_sessions", "live_activities", "live_session_roles", "live_participants", "live_responses", "live_priority_items", "live_priority_votes", "live_pacts", "live_pact_votes"]) channel = channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `${table === "live_sessions" ? "id" : "live_session_id"}=eq.${sessionId}` }, refresh); return channel.subscribe(); }
-export function useLiveSessionSnapshot(sessionId: string | null, access?: LiveParticipantAccess | null) { const client = useMemo(() => access ? liveClient(access) : supabase, [access]); const [snapshot, setSnapshot] = useState<LiveSessionSnapshot | null>(null); const [loading, setLoading] = useState(Boolean(sessionId)); const refresh = useCallback(async () => { if (!sessionId) return null; const next = await fetchLiveSnapshot(sessionId, access); setSnapshot(next); setLoading(false); return next; }, [sessionId, access]); useEffect(() => { if (!sessionId || !client) return; const reload = () => { void refresh(); }; queueMicrotask(reload); const channel = subscribeToLiveSession(client, sessionId, reload); return () => { client.removeChannel(channel); }; }, [client, sessionId, refresh]); return { snapshot, loading, refresh }; }
+export function useLiveSessionSnapshot(sessionId: string | null, access?: LiveParticipantAccess | LiveJoinAccess | null) { const client = useMemo(() => access ? liveClient(access) : supabase, [access]); const [snapshot, setSnapshot] = useState<LiveSessionSnapshot | null>(null); const [loading, setLoading] = useState(Boolean(sessionId)); const refresh = useCallback(async () => { if (!sessionId) return null; const next = await fetchLiveSnapshot(sessionId, access); setSnapshot(next); setLoading(false); return next; }, [sessionId, access]); useEffect(() => { if (!sessionId || !client) return; const reload = () => { void refresh(); }; queueMicrotask(reload); const channel = subscribeToLiveSession(client, sessionId, reload); return () => { client.removeChannel(channel); }; }, [client, sessionId, refresh]); return { snapshot, loading, refresh }; }

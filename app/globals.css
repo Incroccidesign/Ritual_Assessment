@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0");
 @import "../styles/tokens.css";
 @import "../styles/ritual-theme.css";
 
@@ -28,6 +29,36 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Live Facilitation keeps its original visual surface without changing Assessment. */
+.live-experience {
+  min-height: 100vh;
+  color: #f3efe6;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(111, 91, 255, 0.18), transparent 34rem),
+    linear-gradient(180deg, #0f1115 0%, #15171d 58%, #0f1115 100%);
+}
+
+.live-experience ::selection {
+  color: #0f1115;
+  background: #6ef2c2;
+}
+
+.material-symbols-outlined {
+  direction: ltr;
+  display: inline-block;
+  font-family: "Material Symbols Outlined";
+  font-feature-settings: "liga";
+  font-style: normal;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
 }
 
 /* Shared opaque surface for menus, popovers and dialogs. It intentionally

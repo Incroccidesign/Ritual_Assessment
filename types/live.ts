@@ -1,9 +1,36 @@
 export type LiveActivityType = "innesco" | "traccia" | "focus" | "priorita" | "patto";
+export type ActivityType = LiveActivityType;
+export type ParticipantDetailsMode = LiveParticipantDetailsMode;
+export type SurfaceColorKey = "orange" | "mint" | "violet" | "blue" | "yellow" | "rose" | "gray";
+export type SurfaceInputType = { id: string; label: { it: string; en: string }; color: SurfaceColorKey };
+export type PrioritySourceType = "previous_activity" | "manual" | null;
 export type LiveSessionStatus = "draft" | "setup" | "lobby" | "live" | "intermission" | "closed";
 export type LiveActivityStatus = "pending" | "live" | "paused" | "completed";
 export type LiveCollaboratorRole = "editor" | "co_owner";
 export type LiveParticipantDetailsMode = "nickname_only" | "identified";
 export type LivePactStatementMode = "build_live" | "predefined";
+export type PactStatementMode = LivePactStatementMode;
+export const DEFAULT_PRIORITY_VOTES_PER_PARTICIPANT = 1;
+export const MIN_PRIORITY_VOTES_PER_PARTICIPANT = 1;
+export const MAX_PRIORITY_VOTES_PER_PARTICIPANT = 10;
+export const activities: Array<{ id: ActivityType }> = [
+  { id: "innesco" }, { id: "traccia" }, { id: "focus" }, { id: "priorita" }, { id: "patto" }
+];
+export const DEFAULT_ACTIVITY_DURATIONS: Record<ActivityType, number> = {
+  innesco: 3, traccia: 8, focus: 8, priorita: 5, patto: 8
+};
+export function defaultActivityDuration(type: ActivityType) { return DEFAULT_ACTIVITY_DURATIONS[type]; }
+export function clampPriorityVotesPerParticipant(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_PRIORITY_VOTES_PER_PARTICIPANT;
+  return Math.min(MAX_PRIORITY_VOTES_PER_PARTICIPANT, Math.max(MIN_PRIORITY_VOTES_PER_PARTICIPANT, Math.trunc(parsed)));
+}
+export type CreateRitualActivityInput = {
+  activity_type: ActivityType; instance_label?: string | null; prompt: string; timer_enabled: boolean;
+  timer_duration: number | null; show_live_results: boolean; surface_input_types?: SurfaceInputType[] | null;
+  priority_source_type?: PrioritySourceType; priority_source_activity_order?: number | null; priority_manual_items?: string[];
+  votes_per_participant?: number; pact_statement_mode?: PactStatementMode; facilitator_note?: string | null; pact_text?: string | null;
+};
 export type LiveAdhesionLevel = "Concordo" | "Parzialmente" | "Non concordo";
 
 export type LiveSession = { id: string; title: string; facilitator_name: string | null; context_label: string | null; participant_details_mode: LiveParticipantDetailsMode; status: LiveSessionStatus; ritual_started_at: string | null; ritual_ended_at: string | null; export_docx_count: number; export_excel_count: number; error_count: number; created_at: string; updated_at: string };
@@ -21,3 +48,4 @@ export type LiveSessionSnapshot = { session: LiveSession; activities: LiveActivi
 export type CreateLiveActivityInput = Pick<LiveActivity, "activity_type" | "prompt" | "timer_enabled" | "timer_duration" | "show_live_results"> & Partial<Pick<LiveActivity, "instance_label" | "surface_input_types" | "priority_source" | "votes_per_participant" | "pact_statement_mode" | "facilitator_note" | "pact_text">> & { priority_manual_items?: string[] };
 export type CreateLiveSessionInput = { title: string; facilitator_name?: string | null; context_label?: string | null; participant_details_mode: LiveParticipantDetailsMode; roles: string[]; activities: CreateLiveActivityInput[] };
 export type LiveParticipantAccess = { participantId: string; participantToken: string; joinToken?: string | null };
+export type LiveJoinAccess = { joinToken: string };
