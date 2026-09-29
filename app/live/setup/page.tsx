@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, TimerReset, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, Flame, Focus, Handshake, Layers, ListChecks, TimerReset, Trash2, X } from "lucide-react";
 import { Button } from "@/components/live/button";
 import { Field, inputClass, panelClass, selectClass } from "@/components/live/field";
 import { buildRitualFileFromDraft, consumePendingRitualFile, downloadRitualFile, ritualFileToDraft } from "@/lib/live/ritual-file";
@@ -21,24 +21,17 @@ type SetupActivity = CreateRitualActivityInput & {
   priority_source_activity_local_id?: string | null;
 };
 
-const activityIcons: Record<ActivityType, string> = {
-  innesco: "flare",
-  traccia: "layers",
-  focus: "center_focus_strong",
-  priorita: "ballot",
-  patto: "handshake"
+const activityIcons: Record<ActivityType, typeof Flame> = {
+  innesco: Flame,
+  traccia: Layers,
+  focus: Focus,
+  priorita: ListChecks,
+  patto: Handshake
 };
 
 function ActivityIcon({ type, className, size = 22 }: { type: ActivityType; className?: string; size?: number }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn("material-symbols-outlined", className)}
-      style={{ fontSize: size, width: size, height: size }}
-    >
-      {activityIcons[type]}
-    </span>
-  );
+  const Icon = activityIcons[type];
+  return <Icon aria-hidden="true" className={cn("shrink-0", className)} size={size} strokeWidth={1.7} />;
 }
 function SetupSectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="font-heading text-xl font-semibold text-bone">{children}</h3>;
