@@ -2,11 +2,13 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, Flame, Focus, Handshake, Layers, ListChecks, TimerReset, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, Flame, Focus, Handshake, Layers, ListChecks, TimerReset, Trash2, X } from "lucide-react";
 import { Button } from "@/components/live/button";
 import { Field, inputClass, panelClass, selectClass } from "@/components/live/field";
 import { buildRitualFileFromDraft, consumePendingRitualFile, downloadRitualFile, ritualFileToDraft } from "@/lib/live/ritual-file";
 import { AppShell } from "@/components/live/shell";
+import { AppShell as RitualAppShell } from "@/components/layout/AppShell";
+import { ButtonLink as RitualButtonLink } from "@/components/ritual-ui";
 import { activityPrompt } from "@/lib/live/i18n";
 import { createLiveSession, enterLiveLobby } from "@/lib/live/repository";
 import { ActivityType, activities, clampPriorityVotesPerParticipant, CreateRitualActivityInput, defaultActivityDuration, ParticipantDetailsMode, SurfaceColorKey, SurfaceInputType } from "@/types/live";
@@ -347,8 +349,8 @@ function SetupContent() {
   }
 
   return (
-    <AppShell claim={messages.setup.claim} homeHref={href("/")}>
-      <div className="mx-auto max-w-6xl">
+    <RitualAppShell headerAction={<RitualButtonLink href="/dashboard" variant="ghost"><ArrowLeft size={16} /> Dashboard</RitualButtonLink>}>
+      <div className="mx-auto max-w-6xl route-page-fade">
         <aside className="mx-auto max-w-3xl pt-2 text-center">
           <p className="text-sm uppercase tracking-[0.28em] text-mint">{messages.setup.eyebrow}</p>
           <h1 className="mt-4 font-heading text-5xl font-semibold leading-none text-bone md:text-6xl">{messages.setup.title}</h1>
@@ -959,7 +961,7 @@ function SetupContent() {
           ) : null}
         </form>
       </div>
-    </AppShell>
+    </RitualAppShell>
   );
 }
 
