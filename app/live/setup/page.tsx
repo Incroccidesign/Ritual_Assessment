@@ -349,8 +349,11 @@ function SetupContent() {
   }
 
   return (
-    <RitualAppShell headerAction={<RitualButtonLink href="/dashboard" variant="ghost"><ArrowLeft size={16} /> Dashboard</RitualButtonLink>}>
+    <RitualAppShell>
       <div className="mx-auto max-w-6xl route-page-fade">
+        <div className="mb-10">
+          <RitualButtonLink href="/dashboard" variant="ghost"><ArrowLeft size={16} /> Dashboard</RitualButtonLink>
+        </div>
         <aside className="mx-auto max-w-3xl pt-2 text-center">
           <p className="text-sm uppercase tracking-[0.28em] text-mint">{messages.setup.eyebrow}</p>
           <h1 className="mt-4 font-heading text-5xl font-semibold leading-none text-bone md:text-6xl">{messages.setup.title}</h1>
