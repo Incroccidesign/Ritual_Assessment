@@ -7,6 +7,7 @@ import { Designer } from "@/lib/auth/designerAuth";
 import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreationCard";
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
+import { LiveSessionCard } from "@/components/dashboard/LiveSessionCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Button, Card, EmptyState, StepHeader } from "@/components/ritual-ui";
 import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessmentTemplate";
@@ -22,6 +23,8 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
 import { markAssessmentAsTemplate, templateAssessmentIdsForOwner, unmarkAssessmentAsTemplate } from "@/lib/templates/templateStore";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { listLiveSessions } from "@/lib/live/repository";
+import type { LiveSession } from "@/types/live";
 
 export default function DashboardPage() {
   return (
@@ -42,13 +45,15 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const searchParams = useSearchParams();
   const { locale, messages, href } = useLocale();
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
+  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [creationOpen, setCreationOpen] = useState(false);
+  const [creationType, setCreationType] = useState<"choose" | "assessment">("choose");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const creationPopoverRef = useRef<HTMLDivElement | null>(null);
   const newAssessmentButtonRef = useRef<HTMLSpanElement | null>(null);
-  const templateIds = useMemo(() => templateAssessmentIdsForOwner(designer.id), [designer.id, bundles]);
+  const templateIds = useMemo(() => templateAssessmentIdsForOwner(designer.id), [designer.id]);
   const templateBundles = useMemo(
     () => bundles.filter((bundle) => templateIds.has(bundle.assessment.id)),
     [bundles, templateIds]
@@ -67,9 +72,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
       }
       setError(null);
       try {
-        const nextBundles = await fetchDesignerAssessmentBundles(designer.id);
+        const [nextBundles, nextLiveSessions] = await Promise.all([fetchDesignerAssessmentBundles(designer.id), listLiveSessions()]);
         if (!active) return;
         setBundles(nextBundles);
+        setLiveSessions(nextLiveSessions as LiveSession[]);
       } catch (dashboardError) {
         if (!active) return;
         setError(getErrorMessage(dashboardError, messages.auth.signInError));
@@ -113,6 +119,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
 
   useEffect(() => {
     if (searchParams.get("create") !== "1") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCreationOpen(true);
     router.replace(href("/dashboard"));
   }, [href, router, searchParams]);
@@ -207,12 +214,12 @@ function DashboardContent({ designer }: { designer: Designer }) {
               disabled={!isSupabaseConfigured}
               onClick={() => setCreationOpen((open) => !open)}
             >
-              {messages.assessmentCreate.newAssessment}
+              New
             </Button>
           </span>
           {creationOpen ? (
             <div ref={creationPopoverRef} className="absolute right-0 top-[calc(100%+0.75rem)] z-50">
-              <AssessmentCreationCard
+              {creationType === "choose" ? <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),32rem)] border p-4"><h2 className="font-heading text-2xl text-bone">New activity</h2><p className="mt-2 text-sm text-bone/60">Choose how people will participate before creating anything.</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-bone/35" onClick={() => router.push("/live/setup")}><h3 className="font-heading text-xl text-bone">Live</h3><p className="mt-2 text-sm text-bone/60">Facilitated in real time.</p></button><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-bone/35" onClick={() => setCreationType("assessment")}><h3 className="font-heading text-xl text-bone">Differita</h3><p className="mt-2 text-sm text-bone/60">Completed independently.</p></button></div></Card> : <AssessmentCreationCard
                 creating={creating}
                 userTemplates={templateBundles.map((bundle) => bundle.assessment)}
                 onCreateBlank={() => void handleCreateBlankAssessment()}
@@ -220,7 +227,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                 onUseUserTemplate={(assessment) => void handleUseUserTemplate(assessment)}
                 onBuildTemplate={() => void handleBuildTemplate()}
                 onDeleteTemplate={(assessment) => void handleDeleteTemplate(assessment)}
-              />
+              />}
             </div>
           ) : null}
         </div>
@@ -234,8 +241,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <Card><p className="text-bone/50">{messages.app.loading}</p></Card>
         ) : error ? (
           <Card><p className="text-orange">{error}</p></Card>
-        ) : assessmentBundles.length ? (
+        ) : assessmentBundles.length || liveSessions.length ? (
           <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+            {liveSessions.map((session) => <LiveSessionCard key={`live:${session.id}`} session={session} />)}
             {assessmentBundles.map((bundle) => (
               <AssessmentManagementCard
                 key={bundle.assessment.id}

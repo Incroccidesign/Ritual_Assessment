@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { getCurrentLiveActivity, getLiveExportData, getLiveResults, getNextLiveActivity, liveTimerRemaining, subscribeToLiveSession } from "../../lib/live/repository";
 import { toLiveActivityInputs } from "../../lib/live/setup-adapter";
 import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "../../lib/live/ui-adapter";
+import { liveDashboardDestination } from "../../components/dashboard/LiveSessionCard";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
 
 const item = (state: LiveActivity["state"], index: number): LiveActivity => ({ id: `a-${index}`, live_session_id: "s", activity_type: "focus", order_index: index, instance_index: index + 1, instance_label: null, prompt: "p", timer_enabled: true, timer_duration: 5, show_live_results: true, surface_input_types: null, state, priority_source: null, votes_per_participant: 1, pact_statement_mode: null, facilitator_note: null, pact_text: null, started_at: null, ended_at: null, timer_anchor_at: "2026-01-01T00:00:00.000Z", paused_remaining_seconds: null, created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z" });
@@ -32,4 +33,11 @@ test("results aggregation keeps persisted priority votes for a closed session", 
   const activity = item("completed", 0);
   const snapshot = { session: { id: "s", status: "closed" }, activities: [activity], participants: [{ id: "p" }], responses: [], priorityItems: [{ id: "priority", live_activity_id: activity.id, label: "Important" }], priorityVotes: [{ live_activity_id: activity.id, live_priority_item_id: "priority" }, { live_activity_id: activity.id, live_priority_item_id: "priority" }], pacts: [], pactVotes: [] } as unknown as LiveSessionSnapshot;
   expect(getLiveResults(snapshot)).toMatchObject({ participantCount: 1, priorityRanking: [{ id: "priority", votes: 2 }] });
+});
+test("dashboard routes each Live lifecycle state to its own surface", () => {
+  const session = (status: string) => ({ id: "same-id", status }) as never;
+  expect(liveDashboardDestination(session("setup"))).toContain("/live/setup");
+  expect(liveDashboardDestination(session("lobby"))).toContain("/live/lobby");
+  expect(liveDashboardDestination(session("live"))).toContain("/live?id=");
+  expect(liveDashboardDestination(session("closed"))).toContain("/live/results");
 });
