@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { getCurrentLiveActivity, getLiveExportData, getNextLiveActivity, liveTimerRemaining, subscribeToLiveSession } from "../../lib/live/repository";
 import { toLiveActivityInputs } from "../../lib/live/setup-adapter";
+import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "../../lib/live/ui-adapter";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
 
 const item = (state: LiveActivity["state"], index: number): LiveActivity => ({ id: `a-${index}`, live_session_id: "s", activity_type: "focus", order_index: index, instance_index: index + 1, instance_label: null, prompt: "p", timer_enabled: true, timer_duration: 5, show_live_results: true, surface_input_types: null, state, priority_source: null, votes_per_participant: 1, pact_statement_mode: null, facilitator_note: null, pact_text: null, started_at: null, ended_at: null, timer_anchor_at: "2026-01-01T00:00:00.000Z", paused_remaining_seconds: null, created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z" });
@@ -16,4 +17,14 @@ test("setup adapter maps the Facilitation draft to dedicated Live fields", () =>
   ]);
   expect(activities[1]).toMatchObject({ priority_source: "previous:0", votes_per_participant: 3 });
   expect(activities[2]).toMatchObject({ pact_statement_mode: "predefined", pact_text: "Impegno comune", facilitator_note: "Nota" });
+});
+test("Live UI adapter scopes activity records and preserves timer/lifecycle semantics", () => {
+  const live = item("live", 0), next = item("pending", 1);
+  const snapshot = { activities: [live, next], priorityItems: [{ id: "item", live_activity_id: live.id }], pacts: [{ live_activity_id: live.id, pact_text: "Agreement" }] } as unknown as LiveSessionSnapshot;
+  expect(currentLiveActivity(snapshot)?.id).toBe(live.id);
+  expect(nextPendingLiveActivity(snapshot)?.id).toBe(next.id);
+  expect(liveActivityItems(snapshot, live.id)).toHaveLength(1);
+  expect(livePactForActivity(snapshot, live.id)?.pact_text).toBe("Agreement");
+  expect(liveActivityRemainingSeconds({ ...live, state: "paused", paused_remaining_seconds: 42 })).toBe(42);
+  expect(activityDisplayName({ ...live, prompt: "", instance_label: "#1" }, { activities: { focus: { name: "Focus" } } } as never)).toBe("Focus #1");
 });
