@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { getCurrentLiveActivity, getLiveExportData, getNextLiveActivity, liveTimerRemaining, subscribeToLiveSession } from "../../lib/live/repository";
+import { getCurrentLiveActivity, getLiveExportData, getLiveResults, getNextLiveActivity, liveTimerRemaining, subscribeToLiveSession } from "../../lib/live/repository";
 import { toLiveActivityInputs } from "../../lib/live/setup-adapter";
 import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "../../lib/live/ui-adapter";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
@@ -27,4 +27,9 @@ test("Live UI adapter scopes activity records and preserves timer/lifecycle sema
   expect(livePactForActivity(snapshot, live.id)?.pact_text).toBe("Agreement");
   expect(liveActivityRemainingSeconds({ ...live, state: "paused", paused_remaining_seconds: 42 })).toBe(42);
   expect(activityDisplayName({ ...live, prompt: "", instance_label: "#1" }, { activities: { focus: { name: "Focus" } } } as never)).toBe("Focus #1");
+});
+test("results aggregation keeps persisted priority votes for a closed session", () => {
+  const activity = item("completed", 0);
+  const snapshot = { session: { id: "s", status: "closed" }, activities: [activity], participants: [{ id: "p" }], responses: [], priorityItems: [{ id: "priority", live_activity_id: activity.id, label: "Important" }], priorityVotes: [{ live_activity_id: activity.id, live_priority_item_id: "priority" }, { live_activity_id: activity.id, live_priority_item_id: "priority" }], pacts: [], pactVotes: [] } as unknown as LiveSessionSnapshot;
+  expect(getLiveResults(snapshot)).toMatchObject({ participantCount: 1, priorityRanking: [{ id: "priority", votes: 2 }] });
 });
