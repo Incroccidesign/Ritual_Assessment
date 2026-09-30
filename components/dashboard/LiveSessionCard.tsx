@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, Settings2, Trash2 } from "lucide-react";
+import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, RotateCcw, Settings2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { exportLiveDocx, exportLiveXlsx } from "@/lib/live/exports";
@@ -82,6 +82,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
             {menuOpen ? <div role="menu" className="ritual-popover-surface absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-md border p-1">
               {canManageActivities ? <ButtonLink href={`/live/setup?id=${encodeURIComponent(session.id)}`} variant="ghost" className="w-full justify-start px-3"><Settings2 size={16} /> Manage activities</ButtonLink> : null}
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void duplicate()}><CopyPlus size={16} /> {busy === "duplicate" ? "Creating copy…" : "Duplicate as new session"}</Button>
+              <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void duplicate()}><RotateCcw size={16} /> {busy === "duplicate" ? "Restarting…" : "Restart activity"}</Button>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("docx")}><FileText size={16} /> {busy === "docx" ? "Preparing report…" : "Download Word report"}</Button>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("excel")}><FileSpreadsheet size={16} /> {busy === "excel" ? "Preparing data…" : "Download Excel data"}</Button>
               <div className="my-1 border-t border-bone/10" />

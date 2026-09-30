@@ -86,7 +86,10 @@ export function liveTimerRemaining(activity: LiveActivity, at = Date.now()) {
 }
 const timerAnchor = (activity: LiveActivity, remaining: number, at = Date.now()) => new Date(at - ((activity.timer_duration ?? 0) * 60 - remaining) * 1000).toISOString();
 
-async function update(client: Client, table: string, values: Record<string, unknown>, id: string) { const { error } = await client.from(table).update(values).eq("id", id); if (error) fail(`${table}:update`, error); }
+async function update(client: Client, table: string, values: Record<string, unknown>, id: string) {
+  const { data, error } = await client.from(table).update(values).eq("id", id).select("id");
+  if (error || !data?.length) fail(`${table}:update`, error ?? new Error("No accessible row was updated."));
+}
 export async function updateLiveSession(sessionId: string, values: Record<string, unknown>) { await update(liveClient(), "live_sessions", values, sessionId); }
 export async function replaceLiveRoles(sessionId: string, roles: string[]) { const client = liveClient(); const { error: removeError } = await client.from("live_session_roles").delete().eq("live_session_id", sessionId); if (removeError) fail("live_session_roles:delete", removeError); const clean = Array.from(new Set(roles.map((role) => role.trim()).filter(Boolean))); if (clean.length) { const { error } = await client.from("live_session_roles").insert(clean.map((role_name) => ({ live_session_id: sessionId, role_name }))); if (error) fail("live_session_roles:insert", error); } }
 export async function replaceLiveActivities(sessionId: string, activities: CreateLiveActivityInput[]) {
@@ -206,9 +209,7 @@ export function useLiveSessionSnapshot(sessionId: string | null, access?: LivePa
   // reliable fallback that moves participants out of the lobby after a start.
   useEffect(() => {
     if (!sessionId || !access || snapshot?.session.status === "closed") return;
-    const poll = () => {
-      if (document.visibilityState === "visible") void refresh().catch(() => undefined);
-    };
+    const poll = () => { void refresh().catch(() => undefined); };
     const interval = window.setInterval(poll, 2000);
     document.addEventListener("visibilitychange", poll);
     return () => {

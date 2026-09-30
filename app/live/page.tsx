@@ -22,8 +22,13 @@ export default function LivePage() { return <Suspense fallback={<AppShell><p cla
 
 function LiveContent() {
   const params = useSearchParams(); const { language, messages, href } = useLanguage();
-  const sessionId = params.get("id"); const participantId = params.get("participant");
-  const [access] = useState<LiveParticipantAccess | null>(() => sessionId && participantId ? getLiveParticipantAccess(sessionId) : null);
+  const sessionId = params.get("id"); const participantId = params.get("participant"); const participantToken = params.get("participantToken"); const joinToken = params.get("join") ?? params.get("joinToken");
+  const [access] = useState<LiveParticipantAccess | null>(() => {
+    if (!sessionId || !participantId) return null;
+    const stored = getLiveParticipantAccess(sessionId);
+    if (stored?.participantId === participantId) return stored;
+    return participantToken ? { participantId, participantToken, joinToken } : null;
+  });
   const participantMode = Boolean(participantId);
   const participantAccess = access?.participantId === participantId ? access : null;
   const { snapshot, loading, refresh } = useLiveSessionSnapshot(sessionId, participantMode ? participantAccess : null);
@@ -45,7 +50,17 @@ function FacilitatorLive({ snapshot, refresh, language, dashboardHref, messages 
   useEffect(() => { const change = () => setPresentationMode(document.fullscreenElement === presentationRoot.current); document.addEventListener("fullscreenchange", change); return () => document.removeEventListener("fullscreenchange", change); }, []);
   const remaining = current ? liveActivityRemainingSeconds(current, now) : null; const expired = remaining === 0 && snapshot.session.status === "live" && current?.timer_enabled;
   const pact = current ? livePactForActivity(snapshot, current.id) : null; const round = pact?.pact_rounds.find((item) => item.roundNumber === pact.current_round_number); const pactVotes = current && pact?.current_round_number ? snapshot.pactVotes.filter((item) => item.live_activity_id === current.id && item.round_number === pact.current_round_number) : [];
-  async function primary() { if (snapshot.session.status === "lobby" || snapshot.session.status === "intermission") await startNextLiveActivity(snapshot.session.id); else if (snapshot.session.status === "live" && next) await completeLiveActivity(snapshot.session.id); else await closeLiveSession(snapshot.session.id); await refresh(); }
+  async function primary() {
+    try {
+      setError(null);
+      if (snapshot.session.status === "lobby" || snapshot.session.status === "intermission") await startNextLiveActivity(snapshot.session.id);
+      else if (snapshot.session.status === "live" && next) await completeLiveActivity(snapshot.session.id);
+      else await closeLiveSession(snapshot.session.id);
+      await refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : messages.common.sessionNotFound);
+    }
+  }
   async function pactStart() { if (!current || !pactDraft.trim()) return; try { await startLivePactRound(snapshot.session.id, current.id, pactDraft, current.pact_statement_mode ?? "build_live", current.facilitator_note); await refresh(); } catch (cause) { setError(cause instanceof Error ? cause.message : messages.live.pactActionError); } }
   async function pactRefresh() { if (!current) return; await refreshLivePactResults(snapshot.session.id, current.id); await refresh(); }
   async function pactConfirm() { if (!current) return; await confirmLivePact(snapshot.session.id, current.id); await refresh(); }

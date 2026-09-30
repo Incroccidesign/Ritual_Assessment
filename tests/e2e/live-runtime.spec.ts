@@ -20,6 +20,23 @@ test("setup adapter maps the Facilitation draft to dedicated Live fields", () =>
   expect(activities[1]).toMatchObject({ priority_source: "previous:0", votes_per_participant: 3 });
   expect(activities[2]).toMatchObject({ pact_statement_mode: "predefined", pact_text: "Impegno comune", facilitator_note: "Nota" });
 });
+test("setup adapter preserves customized Surface input types", () => {
+  const [activity] = toLiveActivityInputs([{
+    activity_type: "traccia",
+    prompt: "Cosa emerge?",
+    timer_enabled: false,
+    timer_duration: null,
+    show_live_results: true,
+    surface_input_types: [
+      { id: "strengths", label: { it: "Punti di forza", en: "Strengths" }, color: "mint" },
+      { id: "risks", label: { it: "Rischi", en: "Risks" }, color: "orange" }
+    ]
+  }]);
+  expect(activity.surface_input_types).toEqual([
+    { id: "strengths", label: { it: "Punti di forza", en: "Strengths" }, color: "mint" },
+    { id: "risks", label: { it: "Rischi", en: "Risks" }, color: "orange" }
+  ]);
+});
 test("Live UI adapter scopes activity records and preserves timer/lifecycle semantics", () => {
   const live = item("live", 0), next = item("pending", 1);
   const snapshot = { activities: [live, next], priorityItems: [{ id: "item", live_activity_id: live.id }], pacts: [{ live_activity_id: live.id, pact_text: "Agreement" }] } as unknown as LiveSessionSnapshot;

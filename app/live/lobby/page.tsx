@@ -34,6 +34,7 @@ function LobbyContent() {
   const [generatedJoinToken, setGeneratedJoinToken] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
   const joinUrl = useMemo(() => {
     if (!sessionId || !(generatedJoinToken ?? joinToken)) return "";
     return getJoinUrl(sessionId, generatedJoinToken ?? joinToken);
@@ -47,8 +48,13 @@ function LobbyContent() {
 
   async function startRitual() {
     if (!sessionId) return;
-    await startNextActivity(sessionId);
-    router.push(href(`/live?id=${sessionId}`));
+    try {
+      setStartError(null);
+      await startNextActivity(sessionId);
+      router.push(href(`/live?id=${sessionId}`));
+    } catch (error) {
+      setStartError(error instanceof Error ? error.message : messages.common.sessionNotFound);
+    }
   }
 
   async function generateParticipantLink() {
@@ -102,6 +108,7 @@ function LobbyContent() {
               </Button>
             ) : null}
           </div>
+          {startError ? <p className="mt-4 text-sm text-orange">{startError}</p> : null}
         </section>
 
         <section className={panelClass}>

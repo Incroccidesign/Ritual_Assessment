@@ -1,6 +1,6 @@
 import type { CreateLiveActivityInput, CreateRitualActivityInput } from "@/types/live";
 import { clampPriorityVotesPerParticipant, defaultActivityDuration } from "@/types/live";
-import { cloneSurfaceInputTypes, defaultSurfaceInputTypes } from "@/lib/live/surface-input-types";
+import { cloneSurfaceInputTypes, normalizeSurfaceInputTypes } from "@/lib/live/surface-input-types";
 
 /**
  * The setup editor deliberately keeps Facilitation's draft shape.  This is the
@@ -29,7 +29,7 @@ export function toLiveActivityInput(
       : null,
     show_live_results: activity.show_live_results,
     surface_input_types: activity.activity_type === "traccia"
-      ? cloneSurfaceInputTypes(activity.surface_input_types ?? defaultSurfaceInputTypes())
+      ? cloneSurfaceInputTypes(normalizeSurfaceInputTypes(activity.surface_input_types))
       : null,
     priority_source: prioritySource,
     priority_manual_items: activity.activity_type === "priorita"
