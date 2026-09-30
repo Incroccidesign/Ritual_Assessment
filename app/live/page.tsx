@@ -1,18 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { Check, Maximize, Minimize, Pause, Play, Square, StopCircle } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Check, Maximize, Minimize, Pause, Play, QrCode, RotateCcw, Square, StopCircle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, ButtonLink } from "@/components/live/button";
 import { inputClass, panelClass } from "@/components/live/field";
 import { LiveResults } from "@/components/live/live-results";
+import { SessionQrModal } from "@/components/live/session-qr-modal";
 import { AppShell } from "@/components/live/shell";
-import { getLiveParticipantAccess } from "@/lib/live/access";
+import { getLiveJoinToken, getLiveParticipantAccess } from "@/lib/live/access";
 import { participantDisplayName } from "@/lib/live/participant-identity";
+import { getJoinUrl } from "@/lib/live/public-url";
 import { normalizeSurfaceInputTypes, surfaceColorClasses, surfaceLabel } from "@/lib/live/surface-input-types";
 import { cn } from "@/lib/live/utils";
 import { useLanguage } from "@/lib/live/use-language";
-import { closeLiveSession, completeLiveActivity, confirmLivePact, extendLiveTimer, refreshLivePactResults, startLivePactRound, startNextLiveActivity, submitLivePactVote, submitLivePriorityVotes, submitLiveResponse, toggleLiveActivityPause, useLiveSessionSnapshot } from "@/lib/live/repository";
+import { closeLiveSession, completeLiveActivity, confirmLivePact, duplicateLiveSession, extendLiveTimer, generateLiveJoinLink, refreshLivePactResults, startLivePactRound, startNextLiveActivity, submitLivePactVote, submitLivePriorityVotes, submitLiveResponse, toggleLiveActivityPause, useLiveSessionSnapshot } from "@/lib/live/repository";
 import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "@/lib/live/ui-adapter";
 import type { LiveActivity, LiveAdhesionLevel, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
 
@@ -28,12 +30,17 @@ function LiveContent() {
   if (loading) return <AppShell compact={participantMode} claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.live.loading}</p></AppShell>;
   if (participantMode && !participantAccess) return <AppShell compact claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
   if (!sessionId || !snapshot) return <AppShell claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
-  return <AppShell compact={participantMode} claim={messages.chrome.claim} homeHref={href("/")}>{participantMode && participantAccess ? <ParticipantLive snapshot={snapshot} access={participantAccess} language={language} messages={messages} /> : <FacilitatorLive snapshot={snapshot} refresh={refresh} language={language} messages={messages} />}</AppShell>;
+  return <AppShell compact={participantMode} claim={messages.chrome.claim} homeHref={href("/")}>{participantMode && participantAccess ? <ParticipantLive snapshot={snapshot} access={participantAccess} language={language} messages={messages} /> : <FacilitatorLive snapshot={snapshot} refresh={refresh} language={language} dashboardHref={href("/dashboard")} messages={messages} />}</AppShell>;
 }
 
-function FacilitatorLive({ snapshot, refresh, language, messages }: { snapshot: LiveSessionSnapshot; refresh: () => Promise<LiveSessionSnapshot | null>; language: "it" | "en"; messages: ReturnType<typeof useLanguage>["messages"] }) {
+function FacilitatorLive({ snapshot, refresh, language, dashboardHref, messages }: { snapshot: LiveSessionSnapshot; refresh: () => Promise<LiveSessionSnapshot | null>; language: "it" | "en"; dashboardHref: string; messages: ReturnType<typeof useLanguage>["messages"] }) {
+  const router = useRouter();
   const presentationRoot = useRef<HTMLDivElement | null>(null); const [presentationMode, setPresentationMode] = useState(false);
-  const current = currentLiveActivity(snapshot); const next = nextPendingLiveActivity(snapshot); const [reveal, setReveal] = useState(false); const [now, setNow] = useState(() => Date.now()); const [pactDraft, setPactDraft] = useState(""); const [error, setError] = useState<string | null>(null);
+  const current = currentLiveActivity(snapshot); const next = nextPendingLiveActivity(snapshot); const [reveal, setReveal] = useState(false); const [now, setNow] = useState(() => Date.now()); const [pactDraft, setPactDraft] = useState(""); const [error, setError] = useState<string | null>(null); const [qrExpanded, setQrExpanded] = useState(false); const [storedJoinToken] = useState(() => getLiveJoinToken(snapshot.session.id)); const [generatedJoinToken, setGeneratedJoinToken] = useState<string | null>(null); const [generatingLink, setGeneratingLink] = useState(false); const [restarting, setRestarting] = useState(false);
+  const joinUrl = useMemo(() => {
+    const joinToken = generatedJoinToken ?? storedJoinToken;
+    return joinToken ? getJoinUrl(snapshot.session.id, joinToken) : "";
+  }, [generatedJoinToken, snapshot.session.id, storedJoinToken]);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   useEffect(() => { const change = () => setPresentationMode(document.fullscreenElement === presentationRoot.current); document.addEventListener("fullscreenchange", change); return () => document.removeEventListener("fullscreenchange", change); }, []);
   const remaining = current ? liveActivityRemainingSeconds(current, now) : null; const expired = remaining === 0 && snapshot.session.status === "live" && current?.timer_enabled;
@@ -42,11 +49,36 @@ function FacilitatorLive({ snapshot, refresh, language, messages }: { snapshot: 
   async function pactStart() { if (!current || !pactDraft.trim()) return; try { await startLivePactRound(snapshot.session.id, current.id, pactDraft, current.pact_statement_mode ?? "build_live", current.facilitator_note); await refresh(); } catch (cause) { setError(cause instanceof Error ? cause.message : messages.live.pactActionError); } }
   async function pactRefresh() { if (!current) return; await refreshLivePactResults(snapshot.session.id, current.id); await refresh(); }
   async function pactConfirm() { if (!current) return; await confirmLivePact(snapshot.session.id, current.id); await refresh(); }
+  async function showParticipantQr() {
+    try {
+      setError(null);
+      setGeneratingLink(true);
+      if (!joinUrl) setGeneratedJoinToken(await generateLiveJoinLink(snapshot.session.id));
+      setQrExpanded(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : messages.common.sessionNotFound);
+    } finally {
+      setGeneratingLink(false);
+    }
+  }
+  async function restartAsNewSession() {
+    try {
+      setError(null);
+      setRestarting(true);
+      const duplicate = await duplicateLiveSession(snapshot.session.id);
+      router.push(`/live/setup?id=${encodeURIComponent(duplicate.id)}&lang=${language}`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to restart this ritual.");
+    } finally {
+      setRestarting(false);
+    }
+  }
   const fullscreen = <Button variant="secondary" onClick={() => void (presentationMode ? document.exitFullscreen() : presentationRoot.current?.requestFullscreen())}>{presentationMode ? <Minimize size={16} /> : <Maximize size={16} />}{presentationMode ? messages.live.exitPresentationMode : messages.live.presentationMode}</Button>;
-  const controls = <div className="mb-8 flex flex-wrap justify-end gap-3">{fullscreen}{snapshot.session.status === "live" && current ? <><Button variant="ghost" onClick={() => void closeLiveSession(snapshot.session.id).then(refresh)}><StopCircle size={16} /> {messages.live.endRitual}</Button><Button variant="secondary" onClick={() => void toggleLiveActivityPause(snapshot.session.id).then(refresh)}>{current.state === "paused" ? <Play size={16} /> : <Pause size={16} />}{current.state === "paused" ? messages.live.resumeActivity : messages.live.pauseActivity}</Button></> : null}{expired ? <><Button variant="secondary" onClick={() => void extendLiveTimer(snapshot.session.id, 2).then(refresh)}>{messages.live.extendBy2}</Button><Button variant="secondary" onClick={() => void extendLiveTimer(snapshot.session.id, 5).then(refresh)}>{messages.live.extendBy5}</Button></> : null}{snapshot.session.status !== "closed" ? <Button onClick={() => void primary()}>{snapshot.session.status === "lobby" ? messages.lobby.start : snapshot.session.status === "intermission" ? messages.live.startActivity : next ? messages.live.nextActivity : messages.live.endRitual}</Button> : null}</div>;
-  if (snapshot.session.status === "closed") return <PresentationFrame root={presentationRoot} active={presentationMode}><div className="mb-8"><ButtonLink href={`/live/results?id=${snapshot.session.id}&lang=${language}`}>{messages.live.goToReport}</ButtonLink></div><ClosedScreen messages={messages} /></PresentationFrame>;
-  if (snapshot.session.status === "intermission") return <PresentationFrame root={presentationRoot} active={presentationMode}><div>{controls}</div><section className={panelClass}><h1 className="font-heading text-4xl text-bone">{messages.live.nextStepPreparingTitle}</h1><p className="mt-4 text-lg text-bone/62">{messages.live.nextStepPreparingBody}</p>{next ? <p className="mt-8 text-xl text-mint">{messages.live.nextActivityTitle}: {activityDisplayName(next, messages)}</p> : null}</section></PresentationFrame>;
-  return <PresentationFrame root={presentationRoot} active={presentationMode}><div className="flex flex-wrap items-start justify-between gap-6"><div><h1 className="text-xl font-semibold text-bone/72">{snapshot.session.title}</h1>{current && current.activity_type !== "patto" ? <p className="mt-4 font-heading text-4xl leading-tight text-bone md:text-5xl">{current.prompt}</p> : null}</div>{current?.timer_enabled ? <Timer activity={current} language={language} messages={messages} /> : null}</div>{controls}{current ? current.activity_type === "patto" ? <PactFacilitator activity={current} pact={pact} round={round} votes={pactVotes.length} draft={pactDraft} setDraft={setPactDraft} onStart={pactStart} onRefresh={pactRefresh} onConfirm={pactConfirm} error={error} messages={messages} /> : <LiveResults snapshot={snapshot} activity={current} language={language} messages={messages} responsesVisible={current.show_live_results || reveal} onToggleResponses={current.show_live_results ? null : () => setReveal((value) => !value)} /> : null}</PresentationFrame>;
+  const controls = <div className="mb-8 flex flex-wrap justify-end gap-3"><ButtonLink href={dashboardHref} variant="ghost">{messages.setup.backToDashboard}</ButtonLink>{fullscreen}{["live", "intermission"].includes(snapshot.session.status) ? <><Button variant="secondary" disabled={generatingLink} onClick={() => void showParticipantQr()}><QrCode size={16} /> {generatingLink ? messages.lobby.generatingLink : messages.live.inviteParticipants}</Button><Button variant="ghost" disabled={restarting} onClick={() => void restartAsNewSession()}><RotateCcw size={16} /> {restarting ? messages.live.restartingSession : messages.live.restartSession}</Button></> : null}{snapshot.session.status === "live" && current ? <><Button variant="ghost" onClick={() => void closeLiveSession(snapshot.session.id).then(refresh)}><StopCircle size={16} /> {messages.live.endRitual}</Button><Button variant="secondary" onClick={() => void toggleLiveActivityPause(snapshot.session.id).then(refresh)}>{current.state === "paused" ? <Play size={16} /> : <Pause size={16} />}{current.state === "paused" ? messages.live.resumeActivity : messages.live.pauseActivity}</Button></> : null}{expired ? <><Button variant="secondary" onClick={() => void extendLiveTimer(snapshot.session.id, 2).then(refresh)}>{messages.live.extendBy2}</Button><Button variant="secondary" onClick={() => void extendLiveTimer(snapshot.session.id, 5).then(refresh)}>{messages.live.extendBy5}</Button></> : null}{snapshot.session.status !== "closed" ? <Button onClick={() => void primary()}>{snapshot.session.status === "lobby" ? messages.lobby.start : snapshot.session.status === "intermission" ? messages.live.startActivity : next ? messages.live.nextActivity : messages.live.endRitual}</Button> : null}</div>;
+  const qrModal = <SessionQrModal open={qrExpanded} joinUrl={joinUrl} instruction={messages.lobby.scanQrInstruction} closeLabel={messages.live.backToActivity} onClose={() => setQrExpanded(false)} />;
+  if (snapshot.session.status === "closed") return <><PresentationFrame root={presentationRoot} active={presentationMode}><div className="mb-8 flex flex-wrap gap-3"><ButtonLink href={dashboardHref} variant="ghost">{messages.setup.backToDashboard}</ButtonLink><ButtonLink href={`/live/results?id=${snapshot.session.id}&lang=${language}`}>{messages.live.goToReport}</ButtonLink><Button variant="secondary" disabled={restarting} onClick={() => void restartAsNewSession()}><RotateCcw size={16} /> {restarting ? messages.live.restartingSession : messages.live.restartSession}</Button></div>{error ? <p className="mb-5 text-sm text-orange">{error}</p> : null}<ClosedScreen messages={messages} /></PresentationFrame>{qrModal}</>;
+  if (snapshot.session.status === "intermission") return <><PresentationFrame root={presentationRoot} active={presentationMode}><div>{controls}</div>{error ? <p className="mb-5 text-sm text-orange">{error}</p> : null}<section className={panelClass}><h1 className="font-heading text-4xl text-bone">{messages.live.nextStepPreparingTitle}</h1><p className="mt-4 text-lg text-bone/62">{messages.live.nextStepPreparingBody}</p>{next ? <p className="mt-8 text-xl text-mint">{messages.live.nextActivityTitle}: {activityDisplayName(next, messages)}</p> : null}</section></PresentationFrame>{qrModal}</>;
+  return <><PresentationFrame root={presentationRoot} active={presentationMode}><div className="flex flex-wrap items-start justify-between gap-6"><div><h1 className="text-xl font-semibold text-bone/72">{snapshot.session.title}</h1>{current && current.activity_type !== "patto" ? <p className="mt-4 font-heading text-4xl leading-tight text-bone md:text-5xl">{current.prompt}</p> : null}</div>{current?.timer_enabled ? <Timer activity={current} language={language} messages={messages} /> : null}</div>{controls}{error && current?.activity_type !== "patto" ? <p className="mb-5 text-sm text-orange">{error}</p> : null}{current ? current.activity_type === "patto" ? <PactFacilitator activity={current} pact={pact} round={round} votes={pactVotes.length} draft={pactDraft} setDraft={setPactDraft} onStart={pactStart} onRefresh={pactRefresh} onConfirm={pactConfirm} error={error} messages={messages} /> : <LiveResults snapshot={snapshot} activity={current} language={language} messages={messages} responsesVisible={current.show_live_results || reveal} onToggleResponses={current.show_live_results ? null : () => setReveal((value) => !value)} /> : null}</PresentationFrame>{qrModal}</>;
 }
 
 function PresentationFrame({ root, active, children }: { root: React.RefObject<HTMLDivElement | null>; active: boolean; children: React.ReactNode }) {

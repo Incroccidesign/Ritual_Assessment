@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { FileSpreadsheet, FileText, MoreHorizontal, Settings2, Trash2 } from "lucide-react";
+import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, Settings2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { exportLiveDocx, exportLiveXlsx } from "@/lib/live/exports";
-import { deleteLiveSession, fetchLiveSnapshot, recordLiveExport } from "@/lib/live/repository";
+import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveExport } from "@/lib/live/repository";
 import type { LiveSession } from "@/types/live";
 
 export function liveDashboardDestination(session: LiveSession) {
@@ -15,9 +16,10 @@ export function liveDashboardDestination(session: LiveSession) {
 }
 
 export function LiveSessionCard({ session, onDelete }: { session: LiveSession; onDelete?: (sessionId: string) => void }) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [busy, setBusy] = useState<"docx" | "excel" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"docx" | "excel" | "duplicate" | "delete" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const date = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(session.updated_at));
   const status = session.status === "lobby" ? "ready" : session.status;
@@ -54,6 +56,19 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
     }
   }
 
+  async function duplicate() {
+    try {
+      setBusy("duplicate");
+      setNotice(null);
+      const duplicate = await duplicateLiveSession(session.id);
+      router.push(`/live/setup?id=${encodeURIComponent(duplicate.id)}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Unable to duplicate this Live Session.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return <>
     <Card className="flex h-full flex-col space-y-5">
       <div className="flex items-start justify-between gap-3">
@@ -66,6 +81,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
             </Button>
             {menuOpen ? <div role="menu" className="ritual-popover-surface absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-md border p-1">
               {canManageActivities ? <ButtonLink href={`/live/setup?id=${encodeURIComponent(session.id)}`} variant="ghost" className="w-full justify-start px-3"><Settings2 size={16} /> Manage activities</ButtonLink> : null}
+              <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void duplicate()}><CopyPlus size={16} /> {busy === "duplicate" ? "Creating copy…" : "Duplicate as new session"}</Button>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("docx")}><FileText size={16} /> {busy === "docx" ? "Preparing report…" : "Download Word report"}</Button>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("excel")}><FileSpreadsheet size={16} /> {busy === "excel" ? "Preparing data…" : "Download Excel data"}</Button>
               <div className="my-1 border-t border-bone/10" />

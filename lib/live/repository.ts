@@ -22,6 +22,20 @@ export async function createLiveSession(input: CreateLiveSessionInput) {
   return payload;
 }
 
+export async function duplicateLiveSession(sessionId: string): Promise<{ id: string; joinToken: string }> {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.access_token) throw new Error("Authentication required.");
+  const response = await fetch(`/api/live-sessions/${encodeURIComponent(sessionId)}/duplicate`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${data.session.access_token}` }
+  });
+  const payload = await response.json().catch(() => null) as { id?: string; joinToken?: string; error?: string } | null;
+  if (!response.ok || !payload?.id || !payload.joinToken) throw new Error(payload?.error ?? "Unable to duplicate this Live Session.");
+  storeLiveJoinToken(payload.id, payload.joinToken);
+  return { id: payload.id, joinToken: payload.joinToken };
+}
+
 export async function generateLiveJoinLink(sessionId: string) {
   if (!supabase) throw new Error("Supabase is not configured.");
   const { data } = await supabase.auth.getSession();

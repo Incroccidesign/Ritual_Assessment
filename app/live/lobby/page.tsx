@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronUp, Play } from "lucide-react";
-import { Button } from "@/components/live/button";
+import { Button, ButtonLink } from "@/components/live/button";
 import { panelClass } from "@/components/live/field";
 import { participantDisplayName } from "@/lib/live/participant-identity";
 import { SessionQr } from "@/components/live/qr-code";
@@ -92,6 +92,7 @@ function LobbyContent() {
             </div>
           )}
           <div className="mt-6 flex flex-wrap gap-3">
+            <ButtonLink href={href("/dashboard")} variant="ghost">{messages.setup.backToDashboard}</ButtonLink>
             <Button onClick={startRitual} disabled={!nextActivity}>
               {messages.lobby.start} <Play size={17} />
             </Button>
