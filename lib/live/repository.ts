@@ -167,4 +167,46 @@ export function getLiveExportData(snapshot: LiveSessionSnapshot) { return { gene
 export async function recordLiveExport(sessionId: string, kind: "docx" | "excel") { const snapshot = await fetchLiveSnapshot(sessionId); if (!snapshot) return; await updateLiveSession(sessionId, { [kind === "docx" ? "export_docx_count" : "export_excel_count"]: (kind === "docx" ? snapshot.session.export_docx_count : snapshot.session.export_excel_count) + 1 }); }
 
 export function subscribeToLiveSession(client: Client, sessionId: string, refresh: () => void): RealtimeChannel { let channel = client.channel(`live:${sessionId}`); for (const table of ["live_sessions", "live_activities", "live_session_roles", "live_participants", "live_responses", "live_priority_items", "live_priority_votes", "live_pacts", "live_pact_votes"]) channel = channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `${table === "live_sessions" ? "id" : "live_session_id"}=eq.${sessionId}` }, refresh); return channel.subscribe(); }
-export function useLiveSessionSnapshot(sessionId: string | null, access?: LiveParticipantAccess | LiveJoinAccess | null) { const client = useMemo(() => access ? liveClient(access) : supabase, [access]); const [snapshot, setSnapshot] = useState<LiveSessionSnapshot | null>(null); const [loading, setLoading] = useState(Boolean(sessionId)); const refresh = useCallback(async () => { if (!sessionId) return null; const next = await fetchLiveSnapshot(sessionId, access); setSnapshot(next); setLoading(false); return next; }, [sessionId, access]); useEffect(() => { if (!sessionId || !client) return; const reload = () => { void refresh(); }; queueMicrotask(reload); const channel = subscribeToLiveSession(client, sessionId, reload); return () => { client.removeChannel(channel); }; }, [client, sessionId, refresh]); return { snapshot, loading, refresh }; }
+export function useLiveSessionSnapshot(sessionId: string | null, access?: LiveParticipantAccess | LiveJoinAccess | null) {
+  const client = useMemo(() => access ? liveClient(access) : supabase, [access]);
+  const [snapshot, setSnapshot] = useState<LiveSessionSnapshot | null>(null);
+  const [loading, setLoading] = useState(Boolean(sessionId));
+  const refresh = useCallback(async () => {
+    if (!sessionId) return null;
+    const next = await fetchLiveSnapshot(sessionId, access);
+    setSnapshot(next);
+    setLoading(false);
+    return next;
+  }, [sessionId, access]);
+
+  useEffect(() => {
+    if (!sessionId || !client) return;
+    const reload = () => { void refresh().catch(() => undefined); };
+    queueMicrotask(reload);
+    const channel = subscribeToLiveSession(client, sessionId, reload);
+    return () => { client.removeChannel(channel); };
+  }, [client, sessionId, refresh]);
+
+  // Participant credentials are transported in REST request headers. Realtime
+  // does not consistently carry those headers on mobile, so this is the
+  // reliable fallback that moves participants out of the lobby after a start.
+  useEffect(() => {
+    if (!sessionId || !access || snapshot?.session.status === "closed") return;
+    const poll = () => {
+      if (document.visibilityState === "visible") void refresh().catch(() => undefined);
+    };
+    const interval = window.setInterval(poll, 2000);
+    document.addEventListener("visibilitychange", poll);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", poll);
+    };
+  }, [access, refresh, sessionId, snapshot?.session.status]);
+
+  return { snapshot, loading, refresh };
+}
+
+export async function deleteLiveSession(sessionId: string) {
+  const { data, error } = await liveClient().from("live_sessions").delete().eq("id", sessionId).select("id");
+  if (error || !data?.length) fail("live_sessions:delete", error ?? new Error("You cannot delete this Live Session."));
+}

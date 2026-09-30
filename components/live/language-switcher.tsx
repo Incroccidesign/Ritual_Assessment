@@ -15,8 +15,8 @@ export function LanguageSwitcher() {
           type="button"
           onClick={() => switchLanguage(item)}
           className={cn(
-            "h-8 min-w-10 rounded px-2 text-xs font-semibold transition",
-            language === item ? "bg-bone text-night" : "text-bone/52 hover:text-bone"
+            "min-h-8 rounded px-3 text-xs font-semibold uppercase tracking-[0.08em] transition",
+            language === item ? "bg-bone text-night" : "text-bone/58 hover:text-bone"
           )}
           aria-pressed={language === item}
         >

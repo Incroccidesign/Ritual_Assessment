@@ -138,6 +138,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
     );
   }
 
+  function handleDeleteLiveSession(sessionId: string) {
+    setLiveSessions((current) => current.filter((session) => session.id !== sessionId));
+  }
+
   async function handleCreateBlankAssessment() {
     if (!isSupabaseConfigured || creating) return;
     setCreating(true);
@@ -270,7 +274,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <Card><p className="text-orange">{error}</p></Card>
         ) : assessmentBundles.length || liveSessions.length ? (
           <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
-            {liveSessions.map((session) => <LiveSessionCard key={`live:${session.id}`} session={session} />)}
+            {liveSessions.map((session) => <LiveSessionCard key={`live:${session.id}`} session={session} onDelete={handleDeleteLiveSession} />)}
             {assessmentBundles.map((bundle) => (
               <AssessmentManagementCard
                 key={bundle.assessment.id}
