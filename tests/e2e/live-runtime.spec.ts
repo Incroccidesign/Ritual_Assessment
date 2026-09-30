@@ -3,6 +3,7 @@ import { getCurrentLiveActivity, getLiveExportData, getLiveResults, getNextLiveA
 import { toLiveActivityInputs } from "../../lib/live/setup-adapter";
 import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "../../lib/live/ui-adapter";
 import { liveDashboardDestination } from "../../components/dashboard/LiveSessionCard";
+import { getJoinUrl, isLocalDevelopmentUrl } from "../../lib/live/public-url";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
 
 const item = (state: LiveActivity["state"], index: number): LiveActivity => ({ id: `a-${index}`, live_session_id: "s", activity_type: "focus", order_index: index, instance_index: index + 1, instance_label: null, prompt: "p", timer_enabled: true, timer_duration: 5, show_live_results: true, surface_input_types: null, state, priority_source: null, votes_per_participant: 1, pact_statement_mode: null, facilitator_note: null, pact_text: null, started_at: null, ended_at: null, timer_anchor_at: "2026-01-01T00:00:00.000Z", paused_remaining_seconds: null, created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z" });
@@ -40,4 +41,10 @@ test("dashboard routes each Live lifecycle state to its own surface", () => {
   expect(liveDashboardDestination(session("lobby"))).toContain("/live/lobby");
   expect(liveDashboardDestination(session("live"))).toContain("/live?id=");
   expect(liveDashboardDestination(session("closed"))).toContain("/live/results");
+});
+test("Live participant links keep the session token and recognize local network development", () => {
+  expect(getJoinUrl("session-id", "join token")).toContain("join=join%20token");
+  expect(isLocalDevelopmentUrl("http://localhost:3000")).toBe(true);
+  expect(isLocalDevelopmentUrl("http://192.168.1.42:3000")).toBe(true);
+  expect(isLocalDevelopmentUrl("https://www.ritualopen.com")).toBe(false);
 });

@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, Flame, Focus, Handshake, Layers, ListChecks, TimerReset, Trash2, X } from "lucide-react";
 import { Button } from "@/components/live/button";
 import { Field, inputClass, panelClass, selectClass } from "@/components/live/field";
@@ -10,7 +10,7 @@ import { AppShell } from "@/components/live/shell";
 import { AppShell as RitualAppShell } from "@/components/layout/AppShell";
 import { ButtonLink as RitualButtonLink } from "@/components/ritual-ui";
 import { activityPrompt } from "@/lib/live/i18n";
-import { createLiveSession, enterLiveLobby } from "@/lib/live/repository";
+import { createLiveSession, enterLiveLobby, replaceLiveActivities, replaceLiveRoles, updateLiveSession, useLiveSessionSnapshot } from "@/lib/live/repository";
 import { ActivityType, activities, clampPriorityVotesPerParticipant, CreateRitualActivityInput, defaultActivityDuration, ParticipantDetailsMode, SurfaceColorKey, SurfaceInputType } from "@/types/live";
 import { toLiveActivityInputs } from "@/lib/live/setup-adapter";
 import { defaultSurfaceInputTypes, normalizeSurfaceInputTypes, surfaceColorClasses, surfaceColorName, surfaceColorPalette } from "@/lib/live/surface-input-types";
@@ -49,7 +49,11 @@ export default function SetupPage() {
 
 function SetupContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const { language, messages, href } = useLanguage();
+  const sessionId = params.get("id");
+  const { snapshot, loading: sessionLoading } = useLiveSessionSnapshot(sessionId);
+  const hydratedSessionId = useRef<string | null>(null);
   const [title, setTitle] = useState<string>(messages.setup.defaultTitle);
   const [facilitatorName, setFacilitatorName] = useState("");
   const [contextId, setContextId] = useState<string>("");
@@ -62,6 +66,7 @@ function SetupContent() {
   const [surfaceNotice, setSurfaceNotice] = useState<{ activityId: string; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const selectedContext = useMemo(() => messages.setup.contexts.find((context) => context.id === contextId), [contextId, messages.setup.contexts]);
   const availableRoles = useMemo(
@@ -95,6 +100,7 @@ function SetupContent() {
     });
 
   useEffect(() => {
+    if (sessionId) return;
     try {
       const pending = consumePendingRitualFile();
       if (!pending) return;
@@ -140,7 +146,50 @@ function SetupContent() {
     } catch {
       queueMicrotask(() => setSubmitError(`${messages.home.invalidRitualFile}. ${messages.home.unableToLoadRitualFile}.`));
     }
-  }, [language, messages.home.invalidRitualFile, messages.home.unableToLoadRitualFile, messages.setup.defaultTitle]);
+  }, [language, messages.home.invalidRitualFile, messages.home.unableToLoadRitualFile, messages.setup.defaultTitle, sessionId]);
+
+  useEffect(() => {
+    if (!sessionId || !snapshot || hydratedSessionId.current === sessionId) return;
+
+    const sortedActivities = [...snapshot.activities].sort((left, right) => left.order_index - right.order_index);
+    const localIdsByOrder = new Map(sortedActivities.map((activity) => [activity.order_index, uid(`stored_activity_${activity.order_index + 1}`)]));
+    const matchingContext = messages.setup.contexts.find((context) => context.label === snapshot.session.context_label);
+
+    setTitle(snapshot.session.title);
+    setFacilitatorName(snapshot.session.facilitator_name ?? "");
+    setContextId(matchingContext?.id ?? "");
+    setParticipantDetailsMode(snapshot.session.participant_details_mode);
+    setRoles(snapshot.roles.map((role) => role.role_name));
+    setCustomRoles([]);
+    setSelectedActivities(
+      sortedActivities.map((activity) => {
+        const previousOrder = activity.priority_source?.startsWith("previous:")
+          ? Number(activity.priority_source.slice("previous:".length))
+          : null;
+        return {
+          local_id: localIdsByOrder.get(activity.order_index) ?? uid("stored_activity"),
+          activity_type: activity.activity_type,
+          instance_label: activity.instance_label ?? `#${activity.instance_index}`,
+          prompt: activity.prompt,
+          timer_enabled: activity.timer_enabled,
+          timer_duration: activity.timer_duration,
+          show_live_results: activity.show_live_results,
+          surface_input_types: activity.activity_type === "traccia" ? normalizeSurfaceInputTypes(activity.surface_input_types as SurfaceInputType[] | null) : null,
+          priority_source_type: previousOrder === null ? "manual" : "previous_activity",
+          priority_source_activity_order: previousOrder,
+          priority_source_activity_local_id: previousOrder === null ? null : localIdsByOrder.get(previousOrder) ?? null,
+          priority_manual_items: snapshot.priorityItems
+            .filter((item) => item.live_activity_id === activity.id && item.source_type === "manual")
+            .map((item) => item.label),
+          votes_per_participant: clampPriorityVotesPerParticipant(activity.votes_per_participant),
+          pact_statement_mode: activity.pact_statement_mode ?? "build_live",
+          facilitator_note: activity.facilitator_note,
+          pact_text: activity.pact_text
+        };
+      })
+    );
+    hydratedSessionId.current = sessionId;
+  }, [messages.setup.contexts, sessionId, snapshot]);
 
   function addActivity(type: ActivityType) {
     setSelectedActivities((current) => [
@@ -308,12 +357,25 @@ function SetupContent() {
     setSurfaceNotice((current) => (current?.activityId === localId ? null : current));
   }
 
-  async function openLobby() {
+  async function persistConfiguration() {
     if (!canOpenLobby) return;
     setSubmitError(null);
     setSaving(true);
+    setSaved(false);
     try {
-      const { id: sessionId } = await createLiveSession({
+      if (sessionId) {
+        await updateLiveSession(sessionId, {
+          title: title.trim(),
+          facilitator_name: facilitatorName.trim() || null,
+          context_label: selectedContext?.label ?? null,
+          participant_details_mode: participantDetailsMode
+        });
+        await replaceLiveRoles(sessionId, roles);
+        await replaceLiveActivities(sessionId, configuredActivities);
+        setSaved(true);
+        return sessionId;
+      }
+      const created = await createLiveSession({
         title: title.trim(),
         facilitator_name: facilitatorName.trim() || null,
         context_label: selectedContext?.label ?? null,
@@ -321,18 +383,25 @@ function SetupContent() {
         roles,
         activities: configuredActivities
       });
-      if (!sessionId) {
+      if (!created.id) {
         throw new Error("missing_session_id");
       }
-      await enterLiveLobby(sessionId);
-      router.push(href(`/live/lobby?id=${sessionId}`));
+      return created.id;
     } catch (error) {
-      console.error("Failed to open lobby for multi-activity ritual", error);
+      console.error("Failed to save multi-activity ritual", error);
       const detail = error instanceof Error ? error.message : String(error);
       setSubmitError(detail);
+      return null;
     } finally {
       setSaving(false);
     }
+  }
+
+  async function openLobby() {
+    const persistedSessionId = await persistConfiguration();
+    if (!persistedSessionId) return;
+    await enterLiveLobby(persistedSessionId);
+    router.push(href(`/live/lobby?id=${persistedSessionId}`));
   }
 
   function saveRitualFile() {
@@ -346,6 +415,40 @@ function SetupContent() {
       activities: selectedActivities
     });
     downloadRitualFile(file);
+  }
+
+  if (sessionId && sessionLoading) {
+    return (
+      <RitualAppShell>
+        <div className="mx-auto max-w-4xl route-page-fade">
+          <section className={panelClass}><p className="text-bone/55">{messages.common.loading}</p></section>
+        </div>
+      </RitualAppShell>
+    );
+  }
+
+  if (sessionId && !snapshot) {
+    return (
+      <RitualAppShell>
+        <div className="mx-auto max-w-4xl route-page-fade">
+          <section className={panelClass}><p className="text-bone/55">{messages.common.sessionNotFound}</p></section>
+        </div>
+      </RitualAppShell>
+    );
+  }
+
+  if (snapshot && !["draft", "setup", "lobby"].includes(snapshot.session.status)) {
+    return (
+      <RitualAppShell>
+        <div className="mx-auto max-w-4xl route-page-fade">
+          <section className={cn(panelClass, "space-y-5")}>
+            <h1 className="font-heading text-3xl font-semibold text-bone">{messages.setup.editUnavailableTitle}</h1>
+            <p className="max-w-2xl text-bone/62">{messages.setup.editUnavailableBody}</p>
+            <RitualButtonLink href={href("/dashboard")} variant="secondary">{messages.setup.backToDashboard}</RitualButtonLink>
+          </section>
+        </div>
+      </RitualAppShell>
+    );
   }
 
   return (
@@ -497,9 +600,9 @@ function SetupContent() {
                     type="button"
                     onClick={() => addActivity(item.id)}
                     aria-label={`${messages.setup.addActivityCta} ${messages.activities[item.id].name}`}
-                    className="flex min-h-64 flex-col rounded-lg border border-bone/10 bg-night/55 p-5 text-left text-bone/62 transition hover:border-violet/70 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint"
+                    className="flex min-h-64 flex-col rounded-lg border border-bone/10 bg-night/55 p-5 text-left text-bone/62 transition hover:border-mint/70 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint"
                   >
-                    <ActivityIcon type={item.id} className="mb-6 text-violet" size={48} />
+                    <ActivityIcon type={item.id} className="mb-6 text-mint" size={48} />
                     <span className="block font-heading text-lg font-semibold">{messages.activities[item.id].name}</span>
                     <span className="mt-3 block text-[15px] leading-6 text-bone/64">{messages.activities[item.id].setupDescription}</span>
                     <span className="mt-auto inline-flex pt-5 text-sm font-medium text-mint">{messages.setup.addActivityCta}</span>
@@ -536,7 +639,7 @@ function SetupContent() {
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-3">
-                            <ActivityIcon type={activity.activity_type} className="text-violet" size={20} />
+                            <ActivityIcon type={activity.activity_type} className="text-mint" size={20} />
                             <h3 className="font-heading text-xl font-semibold text-bone">{description.name} /</h3>
                             <input
                               aria-label={`${description.name} instance label`}
@@ -746,7 +849,7 @@ function SetupContent() {
                                         "block cursor-pointer rounded-lg border p-4 transition",
                                         checked
                                           ? "border-mint bg-mint/10 text-bone"
-                                          : "border-bone/10 bg-night/45 text-bone/70 hover:border-violet/45"
+                                          : "border-bone/10 bg-night/45 text-bone/70 hover:border-mint/45"
                                       )}
                                     >
                                       <input
@@ -776,7 +879,7 @@ function SetupContent() {
                           ) : null}
 
                           {activity.activity_type === "priorita" ? (
-                            <div className="space-y-4 rounded-lg border border-violet/25 bg-violet/8 p-4">
+                            <div className="space-y-4 rounded-lg border border-bone/10 bg-night/45 p-4">
                               <Field label={messages.setup.labels.priorityWhat}>
                                 <select
                                   className={selectClass}
@@ -952,10 +1055,16 @@ function SetupContent() {
               </section>
 
               {submitError ? <p className="text-sm text-orange">{submitError}</p> : null}
+              {saved ? <p className="text-sm text-mint">{messages.setup.changesSaved}</p> : null}
               <div className="flex flex-wrap gap-3">
                 <Button type="button" variant="secondary" onClick={saveRitualFile} title={messages.setup.saveRitualFileHelp}>
                   {messages.setup.saveRitualFile} <Download size={17} />
                 </Button>
+                {sessionId ? (
+                  <Button type="button" variant="secondary" disabled={saving || !canOpenLobby} onClick={() => void persistConfiguration()}>
+                    {messages.setup.saveChanges}
+                  </Button>
+                ) : null}
                 <Button type="submit" disabled={saving || !canOpenLobby}>
                   {messages.setup.openLobby} <ArrowRight size={17} />
                 </Button>

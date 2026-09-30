@@ -16,7 +16,7 @@ export const inputClass = cn(
 
 export const selectClass = cn(
   inputClass,
-  "border-bone/12 bg-[#171A20] text-bone [color-scheme:dark] hover:border-violet/55 focus:border-mint focus:bg-[#191d24] [&_option]:bg-[#171A20] [&_option]:text-bone"
+  "border-bone/12 bg-[#15181f] text-bone [color-scheme:dark] hover:border-mint/55 focus:border-mint focus:bg-[#15181f] [&_option]:bg-[#15181f] [&_option]:text-bone"
 );
 
 export const panelClass = cn("rounded-lg border border-bone/10 bg-bone/[0.045] p-5 shadow-live");

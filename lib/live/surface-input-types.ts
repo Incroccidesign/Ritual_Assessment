@@ -20,7 +20,7 @@ export const surfaceColorPalette: Array<{
 export function defaultSurfaceInputTypes(): SurfaceInputType[] {
   return [
     { id: "issues", label: { it: "Criticità", en: "Issues" }, color: "orange" },
-    { id: "barriers", label: { it: "Barriere", en: "Barriers" }, color: "violet" },
+    { id: "barriers", label: { it: "Barriere", en: "Barriers" }, color: "blue" },
     { id: "opportunities", label: { it: "Opportunità", en: "Opportunities" }, color: "mint" },
     { id: "signals", label: { it: "Segnali", en: "Signals" }, color: "blue" }
   ];

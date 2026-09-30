@@ -31,17 +31,15 @@ select {
   font: inherit;
 }
 
-/* Live Facilitation keeps its original visual surface without changing Assessment. */
+/* Live Facilitation uses the same night-blue canvas as the rest of Ritual. */
 .live-experience {
   min-height: 100vh;
   color: #f3efe6;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(111, 91, 255, 0.18), transparent 34rem),
-    linear-gradient(180deg, #0f1115 0%, #15171d 58%, #0f1115 100%);
+  background: #01060e;
 }
 
 .live-experience ::selection {
-  color: #0f1115;
+  color: #01060e;
   background: #6ef2c2;
 }
 

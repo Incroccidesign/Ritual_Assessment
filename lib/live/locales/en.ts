@@ -192,6 +192,11 @@ export const en = {
     pactProposalPlaceholder: "E.g. We commit to defining a shared next step by the end of the session.",
     saveRitualFile: "Save ritual file",
     saveRitualFileHelp: "Save the ritual configuration to reuse it later.",
+    saveChanges: "Save changes",
+    changesSaved: "Changes saved.",
+    editUnavailableTitle: "The ritual is already running",
+    editUnavailableBody: "Activities cannot be changed after the start, so responses and results remain consistent.",
+    backToDashboard: "Back to dashboard",
     openLobby: "Open lobby",
     contexts: [
       { id: "healthcare", label: "Healthcare", roles: ["Doctor", "Nurse", "Ward coordinator", "Healthcare assistant", "Administrative staff", "Quality manager", "Researcher", "Facilitator", "Patient", "Caregiver"] },
@@ -212,7 +217,10 @@ export const en = {
   },
   lobby: {
     loading: "Opening lobby.",
-    localWarning: "Localhost only works on this computer. Use your LAN IP locally, or set NEXT_PUBLIC_SITE_URL to the Vercel URL online.",
+    localWarning: "The preview works on this computer. To open the ritual on a phone, set NEXT_PUBLIC_LIVE_JOIN_URL to this computer’s LAN IP and run Next on the local network.",
+    linkUnavailable: "This browser does not retain the participant link. Generate a new one to invite people or test access: the previous link will stop working.",
+    generateLink: "Generate participant link",
+    generatingLink: "Generating link…",
     start: "Start ritual",
     preview: "Mobile preview",
     scanQrInstruction: "Scan the QR code with your smartphone",

@@ -192,6 +192,11 @@ export const it = {
     pactProposalPlaceholder: "Es. Ci impegniamo a definire una prossima mossa condivisa entro la fine dell’incontro.",
     saveRitualFile: "Salva file rituale",
     saveRitualFileHelp: "Salva la configurazione del rituale per riutilizzarla in seguito.",
+    saveChanges: "Salva modifiche",
+    changesSaved: "Modifiche salvate.",
+    editUnavailableTitle: "Il rituale è già in corso",
+    editUnavailableBody: "Le attività non possono essere modificate dopo l’avvio, così le risposte e i risultati restano coerenti.",
+    backToDashboard: "Torna alla dashboard",
     openLobby: "Apri lobby",
     contexts: [
       { id: "healthcare", label: "Sanità", roles: ["Medico", "Infermiere", "Coordinatore di reparto", "Operatore sociosanitario", "Amministrativo", "Responsabile qualità", "Ricercatore", "Facilitatore", "Paziente", "Caregiver"] },
@@ -212,7 +217,10 @@ export const it = {
   },
   lobby: {
     loading: "Apertura lobby.",
-    localWarning: "Localhost funziona solo su questo computer. In locale usa l'IP di rete; online imposta NEXT_PUBLIC_SITE_URL con l'URL Vercel.",
+    localWarning: "L’anteprima funziona su questo computer. Per aprire il rituale da uno smartphone imposta NEXT_PUBLIC_LIVE_JOIN_URL con l’IP di rete del computer e avvia Next sulla rete locale.",
+    linkUnavailable: "Questo browser non conserva il link partecipanti. Generane uno nuovo per invitare o testare l’accesso: il precedente verrà disattivato.",
+    generateLink: "Genera link partecipanti",
+    generatingLink: "Genero link…",
     start: "Avvia rituale",
     preview: "Anteprima mobile",
     scanQrInstruction: "Scansiona il QR code con il tuo smartphone",

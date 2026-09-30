@@ -11,7 +11,7 @@ import { SessionQrModal } from "@/components/live/session-qr-modal";
 import { AppShell } from "@/components/live/shell";
 import { getLiveJoinToken as getStoredJoinToken } from "@/lib/live/access";
 import { getJoinUrl, isLocalhostUrl } from "@/lib/live/public-url";
-import { getNextLiveActivity as getNextPendingActivity, startNextLiveActivity as startNextActivity, useLiveSessionSnapshot as useSessionSnapshot } from "@/lib/live/repository";
+import { generateLiveJoinLink, getNextLiveActivity as getNextPendingActivity, startNextLiveActivity as startNextActivity, useLiveSessionSnapshot as useSessionSnapshot } from "@/lib/live/repository";
 import { useLanguage } from "@/lib/live/use-language";
 
 export default function LobbyPage() {
@@ -31,10 +31,13 @@ function LobbyContent() {
   const [qrExpanded, setQrExpanded] = useState(false);
   const [showSequence, setShowSequence] = useState(false);
   const [joinToken] = useState<string | null>(() => sessionId ? getStoredJoinToken(sessionId) : null);
+  const [generatedJoinToken, setGeneratedJoinToken] = useState<string | null>(null);
+  const [generatingLink, setGeneratingLink] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const joinUrl = useMemo(() => {
-    if (!sessionId) return "";
-    return getJoinUrl(sessionId, joinToken);
-  }, [joinToken, sessionId]);
+    if (!sessionId || !(generatedJoinToken ?? joinToken)) return "";
+    return getJoinUrl(sessionId, generatedJoinToken ?? joinToken);
+  }, [generatedJoinToken, joinToken, sessionId]);
   const isLocalQr = joinUrl ? isLocalhostUrl(joinUrl) : false;
 
   if (loading) return <AppShell claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.lobby.loading}</p></AppShell>;
@@ -48,25 +51,55 @@ function LobbyContent() {
     router.push(href(`/live?id=${sessionId}`));
   }
 
+  async function generateParticipantLink() {
+    if (!sessionId) return;
+    setGeneratingLink(true);
+    setLinkError(null);
+    try {
+      setGeneratedJoinToken(await generateLiveJoinLink(sessionId));
+    } catch (error) {
+      setLinkError(error instanceof Error ? error.message : messages.common.sessionNotFound);
+    } finally {
+      setGeneratingLink(false);
+    }
+  }
+
   return (
     <AppShell claim={messages.chrome.claim} homeHref={href("/")}>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <section className={panelClass}>
           <h1 className="mt-5 font-heading text-5xl font-semibold leading-none text-bone">{snapshot.session.title}</h1>
           {snapshot.session.facilitator_name ? <p className="mt-5 text-bone/55">{snapshot.session.facilitator_name}</p> : null}
-          <div className="mt-8">
-            <button type="button" onClick={() => setQrExpanded(true)} className="rounded-lg transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-mint">
-              <SessionQr value={joinUrl} />
-            </button>
-          </div>
-          <div className="mt-6 rounded-md border border-bone/10 bg-night/55 p-4">
-            <p className="break-all text-sm text-bone/48">{joinUrl}</p>
-            {isLocalQr ? <p className="mt-3 text-xs leading-5 text-orange">{messages.lobby.localWarning}</p> : null}
-          </div>
+          {joinUrl ? (
+            <>
+              <div className="mt-8">
+                <button type="button" onClick={() => setQrExpanded(true)} className="rounded-lg transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-mint">
+                  <SessionQr value={joinUrl} />
+                </button>
+              </div>
+              <div className="mt-6 rounded-md border border-bone/10 bg-night/55 p-4">
+                <p className="break-all text-sm text-bone/48">{joinUrl}</p>
+                {isLocalQr ? <p className="mt-3 text-xs leading-5 text-orange">{messages.lobby.localWarning}</p> : null}
+              </div>
+            </>
+          ) : (
+            <div className="mt-8 rounded-md border border-bone/10 bg-night/55 p-4">
+              <p className="text-sm leading-6 text-bone/62">{messages.lobby.linkUnavailable}</p>
+              {linkError ? <p className="mt-3 text-sm text-orange">{linkError}</p> : null}
+              <Button className="mt-4" type="button" variant="secondary" disabled={generatingLink} onClick={() => void generateParticipantLink()}>
+                {generatingLink ? messages.lobby.generatingLink : messages.lobby.generateLink}
+              </Button>
+            </div>
+          )}
           <div className="mt-6 flex flex-wrap gap-3">
             <Button onClick={startRitual} disabled={!nextActivity}>
               {messages.lobby.start} <Play size={17} />
             </Button>
+            {joinUrl ? (
+              <Button type="button" variant="secondary" onClick={() => window.open(joinUrl, "_blank", "noopener,noreferrer")}>
+                {messages.lobby.preview}
+              </Button>
+            ) : null}
           </div>
         </section>
 

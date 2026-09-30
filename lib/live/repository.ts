@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { generateLiveToken, liveClient, storeLiveJoinToken, storeLiveParticipantAccess } from "@/lib/live/access";
-import type { CreateLiveSessionInput, LiveActivity, LiveAdhesionLevel, LiveJoinAccess, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
+import type { CreateLiveActivityInput, CreateLiveSessionInput, LiveActivity, LiveAdhesionLevel, LiveJoinAccess, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
 
 type Client = ReturnType<typeof liveClient>;
 const fail = (stage: string, error: unknown) => { throw new Error(`${stage}: ${error instanceof Error ? error.message : String(error)}`); };
@@ -20,6 +20,20 @@ export async function createLiveSession(input: CreateLiveSessionInput) {
   if (!response.ok || !payload?.id || !payload.joinToken) throw new Error(payload?.error ?? "Unable to create Live Session.");
   storeLiveJoinToken(payload.id, payload.joinToken);
   return payload;
+}
+
+export async function generateLiveJoinLink(sessionId: string) {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.access_token) throw new Error("Authentication required.");
+  const response = await fetch(`/api/live-sessions/${encodeURIComponent(sessionId)}/join-link`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${data.session.access_token}` }
+  });
+  const payload = await response.json().catch(() => null) as { joinToken?: string; error?: string } | null;
+  if (!response.ok || !payload?.joinToken) throw new Error(payload?.error ?? "Unable to generate a participant link.");
+  storeLiveJoinToken(sessionId, payload.joinToken);
+  return payload.joinToken;
 }
 
 export async function listLiveSessions() {
@@ -61,7 +75,48 @@ const timerAnchor = (activity: LiveActivity, remaining: number, at = Date.now())
 async function update(client: Client, table: string, values: Record<string, unknown>, id: string) { const { error } = await client.from(table).update(values).eq("id", id); if (error) fail(`${table}:update`, error); }
 export async function updateLiveSession(sessionId: string, values: Record<string, unknown>) { await update(liveClient(), "live_sessions", values, sessionId); }
 export async function replaceLiveRoles(sessionId: string, roles: string[]) { const client = liveClient(); const { error: removeError } = await client.from("live_session_roles").delete().eq("live_session_id", sessionId); if (removeError) fail("live_session_roles:delete", removeError); const clean = Array.from(new Set(roles.map((role) => role.trim()).filter(Boolean))); if (clean.length) { const { error } = await client.from("live_session_roles").insert(clean.map((role_name) => ({ live_session_id: sessionId, role_name }))); if (error) fail("live_session_roles:insert", error); } }
-export async function replaceLiveActivities(sessionId: string, activities: Array<Partial<LiveActivity> & Pick<LiveActivity, "activity_type" | "prompt" | "timer_enabled" | "show_live_results">>) { const client = liveClient(); const { error: removeError } = await client.from("live_activities").delete().eq("live_session_id", sessionId).eq("state", "pending"); if (removeError) fail("live_activities:delete", removeError); const rows = activities.map((activity, order_index) => ({ live_session_id: sessionId, activity_type: activity.activity_type, prompt: activity.prompt, timer_enabled: activity.timer_enabled, show_live_results: activity.show_live_results, order_index, instance_index: activities.slice(0, order_index + 1).filter((item) => item.activity_type === activity.activity_type).length, instance_label: activity.instance_label ?? null, timer_duration: activity.timer_duration ?? null, surface_input_types: activity.surface_input_types ?? null, priority_source: activity.priority_source ?? null, votes_per_participant: activity.votes_per_participant ?? 1, pact_statement_mode: activity.pact_statement_mode ?? null, facilitator_note: activity.facilitator_note ?? null, pact_text: activity.pact_text ?? null })); const { error } = await client.from("live_activities").insert(rows); if (error) fail("live_activities:insert", error); }
+export async function replaceLiveActivities(sessionId: string, activities: CreateLiveActivityInput[]) {
+  const client = liveClient();
+  const { error: removeError } = await client.from("live_activities").delete().eq("live_session_id", sessionId).eq("state", "pending");
+  if (removeError) fail("live_activities:delete", removeError);
+
+  const rows = activities.map((activity, order_index) => ({
+    live_session_id: sessionId,
+    activity_type: activity.activity_type,
+    prompt: activity.prompt,
+    timer_enabled: activity.timer_enabled,
+    show_live_results: activity.show_live_results,
+    order_index,
+    instance_index: activities.slice(0, order_index + 1).filter((item) => item.activity_type === activity.activity_type).length,
+    instance_label: activity.instance_label ?? null,
+    timer_duration: activity.timer_duration ?? null,
+    surface_input_types: activity.surface_input_types ?? null,
+    priority_source: activity.priority_source ?? null,
+    votes_per_participant: activity.votes_per_participant ?? 1,
+    pact_statement_mode: activity.pact_statement_mode ?? null,
+    facilitator_note: activity.facilitator_note ?? null,
+    pact_text: activity.pact_text ?? null
+  }));
+  const { data: created, error } = await client.from("live_activities").insert(rows).select("id,order_index");
+  if (error || !created) fail("live_activities:insert", error ?? new Error("No activities were created."));
+  const createdActivities = created ?? [];
+
+  const priorityItems = createdActivities.flatMap((activity) =>
+    (activities[activity.order_index]?.priority_manual_items ?? [])
+      .map((label) => label.trim())
+      .filter(Boolean)
+      .map((label) => ({
+        live_session_id: sessionId,
+        live_activity_id: activity.id,
+        source_type: "manual" as const,
+        label
+      }))
+  );
+  if (priorityItems.length) {
+    const { error: priorityItemsError } = await client.from("live_priority_items").insert(priorityItems);
+    if (priorityItemsError) fail("live_priority_items:insert", priorityItemsError);
+  }
+}
 export async function addLivePriorityItem(sessionId: string, activityId: string, label: string) { const { error } = await liveClient().from("live_priority_items").insert({ live_session_id: sessionId, live_activity_id: activityId, source_type: "manual", label: label.trim() }); if (error) fail("live_priority_items:insert", error); }
 export async function enterLiveLobby(sessionId: string) { await updateLiveSession(sessionId, { status: "lobby" }); }
 export async function startNextLiveActivity(sessionId: string) {

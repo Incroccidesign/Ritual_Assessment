@@ -24,6 +24,7 @@ import { markAssessmentAsTemplate, templateAssessmentIdsForOwner, unmarkAssessme
 import { useLocale } from "@/lib/i18n/useLocale";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { listLiveSessions } from "@/lib/live/repository";
+import { stashPendingRitualFile, validateRitualFile } from "@/lib/live/ritual-file";
 import type { LiveSession } from "@/types/live";
 
 export default function DashboardPage() {
@@ -53,6 +54,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [error, setError] = useState<string | null>(null);
   const creationPopoverRef = useRef<HTMLDivElement | null>(null);
   const newAssessmentButtonRef = useRef<HTMLSpanElement | null>(null);
+  const ritualFileInputRef = useRef<HTMLInputElement | null>(null);
   const templateIds = useMemo(() => templateAssessmentIdsForOwner(designer.id), [designer.id]);
   const templateBundles = useMemo(
     () => bundles.filter((bundle) => templateIds.has(bundle.assessment.id)),
@@ -203,11 +205,36 @@ function DashboardContent({ designer }: { designer: Designer }) {
     }
   }
 
+  async function handleRitualFile(file: File | null) {
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      setError("The Ritual file is too large. Choose a file smaller than 1 MB.");
+      return;
+    }
+    try {
+      const parsed = validateRitualFile(JSON.parse(await file.text()));
+      stashPendingRitualFile(parsed);
+      router.push(href("/live/setup"));
+    } catch {
+      setError("This is not a valid Ritual file.");
+    }
+  }
+
   return (
     <>
       <div className="relative flex flex-wrap items-start justify-between gap-5">
         <StepHeader title={messages.dashboard.title} body={messages.dashboard.body} />
         <div className="relative flex flex-wrap gap-3">
+          <input
+            ref={ritualFileInputRef}
+            type="file"
+            accept="application/json,.json,.ritual"
+            className="sr-only"
+            onChange={(event) => {
+              void handleRitualFile(event.target.files?.[0] ?? null);
+              event.target.value = "";
+            }}
+          />
           <span ref={newAssessmentButtonRef}>
             <Button
               type="button"
@@ -219,7 +246,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
           </span>
           {creationOpen ? (
             <div ref={creationPopoverRef} className="absolute right-0 top-[calc(100%+0.75rem)] z-50">
-              {creationType === "choose" ? <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),32rem)] border p-4"><h2 className="font-heading text-2xl text-bone">New activity</h2><p className="mt-2 text-sm text-bone/60">Choose how people will participate before creating anything.</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-bone/35" onClick={() => router.push("/live/setup")}><h3 className="font-heading text-xl text-bone">Live</h3><p className="mt-2 text-sm text-bone/60">Facilitated in real time.</p></button><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-bone/35" onClick={() => setCreationType("assessment")}><h3 className="font-heading text-xl text-bone">Differita</h3><p className="mt-2 text-sm text-bone/60">Completed independently.</p></button></div></Card> : <AssessmentCreationCard
+              {creationType === "choose" ? <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),32rem)] border p-4"><h2 className="font-heading text-2xl text-bone">New activity</h2><p className="mt-2 text-sm text-bone/60">Choose how people will participate before creating anything.</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-mint/70" onClick={() => router.push(href("/live/setup"))}><h3 className="font-heading text-xl text-bone">Live</h3><p className="mt-2 text-sm text-bone/60">Facilitated in real time.</p></button><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-mint/70" onClick={() => setCreationType("assessment")}><h3 className="font-heading text-xl text-bone">Differita</h3><p className="mt-2 text-sm text-bone/60">Completed independently.</p></button></div><button type="button" className="mt-3 w-full rounded-lg border border-bone/12 bg-night/45 px-4 py-3 text-left text-sm font-medium text-bone/72 transition hover:border-mint/70 hover:text-bone" onClick={() => ritualFileInputRef.current?.click()}>Import a Ritual file</button></Card> : <AssessmentCreationCard
                 creating={creating}
                 userTemplates={templateBundles.map((bundle) => bundle.assessment)}
                 onCreateBlank={() => void handleCreateBlankAssessment()}
