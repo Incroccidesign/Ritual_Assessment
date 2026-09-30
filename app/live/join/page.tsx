@@ -87,6 +87,8 @@ function JoinContent() {
       const participantTokenParam = `&participantToken=${encodeURIComponent(participantAccess.access.participantToken)}`;
       const joinTokenParam = joinToken ? `&join=${encodeURIComponent(joinToken)}` : "";
       router.push(href(`/live?id=${sessionId}&participant=${participantAccess.access.participantId}${participantTokenParam}${joinTokenParam}`));
+    } catch (error) {
+      setJoinError(error instanceof Error ? error.message : messages.common.sessionNotFound);
     } finally {
       setJoining(false);
     }

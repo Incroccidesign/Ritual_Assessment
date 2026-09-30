@@ -98,6 +98,9 @@ function SetupContent() {
       }
       return true;
     });
+  const canPersistDraft =
+    title.trim().length > 0 &&
+    configuredActivities.every((activity) => Boolean(activity.prompt));
 
   useEffect(() => {
     if (sessionId) return;
@@ -357,8 +360,8 @@ function SetupContent() {
     setSurfaceNotice((current) => (current?.activityId === localId ? null : current));
   }
 
-  async function persistConfiguration() {
-    if (!canOpenLobby) return;
+  async function persistConfiguration(allowIncomplete = false) {
+    if (!canPersistDraft || (!allowIncomplete && !canOpenLobby)) return;
     setSubmitError(null);
     setSaving(true);
     setSaved(false);
@@ -402,6 +405,12 @@ function SetupContent() {
     if (!persistedSessionId) return;
     await enterLiveLobby(persistedSessionId);
     router.push(href(`/live/lobby?id=${persistedSessionId}`));
+  }
+
+  async function returnToDashboard() {
+    const persistedSessionId = await persistConfiguration(true);
+    if (!persistedSessionId) return;
+    router.push(href("/dashboard"));
   }
 
   function saveRitualFile() {
@@ -455,7 +464,7 @@ function SetupContent() {
     <RitualAppShell>
       <div className="mx-auto max-w-6xl route-page-fade">
         <div className="mb-10">
-          <RitualButtonLink href="/dashboard" variant="ghost"><ArrowLeft size={16} /> Dashboard</RitualButtonLink>
+          <Button type="button" variant="ghost" disabled={saving} onClick={() => void returnToDashboard()}><ArrowLeft size={16} /> {messages.setup.backToDashboard}</Button>
         </div>
         <aside className="mx-auto max-w-3xl pt-2 text-center">
           <p className="text-sm uppercase tracking-[0.28em] text-mint">{messages.setup.eyebrow}</p>

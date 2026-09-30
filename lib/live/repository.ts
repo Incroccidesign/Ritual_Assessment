@@ -167,10 +167,16 @@ export async function closeLiveSession(sessionId: string) { const snapshot = awa
 export async function joinLiveSession(sessionId: string, joinToken: string, roleName: string, identity: Partial<Omit<LiveParticipant, "id" | "live_session_id" | "role_name" | "joined_at">>) {
   if (!supabase) throw new Error("Supabase is not configured.");
   const participantToken = generateLiveToken();
-  const { data, error } = await supabase.rpc("live_join_session", { target_live_session_id: sessionId, target_join_token: joinToken, target_participant_token: participantToken, target_role_name: roleName, target_nickname: identity.nickname ?? null, target_first_name: identity.first_name ?? null, target_last_name: identity.last_name ?? null, target_organization: identity.organization ?? null, target_contact: identity.contact ?? null, target_display_name: identity.display_name ?? null });
-  if (error || !data) fail("live_join_session", error ?? new Error("No participant returned."));
-  const access = { participantId: (data as LiveParticipant).id, participantToken, joinToken };
-  storeLiveParticipantAccess(sessionId, access); return { participant: data as LiveParticipant, access };
+  const response = await fetch(`/api/live-sessions/${encodeURIComponent(sessionId)}/join`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ joinToken, participantToken, roleName, identity })
+  });
+  const payload = await response.json().catch(() => null) as { participantId?: string; error?: string } | null;
+  if (!response.ok || !payload?.participantId) throw new Error(payload?.error ?? "Unable to join this Live Session.");
+  const access = { participantId: payload.participantId, participantToken, joinToken };
+  storeLiveParticipantAccess(sessionId, access);
+  return { participant: { id: payload.participantId } as LiveParticipant, access };
 }
 export async function submitLiveResponse(sessionId: string, access: LiveParticipantAccess, activityId: string, activityType: LiveActivity["activity_type"], text: string, category: string | null = null) { const { error } = await liveClient(access).from("live_responses").insert({ live_session_id: sessionId, live_activity_id: activityId, participant_id: access.participantId, activity_type: activityType, response_text: text, response_category: category }); if (error) fail("live_responses:insert", error); }
 export async function submitLivePriorityVotes(sessionId: string, access: LiveParticipantAccess, activityId: string, itemIds: string[]) { const client = liveClient(access); const { error: removeError } = await client.from("live_priority_votes").delete().eq("live_session_id", sessionId).eq("live_activity_id", activityId).eq("participant_id", access.participantId); if (removeError) fail("live_priority_votes:delete", removeError); if (itemIds.length) { const { error } = await client.from("live_priority_votes").insert(itemIds.map((live_priority_item_id) => ({ live_session_id: sessionId, live_activity_id: activityId, participant_id: access.participantId, live_priority_item_id }))); if (error) fail("live_priority_votes:insert", error); } }
