@@ -9,7 +9,7 @@ import type { CreateLiveActivityInput, CreateLiveSessionInput, LiveActivity, Liv
 type Client = ReturnType<typeof liveClient>;
 const fail = (stage: string, error: unknown) => { throw new Error(`${stage}: ${error instanceof Error ? error.message : String(error)}`); };
 const now = () => new Date().toISOString();
-const liveSessionColumns = "id,title,facilitator_name,context_label,participant_details_mode,status,ritual_started_at,ritual_ended_at,export_docx_count,export_excel_count,error_count,created_at,updated_at";
+const liveSessionColumns = "id,run_number,title,facilitator_name,context_label,participant_details_mode,status,ritual_started_at,ritual_ended_at,export_docx_count,export_excel_count,error_count,created_at,updated_at";
 
 export async function createLiveSession(input: CreateLiveSessionInput) {
   if (!supabase) throw new Error("Supabase is not configured.");
@@ -48,6 +48,27 @@ export async function generateLiveJoinLink(sessionId: string) {
   if (!response.ok || !payload?.joinToken) throw new Error(payload?.error ?? "Unable to generate a participant link.");
   storeLiveJoinToken(sessionId, payload.joinToken);
   return payload.joinToken;
+}
+
+export async function restartLiveSession(session: LiveSessionSnapshot["session"]): Promise<"live" | "lobby"> {
+  const { data, error } = await liveClient().rpc("restart_live_session", { target_session_id: session.id, expected_run: session.run_number ?? 1 });
+  if (error) throw new Error(error.message);
+  if (data !== "live" && data !== "lobby") throw new Error("Unable to restart this session.");
+  return data;
+}
+
+export type ArchivedLiveRun = { run_number: number; archived_at: string };
+export async function listArchivedLiveRuns(sessionId: string): Promise<ArchivedLiveRun[]> {
+  const { data, error } = await liveClient().from("live_session_runs").select("run_number,archived_at")
+    .eq("live_session_id", sessionId).order("run_number", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+export async function fetchArchivedLiveRun(sessionId: string, runNumber: number): Promise<LiveSessionSnapshot> {
+  const { data, error } = await liveClient().from("live_session_runs").select("snapshot")
+    .eq("live_session_id", sessionId).eq("run_number", runNumber).single();
+  if (error || !data) throw new Error(error?.message ?? "Archived report not found.");
+  return data.snapshot as LiveSessionSnapshot;
 }
 
 export async function listLiveSessions() {
@@ -216,7 +237,7 @@ export function useLiveSessionSnapshot(sessionId: string | null, access?: LivePa
   // does not consistently carry those headers on mobile, so this is the
   // reliable fallback that moves participants out of the lobby after a start.
   useEffect(() => {
-    if (!sessionId || !access || snapshot?.session.status === "closed") return;
+    if (!sessionId || !access) return;
     const poll = () => { void refresh().catch(() => undefined); };
     const interval = window.setInterval(poll, 2000);
     document.addEventListener("visibilitychange", poll);
@@ -224,7 +245,7 @@ export function useLiveSessionSnapshot(sessionId: string | null, access?: LivePa
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", poll);
     };
-  }, [access, refresh, sessionId, snapshot?.session.status]);
+  }, [access, refresh, sessionId]);
 
   return { snapshot, loading, refresh };
 }

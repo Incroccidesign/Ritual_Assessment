@@ -2,36 +2,55 @@
 
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from "docx";
 import type { LiveSessionSnapshot } from "@/types/live";
-import { getLiveExportData } from "@/lib/live/repository";
+import type { Language } from "@/lib/live/i18n";
+import { getMessages } from "@/lib/live/i18n";
+import { participantDisplayName } from "@/lib/live/participant-identity";
+import { buildLiveReport } from "@/lib/live/report-data";
 
 const safeName = (value: string) => (value || "live-session").replace(/[^a-z0-9-_]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
+const filename = (snapshot: LiveSessionSnapshot) => `${safeName(snapshot.session.title)}-run-${snapshot.session.run_number ?? 1}-report`;
 const download = (blob: Blob, name: string) => { const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url); };
-const text = (value: unknown) => value == null ? "" : String(value);
 
-export async function exportLiveDocx(snapshot: LiveSessionSnapshot) {
-  const data = getLiveExportData(snapshot);
+export function buildLiveDocx(snapshot: LiveSessionSnapshot, language: Language = "it") {
+  const data = buildLiveReport(snapshot, language);
+  const messages = getMessages(language);
   const rows = [
-    ["Status", data.session.status], ["Facilitator", data.session.facilitator_name], ["Context", data.session.context_label],
-    ["Participants", data.participants.length], ["Responses", data.responses.length]
-  ].map(([label, value]) => new TableRow({ children: [new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: text(label), bold: true })] })] }), new TableCell({ children: [new Paragraph(text(value))] })] }));
-  const blocks = data.activities.flatMap((activity) => {
-    const responses = data.responses.filter((item) => item.live_activity_id === activity.id);
-    const priority = data.results.priorityRanking.filter((item) => item.live_activity_id === activity.id);
-    const pact = data.pacts.find((item) => item.live_activity_id === activity.id);
-    return [new Paragraph({ text: `${activity.order_index + 1}. ${activity.activity_type}: ${activity.prompt}`, heading: "Heading2" }), ...responses.map((item) => new Paragraph(`• ${item.response_text}`)), ...priority.map((item) => new Paragraph(`• ${item.label}: ${item.votes} votes`)), ...(pact ? [new Paragraph(`Pact: ${pact.resolved_final_statement}`)] : [])];
-  });
-  const document = new Document({ sections: [{ children: [new Paragraph({ text: data.session.title, heading: "Title" }), new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows }), ...blocks] }] });
-  download(await Packer.toBlob(document), `${safeName(data.session.title)}-live-report.docx`);
+    ["Run", snapshot.session.run_number ?? 1], ["Status", snapshot.session.status],
+    ["Facilitator", snapshot.session.facilitator_name], ["Context", snapshot.session.context_label],
+    ["Started", snapshot.session.ritual_started_at], ["Ended", snapshot.session.ritual_ended_at],
+    ["Participants", snapshot.participants.length], ["Responses", snapshot.responses.length]
+  ].map(([label, value]) => new TableRow({ children: [new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: String(label), bold: true })] })] }), new TableCell({ children: [new Paragraph(value == null ? "" : String(value))] })] }));
+  const blocks = snapshot.activities.flatMap((activity) => [
+    new Paragraph({ text: `${activity.order_index + 1}. ${messages.activities[activity.activity_type].name}: ${activity.instance_label ?? ""} ${activity.prompt}`, heading: "Heading2" }),
+    ...(activity.facilitator_note ? [new Paragraph(activity.facilitator_note)] : []),
+    ...data.responses.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`• ${r.category ? `[${r.category}] ` : ""}${r.response} — ${r.participant}${r.role ? ` (${r.role})` : ""}`)),
+    ...data.priority.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`• ${r.item}: ${r.votes} ${language === "it" ? "voti" : "votes"}`)),
+    ...data.pacts.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${language === "it" ? "Proposta finale" : "Final proposal"}: ${r.final_statement} (${r.confirmed_round ? `${language === "it" ? "confermata, turno" : "confirmed, round"} ${r.confirmed_round}` : language === "it" ? "non confermata" : "unconfirmed"})`)),
+    ...data.pactRounds.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${language === "it" ? "Turno" : "Round"} ${r.round}: ${r.proposal} — ${messages.adhesionLabels.Concordo}: ${r.agree}; ${messages.adhesionLabels.Parzialmente}: ${r.partial}; ${messages.adhesionLabels["Non concordo"]}: ${r.disagree}`))
+  ]);
+  return new Document({ sections: [{ children: [new Paragraph({ text: snapshot.session.title, heading: "Title" }), new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows }), ...blocks] }] });
 }
 
-export async function exportLiveXlsx(snapshot: LiveSessionSnapshot) {
-  const XLSX = await import("xlsx"); const data = getLiveExportData(snapshot); const book = XLSX.utils.book_new();
-  const add = (name: string, rows: Record<string, unknown>[]) => XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), name);
-  add("Session", [{ title: data.session.title, status: data.session.status, facilitator: data.session.facilitator_name, context: data.session.context_label, started_at: data.session.ritual_started_at, ended_at: data.session.ritual_ended_at }]);
-  add("Activities", data.activities.map((item) => ({ order: item.order_index + 1, type: item.activity_type, prompt: item.prompt, state: item.state, started_at: item.started_at, ended_at: item.ended_at })));
-  add("Participants", data.participants.map((item) => ({ role: item.role_name, name: item.display_name || item.nickname, organization: item.organization, joined_at: item.joined_at })));
-  add("Responses", data.responses.map((item) => ({ activity_id: item.live_activity_id, type: item.activity_type, response: item.response_text, category: item.response_category, created_at: item.created_at })));
-  add("Priority", data.results.priorityRanking.map((item) => ({ activity_id: item.live_activity_id, item: item.label, votes: item.votes })));
-  add("Pacts", data.pacts.map((item) => ({ activity_id: item.live_activity_id, final_statement: item.resolved_final_statement, confirmed_round: item.confirmed_round_number })));
-  XLSX.writeFileXLSX(book, `${safeName(data.session.title)}-live-report.xlsx`);
+export async function exportLiveDocx(snapshot: LiveSessionSnapshot, language: Language = "it") {
+  download(await Packer.toBlob(buildLiveDocx(snapshot, language)), `${filename(snapshot)}.docx`);
+}
+
+export async function buildLiveWorkbook(snapshot: LiveSessionSnapshot, language: Language = "it") {
+  const XLSX = await import("xlsx"); const data = buildLiveReport(snapshot, language); const book = XLSX.utils.book_new();
+  const add = (name: string, rows: object[]) => XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), name);
+  add("Session", [{ id: snapshot.session.id, run: snapshot.session.run_number ?? 1, title: snapshot.session.title, status: snapshot.session.status, facilitator: snapshot.session.facilitator_name, context: snapshot.session.context_label, started_at: snapshot.session.ritual_started_at, ended_at: snapshot.session.ritual_ended_at }]);
+  add("Activities", snapshot.activities.map((a) => ({ activity_id: a.id, order: a.order_index + 1, type: a.activity_type, label: a.instance_label, prompt: a.prompt, state: a.state, note: a.facilitator_note, votes_per_participant: a.votes_per_participant, started_at: a.started_at, ended_at: a.ended_at, categories: JSON.stringify(a.surface_input_types) })));
+  add("Participants", snapshot.participants.map((p) => ({ participant_id: p.id, role: p.role_name, name: participantDisplayName(p, getMessages(language).common.participant), organization: p.organization, joined_at: p.joined_at })));
+  add("Responses", data.responses);
+  add("Priority", data.priority);
+  add("Priority votes", data.priorityVotes);
+  add("Pacts", data.pacts);
+  add("Pact rounds", data.pactRounds);
+  add("Pact votes", data.pactVotes);
+  return book;
+}
+
+export async function exportLiveXlsx(snapshot: LiveSessionSnapshot, language: Language = "it") {
+  const XLSX = await import("xlsx");
+  XLSX.writeFileXLSX(await buildLiveWorkbook(snapshot, language), `${filename(snapshot)}.xlsx`);
 }

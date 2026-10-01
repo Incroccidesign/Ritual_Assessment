@@ -79,9 +79,9 @@ export function mapLegacySurfaceCategory(category: string | null | undefined) {
 }
 
 export function resolveSurfaceCategoryId(category: string | null | undefined, categories: SurfaceInputType[]) {
-  if (!category) return categories[0]?.id ?? null;
+  if (!category) return null;
   if (categories.some((item) => item.id === category)) return category;
   const legacy = mapLegacySurfaceCategory(category);
   if (legacy && categories.some((item) => item.id === legacy)) return legacy;
-  return categories[0]?.id ?? null;
+  return null;
 }

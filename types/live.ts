@@ -33,7 +33,7 @@ export type CreateRitualActivityInput = {
 };
 export type LiveAdhesionLevel = "Concordo" | "Parzialmente" | "Non concordo";
 
-export type LiveSession = { id: string; title: string; facilitator_name: string | null; context_label: string | null; participant_details_mode: LiveParticipantDetailsMode; status: LiveSessionStatus; ritual_started_at: string | null; ritual_ended_at: string | null; export_docx_count: number; export_excel_count: number; error_count: number; created_at: string; updated_at: string };
+export type LiveSession = { run_number?: number; id: string; title: string; facilitator_name: string | null; context_label: string | null; participant_details_mode: LiveParticipantDetailsMode; status: LiveSessionStatus; ritual_started_at: string | null; ritual_ended_at: string | null; export_docx_count: number; export_excel_count: number; error_count: number; created_at: string; updated_at: string };
 export type LiveActivity = { id: string; live_session_id: string; activity_type: LiveActivityType; order_index: number; instance_index: number; instance_label: string | null; prompt: string; timer_enabled: boolean; timer_duration: number | null; show_live_results: boolean; surface_input_types: unknown[] | null; state: LiveActivityStatus; priority_source: string | null; votes_per_participant: number; pact_statement_mode: LivePactStatementMode | null; facilitator_note: string | null; pact_text: string | null; started_at: string | null; ended_at: string | null; timer_anchor_at: string | null; paused_remaining_seconds: number | null; created_at: string; updated_at: string };
 export type LiveSessionRole = { id: string; live_session_id: string; role_name: string; created_at: string };
 export type LiveCollaborator = { live_session_id: string; user_id: string; role: LiveCollaboratorRole; granted_by: string; created_at: string; updated_at: string };
@@ -47,5 +47,5 @@ export type LivePactVote = { id: string; live_session_id: string; live_activity_
 export type LiveSessionSnapshot = { session: LiveSession; activities: LiveActivity[]; roles: LiveSessionRole[]; participants: LiveParticipant[]; responses: LiveResponse[]; priorityItems: LivePriorityItem[]; priorityVotes: LivePriorityVote[]; pacts: LivePact[]; pactVotes: LivePactVote[] };
 export type CreateLiveActivityInput = Pick<LiveActivity, "activity_type" | "prompt" | "timer_enabled" | "timer_duration" | "show_live_results"> & Partial<Pick<LiveActivity, "instance_label" | "surface_input_types" | "priority_source" | "votes_per_participant" | "pact_statement_mode" | "facilitator_note" | "pact_text">> & { priority_manual_items?: string[] };
 export type CreateLiveSessionInput = { title: string; facilitator_name?: string | null; context_label?: string | null; participant_details_mode: LiveParticipantDetailsMode; roles: string[]; activities: CreateLiveActivityInput[] };
-export type LiveParticipantAccess = { participantId: string; participantToken: string; joinToken?: string | null };
+export type LiveParticipantAccess = { runNumber?: number; participantId: string; participantToken: string; joinToken?: string | null };
 export type LiveJoinAccess = { joinToken: string };

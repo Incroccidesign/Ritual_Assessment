@@ -4,6 +4,7 @@ import { toLiveActivityInputs } from "../../lib/live/setup-adapter";
 import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivityRemainingSeconds, livePactForActivity, nextPendingLiveActivity } from "../../lib/live/ui-adapter";
 import { liveDashboardDestination } from "../../components/dashboard/LiveSessionCard";
 import { getJoinUrl, isLocalDevelopmentUrl } from "../../lib/live/public-url";
+import { buildLiveReport } from "../../lib/live/report-data";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
 
 const item = (state: LiveActivity["state"], index: number): LiveActivity => ({ id: `a-${index}`, live_session_id: "s", activity_type: "focus", order_index: index, instance_index: index + 1, instance_label: null, prompt: "p", timer_enabled: true, timer_duration: 5, show_live_results: true, surface_input_types: null, state, priority_source: null, votes_per_participant: 1, pact_statement_mode: null, facilitator_note: null, pact_text: null, started_at: null, ended_at: null, timer_anchor_at: "2026-01-01T00:00:00.000Z", paused_remaining_seconds: null, created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z" });
@@ -64,4 +65,14 @@ test("Live participant links keep the session token and recognize local network 
   expect(isLocalDevelopmentUrl("http://localhost:3000")).toBe(true);
   expect(isLocalDevelopmentUrl("http://192.168.1.42:3000")).toBe(true);
   expect(isLocalDevelopmentUrl("https://www.ritualopen.com")).toBe(false);
+});
+
+test("Live report keeps Emersione categories, priority votes and pact rounds", () => {
+  const surface = { ...item("completed", 0), id: "surface", activity_type: "traccia" as const, surface_input_types: [{ id: "strength", label: { it: "Punti di forza", en: "Strengths" }, color: "mint" }] };
+  const priority = { ...item("completed", 1), id: "priority", activity_type: "priorita" as const };
+  const pact = { ...item("completed", 2), id: "pact", activity_type: "patto" as const };
+  const data = buildLiveReport({ session: { id: "s", status: "closed" }, activities: [surface, priority, pact], participants: [{ id: "p", nickname: "Marta", role_name: "Facilitator" }], responses: [{ live_activity_id: "surface", activity_type: "traccia", response_text: "Risposta", response_category: "strength", participant_id: "p" }], priorityItems: [{ id: "item", live_activity_id: "priority", label: "Voce", source_type: "manual" }], priorityVotes: [{ live_activity_id: "priority", live_priority_item_id: "item", participant_id: "p" }], pacts: [{ live_activity_id: "pact", pact_rounds: [{ roundNumber: 1, proposalText: "Patto", agreementCounts: { agree: 0, partial: 0, disagree: 0 }, confirmed: true }], confirmed_round_number: 1, pact_statement_mode: "build_live", facilitator_note: null, pact_text: "Patto", resolved_final_statement: "Patto", confirmed_pact_proposal: "Patto" }], pactVotes: [{ live_activity_id: "pact", participant_id: "p", round_number: 1, adhesion_level: "Concordo" }] } as never, "it");
+  expect(data.responses[0]).toMatchObject({ category: "Punti di forza", participant: "Marta" });
+  expect(data.priority[0]).toMatchObject({ item: "Voce", votes: 1 });
+  expect(data.pactRounds[0]).toMatchObject({ proposal: "Patto", agree: 1, confirmed: true });
 });

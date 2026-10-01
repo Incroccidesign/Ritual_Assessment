@@ -5,7 +5,7 @@ import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, RotateCcw, Setting
 import { useRouter } from "next/navigation";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { exportLiveDocx, exportLiveXlsx } from "@/lib/live/exports";
-import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveExport } from "@/lib/live/repository";
+import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveExport, restartLiveSession } from "@/lib/live/repository";
 import type { LiveSession } from "@/types/live";
 
 export function liveDashboardDestination(session: LiveSession) {
@@ -19,7 +19,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [busy, setBusy] = useState<"docx" | "excel" | "duplicate" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"docx" | "excel" | "duplicate" | "restart" | "delete" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const date = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(session.updated_at));
   const status = session.status === "lobby" ? "ready" : session.status;
@@ -31,8 +31,8 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
       setNotice(null);
       const snapshot = await fetchLiveSnapshot(session.id);
       if (!snapshot) throw new Error("Live Session not found.");
-      if (kind === "docx") await exportLiveDocx(snapshot);
-      else await exportLiveXlsx(snapshot);
+      if (kind === "docx") await exportLiveDocx(snapshot, "it");
+      else await exportLiveXlsx(snapshot, "it");
       await recordLiveExport(session.id, kind);
       setMenuOpen(false);
     } catch {
@@ -69,6 +69,15 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
     }
   }
 
+  async function restart() {
+    setBusy("restart"); setNotice(null);
+    try {
+      const status = await restartLiveSession(session);
+      router.push(`${status === "lobby" ? "/live/lobby" : "/live"}?id=${encodeURIComponent(session.id)}`);
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Unable to restart."); }
+    finally { setBusy(null); }
+  }
+
   return <>
     <Card className="flex h-full flex-col space-y-5">
       <div className="flex items-start justify-between gap-3">
@@ -82,7 +91,8 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
             {menuOpen ? <div role="menu" className="ritual-popover-surface absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-md border p-1">
               {canManageActivities ? <ButtonLink href={`/live/setup?id=${encodeURIComponent(session.id)}`} variant="ghost" className="w-full justify-start px-3"><Settings2 size={16} /> Manage activities</ButtonLink> : null}
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void duplicate()}><CopyPlus size={16} /> {busy === "duplicate" ? "Creating copy…" : "Duplicate as new session"}</Button>
-              <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void duplicate()}><RotateCcw size={16} /> {busy === "duplicate" ? "Restarting…" : "Restart activity"}</Button>
+              {["live", "intermission", "closed"].includes(session.status) ? <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void restart()}><RotateCcw size={16} /> {busy === "restart" ? "Restarting…" : "Archive and restart"}</Button> : null}
+              <ButtonLink href={`/live/results?id=${encodeURIComponent(session.id)}`} variant="ghost" className="w-full justify-start px-3"><FileText size={16} /> Results and previous runs</ButtonLink>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("docx")}><FileText size={16} /> {busy === "docx" ? "Preparing report…" : "Download Word report"}</Button>
               <Button type="button" variant="ghost" className="w-full justify-start px-3" disabled={busy !== null} onClick={() => void download("excel")}><FileSpreadsheet size={16} /> {busy === "excel" ? "Preparing data…" : "Download Excel data"}</Button>
               <div className="my-1 border-t border-bone/10" />

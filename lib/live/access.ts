@@ -31,6 +31,7 @@ export function liveClient(access?: LiveParticipantAccess | LiveJoinAccess | nul
     const headers = new Headers(init?.headers);
     if ("participantId" in access) {
       headers.set("x-live-participant-id", access.participantId);
+      if (access.runNumber !== undefined) headers.set("x-live-run-number", String(access.runNumber));
       headers.set("x-live-participant-token", access.participantToken);
     }
     if (access.joinToken) headers.set("x-live-join-token", access.joinToken);
