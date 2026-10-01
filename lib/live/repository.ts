@@ -59,16 +59,18 @@ export async function listLiveSessions() {
 
 export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | LiveJoinAccess | null): Promise<LiveSessionSnapshot | null> {
   const client = liveClient(access);
+  const joiningWithQrOnly = Boolean(access && !("participantId" in access));
+  const emptyRows = () => Promise.resolve({ data: [] as unknown[], error: null });
   const [session, activities, roles, participants, responses, priorityItems, priorityVotes, pacts, pactVotes] = await Promise.all([
     client.from("live_sessions").select(liveSessionColumns).eq("id", sessionId).maybeSingle(),
     client.from("live_activities").select("*").eq("live_session_id", sessionId).order("order_index"),
     client.from("live_session_roles").select("*").eq("live_session_id", sessionId).order("role_name"),
-    client.from("live_participants").select("*").eq("live_session_id", sessionId).order("joined_at"),
-    client.from("live_responses").select("*").eq("live_session_id", sessionId).order("created_at"),
+    joiningWithQrOnly ? emptyRows() : client.from("live_participants").select("*").eq("live_session_id", sessionId).order("joined_at"),
+    joiningWithQrOnly ? emptyRows() : client.from("live_responses").select("*").eq("live_session_id", sessionId).order("created_at"),
     client.from("live_priority_items").select("*").eq("live_session_id", sessionId).order("created_at"),
-    client.from("live_priority_votes").select("*").eq("live_session_id", sessionId).order("created_at"),
-    client.from("live_pacts").select("*").eq("live_session_id", sessionId).order("created_at"),
-    client.from("live_pact_votes").select("*").eq("live_session_id", sessionId).order("created_at")
+    joiningWithQrOnly ? emptyRows() : client.from("live_priority_votes").select("*").eq("live_session_id", sessionId).order("created_at"),
+    joiningWithQrOnly ? emptyRows() : client.from("live_pacts").select("*").eq("live_session_id", sessionId).order("created_at"),
+    joiningWithQrOnly ? emptyRows() : client.from("live_pact_votes").select("*").eq("live_session_id", sessionId).order("created_at")
   ]);
   if (session.error || !session.data) return null;
   const errors = [activities, roles, participants, responses, priorityItems, priorityVotes, pacts, pactVotes].find((result) => result.error)?.error;
