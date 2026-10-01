@@ -7,38 +7,9 @@
 
 begin;
 
--- Data API privileges are required before RLS policies can be evaluated.
-grant select on table
-  public.live_sessions,
-  public.live_activities,
-  public.live_session_roles,
-  public.live_participants,
-  public.live_responses,
-  public.live_priority_items,
-  public.live_priority_votes,
-  public.live_pacts,
-  public.live_pact_votes
-to anon, authenticated;
-
-grant insert on table
-  public.live_responses,
-  public.live_priority_votes,
-  public.live_pact_votes
-to anon, authenticated;
-
-grant delete on table
-  public.live_priority_votes,
-  public.live_pact_votes
-to anon, authenticated;
-
--- Only helpers that verify the QR token or a participant's own token are
--- callable by public participants. Member/owner helpers remain authenticated.
-grant execute on function public.live_request_header(text) to anon, authenticated;
-grant execute on function public.live_token_hash(text) to anon, authenticated;
-grant execute on function public.live_request_participant_id() to anon, authenticated;
-grant execute on function public.live_has_join_access(uuid) to anon, authenticated;
-grant execute on function public.live_is_participant(uuid) to anon, authenticated;
-grant execute on function public.live_has_participant_access(uuid) to anon, authenticated;
+-- Existing table, column and function grants are sufficient and unchanged.
+-- Separate the same predicates by role; do not grant anonymous callers
+-- execution of member-only authorization helpers.
 
 drop policy if exists "Live members and public access read activities" on public.live_activities;
 drop policy if exists "Live members and public access read session roles" on public.live_session_roles;
