@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { AppShell as RitualAppShell } from "@/components/layout/AppShell";
+import { AccountMenu } from "@/components/dashboard/AccountMenu";
+import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 
 export function AppShell({
   children,
@@ -32,5 +35,25 @@ export function AppShell({
         {children}
       </div>
     </main>
+  );
+}
+
+/** Shared chrome for every facilitator route. Participant routes intentionally keep
+ * the compact public shell above: they do not expose account controls. */
+export function AuthenticatedLiveShell({ children }: { children: React.ReactNode }) {
+  return (
+    <DesignerAuthGate>
+      {(designer) => (
+        <RitualAppShell
+          logoHref="/dashboard"
+          logoClassName="w-[120px] sm:w-[120px] md:w-[120px]"
+          showHeaderDivider={false}
+          showLanguageSwitcher={false}
+          headerAction={<AccountMenu designer={designer} />}
+        >
+          {children}
+        </RitualAppShell>
+      )}
+    </DesignerAuthGate>
   );
 }

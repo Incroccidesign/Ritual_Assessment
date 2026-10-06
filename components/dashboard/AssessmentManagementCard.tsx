@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, FileText, MoreHorizontal, Pause, Pencil, Play, Square, Trash2 } from "lucide-react";
+import { FileText, MoreHorizontal, Pause, Pencil, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { AssessmentResponse } from "@/types/response";
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
@@ -11,7 +11,6 @@ import { deleteSupabaseAssessment, publishSupabaseAssessment, setSupabaseAssessm
 
 export function AssessmentManagementCard({
   assessment,
-  responses,
   onDelete,
   onUpdate
 }: {
@@ -29,13 +28,6 @@ export function AssessmentManagementCard({
   const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [managerRole, setManagerRole] = useState<"owner" | "co_owner" | null>(null);
-  const submittedResponses = responses.filter((response) => response.status === "submitted").length;
-  function responseCountLabel() {
-    if (submittedResponses === 0) return messages.dashboard.noResponsesYet;
-    if (submittedResponses === 1) return `1 ${messages.dashboard.response}`;
-    return `${submittedResponses} ${messages.dashboard.responses}`;
-  }
-
   function statusLabel() {
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
@@ -44,10 +36,17 @@ export function AssessmentManagementCard({
   }
 
   function statusClassName() {
-    if (assessment.status === "published") return "border-mint/20 bg-mint/10 text-mint";
-    if (assessment.status === "paused") return "border-orange/25 bg-orange/10 text-orange";
-    if (assessment.status === "closed") return "border-violet/25 bg-violet/10 text-violet";
-    return "border-bone/10 bg-night/50 text-bone/62";
+    if (assessment.status === "published") return "border-mint/20 text-bone";
+    if (assessment.status === "paused") return "border-orange/25 text-bone";
+    if (assessment.status === "closed") return "border-violet/25 text-bone";
+    return "border-blue/20 text-bone";
+  }
+
+  function statusIndicatorClassName() {
+    if (assessment.status === "published") return "bg-mint";
+    if (assessment.status === "paused") return "bg-orange";
+    if (assessment.status === "closed") return "bg-violet";
+    return "bg-blue";
   }
 
   function dateLabel() {
@@ -110,12 +109,14 @@ export function AssessmentManagementCard({
   }
 
   return (
-    <Card className="flex h-full flex-col space-y-5">
+    <Card className="flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
       <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} loadOnly />
-      <div className="flex items-start justify-between gap-4">
-        <span className="rounded-full border border-bone/15 bg-night/50 px-3 py-1 text-sm font-medium text-bone/72">Assessment</span>
-        <div className="flex items-center gap-2">
-          <span className={`rounded-full border px-3 py-1 text-sm ${statusClassName()}`}>{statusLabel()}</span>
+      <div className="flex h-8 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-medium text-bone">Assessment</span>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}><span className={`size-2 rounded-full ${statusIndicatorClassName()}`} />{statusLabel()}</span>
+        </div>
+        <div className="shrink-0">
           <div className="relative">
           <Button
             type="button"
@@ -171,31 +172,26 @@ export function AssessmentManagementCard({
         </div>
       </div>
 
-      <div>
-        <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-tight text-bone">{assessment.title}</h2>
-        {assessment.description ? <p className="mt-3 line-clamp-2 text-sm leading-6 text-bone/62">{assessment.description}</p> : null}
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-xs">
-        <span className="text-bone/48">{dateLabel()}</span>
-        <span className="text-bone/25" aria-hidden="true">·</span>
-        <span className="text-mint">{responseCountLabel()}</span>
-      </div>
-
-      <div className="mt-auto space-y-3 pt-1">
+      <div className="flex flex-1 flex-col justify-between pt-4">
+        <div>
+          <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-[30px] text-bone">{assessment.title}</h2>
+          <p className="mt-2 text-xs leading-4 text-bone/60">{dateLabel()}</p>
+        </div>
+        <div className="flex justify-end pt-4">
         {assessment.status === "draft" ? (
-          <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} className="w-full">
+          <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="dashboard-card-cta !min-h-11 !px-3">
             {messages.dashboard.continueBuilding}
           </ButtonLink>
         ) : assessment.status === "published" ? (
-          <Button type="button" className="w-full" onClick={() => void copyPublicLink()}>
-            <Copy size={16} /> {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
+          <Button type="button" variant="ghost" className="dashboard-card-cta !min-h-11 !px-3" onClick={() => void copyPublicLink()}>
+            {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
           </Button>
         ) : (
-          <Button type="button" className="w-full" onClick={() => void publishAssessment()} disabled={publishing}>
-            <Play size={16} /> {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
+          <Button type="button" variant="ghost" className="dashboard-card-cta !min-h-11 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
+            {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
           </Button>
         )}
+        </div>
       </div>
 
       {deleteOpen ? (

@@ -8,7 +8,7 @@ import { panelClass } from "@/components/live/field";
 import { participantDisplayName } from "@/lib/live/participant-identity";
 import { SessionQr } from "@/components/live/qr-code";
 import { SessionQrModal } from "@/components/live/session-qr-modal";
-import { AppShell } from "@/components/live/shell";
+import { AppShell, AuthenticatedLiveShell } from "@/components/live/shell";
 import { getLiveJoinToken as getStoredJoinToken } from "@/lib/live/access";
 import { getJoinUrl, isLocalhostUrl } from "@/lib/live/public-url";
 import { generateLiveJoinLink, getNextLiveActivity as getNextPendingActivity, startNextLiveActivity as startNextActivity, useLiveSessionSnapshot as useSessionSnapshot } from "@/lib/live/repository";
@@ -41,8 +41,8 @@ function LobbyContent() {
   }, [generatedJoinToken, joinToken, sessionId]);
   const isLocalQr = joinUrl ? isLocalhostUrl(joinUrl) : false;
 
-  if (loading) return <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}><p className="text-bone/50">{messages.lobby.loading}</p></AppShell>;
-  if (!snapshot) return <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
+  if (loading) return <AuthenticatedLiveShell><p className="text-bone/50">{messages.lobby.loading}</p></AuthenticatedLiveShell>;
+  if (!snapshot) return <AuthenticatedLiveShell><p className="text-bone/50">{messages.common.sessionNotFound}</p></AuthenticatedLiveShell>;
 
   const nextActivity = getNextPendingActivity(snapshot);
 
@@ -71,7 +71,7 @@ function LobbyContent() {
   }
 
   return (
-    <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}>
+    <AuthenticatedLiveShell>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <section className={panelClass}>
           <h1 className="mt-5 font-heading text-5xl font-semibold leading-none text-bone">{snapshot.session.title}</h1>
@@ -178,6 +178,6 @@ function LobbyContent() {
         closeLabel={messages.live.backToActivity}
         onClose={() => setQrExpanded(false)}
       />
-    </AppShell>
+    </AuthenticatedLiveShell>
   );
 }

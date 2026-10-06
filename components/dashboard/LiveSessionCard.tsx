@@ -29,6 +29,14 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   const canManageActivities = ["draft", "setup", "lobby"].includes(session.status);
   const canAccessResults = ["live", "intermission", "closed"].includes(session.status);
   const reportLanguage = locale === "it" ? "it" : "en";
+  const hasStatusIndicator = session.status !== "closed";
+
+  function statusClassName() {
+    if (session.status === "live") return "border-mint/20 text-bone";
+    if (session.status === "draft" || session.status === "setup") return "border-blue/20 text-bone";
+    if (session.status === "intermission") return "border-orange/20 text-bone";
+    return "border-bone/10 text-bone/60";
+  }
 
   async function download(kind: "docx" | "excel") {
     try {
@@ -84,13 +92,18 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   }
 
   return <>
-    <Card className="flex h-full flex-col space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <span className="rounded-full border border-mint/20 bg-mint/10 px-3 py-1 text-sm font-medium text-mint">{messages.liveSessions.type}</span>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full border border-bone/10 px-3 py-1 text-sm text-bone/60">{status}</span>
+    <Card className="flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
+      <div className="flex h-8 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-medium text-bone">{messages.liveSessions.type}</span>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}>
+            {hasStatusIndicator ? <span className={`size-2 rounded-full ${session.status === "intermission" ? "bg-orange" : session.status === "live" ? "bg-mint" : "bg-blue"}`} /> : null}
+            {status}
+          </span>
+        </div>
+        <div className="shrink-0">
           <div className="relative">
-            <Button type="button" variant="ghost" className="h-10 min-h-10 w-10 min-w-10 !p-0" aria-label={messages.liveSessions.settings} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
+            <Button type="button" variant="ghost" className="h-11 min-h-11 w-10 min-w-10 !p-0" aria-label={messages.liveSessions.settings} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
               <MoreHorizontal size={19} />
             </Button>
             {menuOpen ? <div role="menu" className="ritual-popover-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border p-1">
@@ -106,9 +119,13 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
           </div>
         </div>
       </div>
-      <div><h2 className="line-clamp-2 font-heading text-2xl font-semibold text-bone">{session.title}</h2>{session.context_label ? <p className="mt-3 line-clamp-2 text-sm leading-6 text-bone/62">{session.context_label}</p> : null}</div>
-      <p className="text-xs text-bone/48">{messages.liveSessions.updated} {date}</p>
-      <div className="mt-auto"><ButtonLink className="w-full" href={liveDashboardDestination(session)}>{primaryLabel}</ButtonLink></div>
+      <div className="flex flex-1 flex-col justify-between pt-4">
+        <div>
+          <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-[30px] text-bone">{session.title}</h2>
+          <p className="mt-2 text-xs leading-4 text-bone/60">{messages.liveSessions.updated} {date}</p>
+        </div>
+        <div className="flex justify-end pt-4"><ButtonLink className="dashboard-card-cta !min-h-11 !px-3" variant="ghost" href={href(liveDashboardDestination(session))}>{primaryLabel}</ButtonLink></div>
+      </div>
       {notice ? <p className="text-sm text-orange">{notice}</p> : null}
     </Card>
     {deleteOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]"><Card className="ritual-overlay-surface w-full max-w-md border"><h3 className="font-heading text-2xl font-semibold text-bone">{messages.liveSessions.deleteTitle}</h3><p className="mt-3 text-sm leading-6 text-bone/62">{messages.liveSessions.deleteBody}</p><div className="mt-6 flex justify-end gap-3"><Button type="button" variant="ghost" disabled={busy === "delete"} onClick={() => setDeleteOpen(false)}>{messages.common.cancel}</Button><Button type="button" variant="danger" disabled={busy === "delete"} onClick={() => void confirmDelete()}><Trash2 size={16} /> {busy === "delete" ? messages.liveSessions.deleting : messages.liveSessions.delete}</Button></div></Card></div> : null}

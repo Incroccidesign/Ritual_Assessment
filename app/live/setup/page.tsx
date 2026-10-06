@@ -6,8 +6,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Down
 import { Button } from "@/components/live/button";
 import { Field, inputClass, panelClass, selectClass } from "@/components/live/field";
 import { buildRitualFileFromDraft, consumePendingRitualFile, downloadRitualFile, ritualFileToDraft } from "@/lib/live/ritual-file";
-import { AppShell } from "@/components/live/shell";
-import { AppShell as RitualAppShell } from "@/components/layout/AppShell";
+import { AppShell, AuthenticatedLiveShell } from "@/components/live/shell";
 import { ButtonLink as RitualButtonLink } from "@/components/ritual-ui";
 import { activityPrompt } from "@/lib/live/i18n";
 import { createLiveSession, enterLiveLobby, replaceLiveActivities, replaceLiveRoles, updateLiveSession, useLiveSessionSnapshot } from "@/lib/live/repository";
@@ -428,27 +427,27 @@ function SetupContent() {
 
   if (sessionId && sessionLoading) {
     return (
-      <RitualAppShell logoHref={href("/dashboard")}>
+      <AuthenticatedLiveShell>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.loading}</p></section>
         </div>
-      </RitualAppShell>
+      </AuthenticatedLiveShell>
     );
   }
 
   if (sessionId && !snapshot) {
     return (
-      <RitualAppShell logoHref={href("/dashboard")}>
+      <AuthenticatedLiveShell>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.sessionNotFound}</p></section>
         </div>
-      </RitualAppShell>
+      </AuthenticatedLiveShell>
     );
   }
 
   if (snapshot && !["draft", "setup", "lobby"].includes(snapshot.session.status)) {
     return (
-      <RitualAppShell logoHref={href("/dashboard")}>
+      <AuthenticatedLiveShell>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={cn(panelClass, "space-y-5")}>
             <h1 className="font-heading text-3xl font-semibold text-bone">{messages.setup.editUnavailableTitle}</h1>
@@ -456,12 +455,12 @@ function SetupContent() {
             <RitualButtonLink href={href("/dashboard")} variant="secondary">{messages.setup.backToDashboard}</RitualButtonLink>
           </section>
         </div>
-      </RitualAppShell>
+      </AuthenticatedLiveShell>
     );
   }
 
   return (
-    <RitualAppShell logoHref={href("/dashboard")}>
+    <AuthenticatedLiveShell>
       <div className="mx-auto max-w-6xl route-page-fade">
         <div className="mb-10">
           <Button type="button" variant="ghost" disabled={saving} onClick={() => void returnToDashboard()}><ArrowLeft size={16} /> {messages.setup.backToDashboard}</Button>
@@ -1082,7 +1081,7 @@ function SetupContent() {
           ) : null}
         </form>
       </div>
-    </RitualAppShell>
+    </AuthenticatedLiveShell>
   );
 }
 

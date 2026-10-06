@@ -68,6 +68,16 @@ select {
   box-shadow: 0 28px 80px rgb(0 0 0 / 0.72);
 }
 
+/* Dashboard cards follow the fixed Figma grid. Only the bottom CTA gains a
+   surface on hover; cards themselves deliberately remain static. */
+.dashboard-card-cta {
+  background: transparent;
+}
+
+.dashboard-card-cta:hover {
+  background: rgb(243 239 230 / 0.043);
+}
+
 select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23F4F0E8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");

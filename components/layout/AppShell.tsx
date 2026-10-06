@@ -15,7 +15,8 @@ export function AppShell({
   showHeaderDivider = true,
   showLanguageSwitcher = true,
   headerAction,
-  logoHref
+  logoHref,
+  logoClassName
 }: {
   children: React.ReactNode;
   compact?: boolean;
@@ -24,6 +25,7 @@ export function AppShell({
   showLanguageSwitcher?: boolean;
   headerAction?: React.ReactNode;
   logoHref?: string;
+  logoClassName?: string;
 }) {
   const { href, direction } = useLocale();
 
@@ -45,7 +47,7 @@ export function AppShell({
           )}
         >
           <Link href={logoHref ?? href("/")} className="block py-1 focus:outline-none focus:ring-2 focus:ring-mint">
-            <Image src="/ritual-logo-white.svg" alt="Ritual" width={516} height={128} priority className="h-auto w-24 sm:w-28 md:w-32" />
+            <Image src="/ritual-logo-white.svg" alt="Ritual" width={516} height={128} priority className={cn("h-auto w-24 sm:w-28 md:w-32", logoClassName)} />
           </Link>
           <div className="flex items-center gap-3">
             {showLanguageSwitcher ? (

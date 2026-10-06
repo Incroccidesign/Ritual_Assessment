@@ -9,7 +9,7 @@ import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreatio
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
 import { LiveSessionCard } from "@/components/dashboard/LiveSessionCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { Button, Card, EmptyState, StepHeader } from "@/components/ritual-ui";
+import { Button, Card, EmptyState } from "@/components/ritual-ui";
 import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessmentTemplate";
 import {
   AssessmentBundle,
@@ -226,9 +226,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
 
   return (
     <>
-      <div className="relative flex flex-wrap items-start justify-between gap-5">
-        <StepHeader title={messages.dashboard.title} body={messages.dashboard.body} />
-        <div className="relative flex flex-wrap gap-3">
+      <div className="relative">
+        <h1 className="font-heading text-5xl font-semibold leading-none text-bone">{messages.dashboard.title}</h1>
+        <div className="relative mt-8 flex flex-wrap gap-3">
           <input
             ref={ritualFileInputRef}
             type="file"
@@ -239,28 +239,43 @@ function DashboardContent({ designer }: { designer: Designer }) {
               event.target.value = "";
             }}
           />
-          <span ref={newAssessmentButtonRef}>
+          <span ref={newAssessmentButtonRef} className="relative inline-flex">
             <Button
               type="button"
               disabled={!isSupabaseConfigured}
               onClick={() => setCreationOpen((open) => !open)}
             >
-              New
+              New ritual
             </Button>
+            {creationOpen ? (
+              <div ref={creationPopoverRef} className="absolute left-0 top-[calc(100%+0.625rem)] z-50">
+                {creationType === "choose" ? (
+                  <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),24rem)] border p-3">
+                    <div className="space-y-1">
+                      <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => router.push(href("/live/setup"))}>
+                        <h2 className="font-heading text-xl font-semibold text-bone">Collective</h2>
+                        <p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p>
+                      </button>
+                      <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => setCreationType("assessment")}>
+                        <h2 className="font-heading text-xl font-semibold text-bone">Individual</h2>
+                        <p className="mt-1 text-sm leading-5 text-bone/60">Completed independently.</p>
+                      </button>
+                      <div className="mx-3 border-t border-bone/10" />
+                      <button type="button" className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-bone/62 transition hover:bg-bone/6 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => ritualFileInputRef.current?.click()}>Import ritual</button>
+                    </div>
+                  </Card>
+                ) : <AssessmentCreationCard
+                  creating={creating}
+                  userTemplates={templateBundles.map((bundle) => bundle.assessment)}
+                  onCreateBlank={() => void handleCreateBlankAssessment()}
+                  onUseDefaultTemplate={(template) => void handleUseTemplate(template)}
+                  onUseUserTemplate={(assessment) => void handleUseUserTemplate(assessment)}
+                  onBuildTemplate={() => void handleBuildTemplate()}
+                  onDeleteTemplate={(assessment) => void handleDeleteTemplate(assessment)}
+                />}
+              </div>
+            ) : null}
           </span>
-          {creationOpen ? (
-            <div ref={creationPopoverRef} className="absolute right-0 top-[calc(100%+0.75rem)] z-50">
-              {creationType === "choose" ? <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),32rem)] border p-4"><h2 className="font-heading text-2xl text-bone">New activity</h2><p className="mt-2 text-sm text-bone/60">Choose how people will participate before creating anything.</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-mint/70" onClick={() => router.push(href("/live/setup"))}><h3 className="font-heading text-xl text-bone">Live</h3><p className="mt-2 text-sm text-bone/60">Facilitated in real time.</p></button><button type="button" className="rounded-lg border border-bone/12 bg-night/45 p-4 text-left hover:border-mint/70" onClick={() => setCreationType("assessment")}><h3 className="font-heading text-xl text-bone">Differita</h3><p className="mt-2 text-sm text-bone/60">Completed independently.</p></button></div><button type="button" className="mt-3 w-full rounded-lg border border-bone/12 bg-night/45 px-4 py-3 text-left text-sm font-medium text-bone/72 transition hover:border-mint/70 hover:text-bone" onClick={() => ritualFileInputRef.current?.click()}>Import a Ritual file</button></Card> : <AssessmentCreationCard
-                creating={creating}
-                userTemplates={templateBundles.map((bundle) => bundle.assessment)}
-                onCreateBlank={() => void handleCreateBlankAssessment()}
-                onUseDefaultTemplate={(template) => void handleUseTemplate(template)}
-                onUseUserTemplate={(assessment) => void handleUseUserTemplate(assessment)}
-                onBuildTemplate={() => void handleBuildTemplate()}
-                onDeleteTemplate={(assessment) => void handleDeleteTemplate(assessment)}
-              />}
-            </div>
-          ) : null}
         </div>
       </div>
       <div className="mt-8">
@@ -273,7 +288,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
         ) : error ? (
           <Card><p className="text-orange">{error}</p></Card>
         ) : assessmentBundles.length || liveSessions.length ? (
-          <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+          <div className="grid gap-4 xl:grid-cols-3">
             {liveSessions.map((session) => <LiveSessionCard key={`live:${session.id}`} session={session} onDelete={handleDeleteLiveSession} />)}
             {assessmentBundles.map((bundle) => (
               <AssessmentManagementCard
