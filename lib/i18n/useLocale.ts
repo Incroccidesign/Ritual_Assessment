@@ -11,7 +11,9 @@ const localeChangeEvent = "ritual-assessment-locale-change";
 
 function readBrowserLocale() {
   const params = new URLSearchParams(window.location.search);
-  const queryLocale = params.get("locale");
+  // Keep pre-unification Live links usable while routing every surface through
+  // the shared locale store. New links are always generated with `locale`.
+  const queryLocale = params.get("locale") ?? params.get("lang");
   return queryLocale ? normalizeLocale(queryLocale) : normalizeLocale(window.localStorage.getItem(storageKey));
 }
 
@@ -22,7 +24,7 @@ export function useLocale() {
   const messages = getMessages(locale);
 
   useEffect(() => {
-    setStoredLocale(readBrowserLocale());
+    const initialLocaleFrame = window.requestAnimationFrame(() => setStoredLocale(readBrowserLocale()));
 
     function handleLocaleChange(event: Event) {
       const nextLocale = event instanceof CustomEvent ? normalizeLocale(event.detail) : readBrowserLocale();
@@ -34,6 +36,7 @@ export function useLocale() {
     window.addEventListener("storage", handleLocaleChange);
 
     return () => {
+      window.cancelAnimationFrame(initialLocaleFrame);
       window.removeEventListener(localeChangeEvent, handleLocaleChange);
       window.removeEventListener("popstate", handleLocaleChange);
       window.removeEventListener("storage", handleLocaleChange);

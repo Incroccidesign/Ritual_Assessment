@@ -110,10 +110,16 @@ function RoleSelector({
 
 export function AssessmentCollaborators({
   assessmentId,
-  onManagerRoleChange
+  onManagerRoleChange,
+  triggerVariant = "secondary",
+  triggerClassName,
+  loadOnly = false
 }: {
   assessmentId: string;
   onManagerRoleChange?: (role: ManagerRole | null) => void;
+  triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
+  triggerClassName?: string;
+  loadOnly?: boolean;
 }) {
   const { messages } = useLocale();
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
@@ -235,12 +241,12 @@ export function AssessmentCollaborators({
     }
   }
 
-  if (loading || !managerRole) return null;
+  if (loading || !managerRole || loadOnly) return null;
   const emailHasValue = Boolean(email.trim());
   const emailIsValid = validEmail(email);
   return (
     <>
-      <Button type="button" variant="secondary" aria-haspopup="dialog" aria-expanded={open} onClick={openDialog}>
+      <Button type="button" variant={triggerVariant} className={triggerClassName} aria-haspopup="dialog" aria-expanded={open} onClick={openDialog}>
         <Share2 size={16} /> {messages.collaboration.share}
       </Button>
       {open ? (

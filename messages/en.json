@@ -126,6 +126,45 @@
     "noResponsesToExport": "No responses available to export yet.",
     "noCustomResponses": "No custom responses added."
   },
+  "liveSessions": {
+    "type": "Live session",
+    "updated": "Updated",
+    "settings": "Live session settings",
+    "statuses": {
+      "draft": "Draft",
+      "setup": "Setup",
+      "lobby": "Ready",
+      "live": "In progress",
+      "intermission": "Between activities",
+      "closed": "Closed"
+    },
+    "primary": {
+      "draft": "Continue setup",
+      "setup": "Continue setup",
+      "lobby": "Open lobby",
+      "live": "Open session",
+      "intermission": "Open session",
+      "closed": "View results"
+    },
+    "manageActivities": "Manage activities",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating…",
+    "restart": "Restart",
+    "restarting": "Restarting…",
+    "results": "Results",
+    "downloadWord": "Download Word",
+    "downloadExcel": "Download Excel",
+    "preparing": "Preparing…",
+    "delete": "Delete session",
+    "deleteTitle": "Delete this Live Session?",
+    "deleteBody": "This permanently removes the session, its activities, participant data and live responses.",
+    "deleting": "Deleting…",
+    "notFound": "Live Session not found.",
+    "downloadError": "Unable to download this report.",
+    "deleteError": "Only the owner or a co-owner can delete this Live Session.",
+    "duplicateError": "Unable to duplicate this Live Session.",
+    "restartError": "Unable to restart."
+  },
   "assessmentCreate": {
     "title": "Create assessment",
     "helper": "Choose how you want to start.",
