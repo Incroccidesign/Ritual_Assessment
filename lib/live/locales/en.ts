@@ -302,6 +302,7 @@ export const en = {
     noPriorityItems: "No responses available for this activity.",
     roomParticipants: "participants",
     nextActivity: "Next activity",
+    completeActivity: "Complete activity",
     startActivity: "Start activity",
     pauseActivity: "Pause activity",
     resumeActivity: "Resume activity",

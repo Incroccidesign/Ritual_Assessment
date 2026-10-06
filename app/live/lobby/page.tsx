@@ -16,7 +16,7 @@ import { useLanguage } from "@/lib/live/use-language";
 
 export default function LobbyPage() {
   return (
-    <Suspense fallback={<AppShell><p className="text-bone/50">Caricamento.</p></AppShell>}>
+    <Suspense fallback={<AppShell><p className="text-bone/50">Loading.</p></AppShell>}>
       <LobbyContent />
     </Suspense>
   );
@@ -41,8 +41,8 @@ function LobbyContent() {
   }, [generatedJoinToken, joinToken, sessionId]);
   const isLocalQr = joinUrl ? isLocalhostUrl(joinUrl) : false;
 
-  if (loading) return <AppShell claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.lobby.loading}</p></AppShell>;
-  if (!snapshot) return <AppShell claim={messages.chrome.claim} homeHref={href("/")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
+  if (loading) return <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}><p className="text-bone/50">{messages.lobby.loading}</p></AppShell>;
+  if (!snapshot) return <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
 
   const nextActivity = getNextPendingActivity(snapshot);
 
@@ -71,7 +71,7 @@ function LobbyContent() {
   }
 
   return (
-    <AppShell claim={messages.chrome.claim} homeHref={href("/")}>
+    <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <section className={panelClass}>
           <h1 className="mt-5 font-heading text-5xl font-semibold leading-none text-bone">{snapshot.session.title}</h1>

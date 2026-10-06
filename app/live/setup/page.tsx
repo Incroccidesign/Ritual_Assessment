@@ -41,7 +41,7 @@ function SetupSectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function SetupPage() {
   return (
-    <Suspense fallback={<AppShell><p className="text-bone/50">Caricamento.</p></AppShell>}>
+    <Suspense fallback={<AppShell><p className="text-bone/50">Loading.</p></AppShell>}>
       <SetupContent />
     </Suspense>
   );
@@ -428,7 +428,7 @@ function SetupContent() {
 
   if (sessionId && sessionLoading) {
     return (
-      <RitualAppShell>
+      <RitualAppShell logoHref={href("/dashboard")}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.loading}</p></section>
         </div>
@@ -438,7 +438,7 @@ function SetupContent() {
 
   if (sessionId && !snapshot) {
     return (
-      <RitualAppShell>
+      <RitualAppShell logoHref={href("/dashboard")}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.sessionNotFound}</p></section>
         </div>
@@ -448,7 +448,7 @@ function SetupContent() {
 
   if (snapshot && !["draft", "setup", "lobby"].includes(snapshot.session.status)) {
     return (
-      <RitualAppShell>
+      <RitualAppShell logoHref={href("/dashboard")}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={cn(panelClass, "space-y-5")}>
             <h1 className="font-heading text-3xl font-semibold text-bone">{messages.setup.editUnavailableTitle}</h1>
@@ -461,7 +461,7 @@ function SetupContent() {
   }
 
   return (
-    <RitualAppShell>
+    <RitualAppShell logoHref={href("/dashboard")}>
       <div className="mx-auto max-w-6xl route-page-fade">
         <div className="mb-10">
           <Button type="button" variant="ghost" disabled={saving} onClick={() => void returnToDashboard()}><ArrowLeft size={16} /> {messages.setup.backToDashboard}</Button>

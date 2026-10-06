@@ -126,6 +126,45 @@
     "noResponsesToExport": "Non ci sono ancora risposte da esportare.",
     "noCustomResponses": "Nessuna risposta personalizzata aggiunta."
   },
+  "liveSessions": {
+    "type": "Sessione live",
+    "updated": "Aggiornata",
+    "settings": "Impostazioni sessione live",
+    "statuses": {
+      "draft": "Bozza",
+      "setup": "Impostazione",
+      "lobby": "Pronta",
+      "live": "In corso",
+      "intermission": "Tra le attività",
+      "closed": "Conclusa"
+    },
+    "primary": {
+      "draft": "Continua impostazione",
+      "setup": "Continua impostazione",
+      "lobby": "Apri lobby",
+      "live": "Apri sessione",
+      "intermission": "Apri sessione",
+      "closed": "Vedi risultati"
+    },
+    "manageActivities": "Gestisci attività",
+    "duplicate": "Duplica",
+    "duplicating": "Duplicazione…",
+    "restart": "Riavvia",
+    "restarting": "Riavvio…",
+    "results": "Risultati",
+    "downloadWord": "Scarica Word",
+    "downloadExcel": "Scarica Excel",
+    "preparing": "Preparazione…",
+    "delete": "Elimina sessione",
+    "deleteTitle": "Eliminare questa sessione live?",
+    "deleteBody": "Questa azione rimuove definitivamente la sessione, le attività, i dati dei partecipanti e le risposte live.",
+    "deleting": "Eliminazione…",
+    "notFound": "Sessione live non trovata.",
+    "downloadError": "Impossibile scaricare questo report.",
+    "deleteError": "Solo il proprietario o un co-proprietario può eliminare questa sessione live.",
+    "duplicateError": "Impossibile duplicare questa sessione live.",
+    "restartError": "Impossibile riavviare la sessione."
+  },
   "assessmentCreate": {
     "title": "Crea assessment",
     "helper": "Scegli come vuoi iniziare.",

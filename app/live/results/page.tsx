@@ -25,7 +25,7 @@ function Content() {
   useEffect(() => { if (!id || selectedRun === null) return; void fetchArchivedLiveRun(id, selectedRun).then(setArchiveSnapshot).catch((cause) => setError(cause instanceof Error ? cause.message : "Archived report unavailable.")); }, [id, selectedRun]);
 
   if (loading) return <AppShell><p>{messages.export.loading}</p></AppShell>;
-  if (!snapshot) return <AppShell homeHref={href("/")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
+  if (!snapshot) return <AppShell homeHref={href("/dashboard")}><p className="text-bone/50">{messages.common.sessionNotFound}</p></AppShell>;
   const currentSnapshot = snapshot;
   const displayed = archiveSnapshot ?? currentSnapshot; const results = getLiveResults(displayed); const isArchive = selectedRun !== null;
 
@@ -41,13 +41,13 @@ function Content() {
     setRestarting(true); setError(null);
     try {
       const status = await restartLiveSession(currentSnapshot.session);
-      if (status === "lobby") router.push(`/live/lobby?id=${encodeURIComponent(currentSnapshot.session.id)}&lang=${language}`);
-      else router.push(`/live?id=${encodeURIComponent(currentSnapshot.session.id)}&lang=${language}`);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to restart this ritual."); }
+      if (status === "lobby") router.push(href(`/live/lobby?id=${encodeURIComponent(currentSnapshot.session.id)}`));
+      else router.push(href(`/live?id=${encodeURIComponent(currentSnapshot.session.id)}`));
+    } catch (cause) { setError(cause instanceof Error ? cause.message : messages.common.sessionNotFound); }
     finally { setRestarting(false); }
   }
 
-  return <AppShell claim={messages.chrome.claim} homeHref={href("/")}>
+  return <AppShell claim={messages.chrome.claim} homeHref={href("/dashboard")}>
     <div className="flex flex-wrap items-start justify-between gap-6">
       <div><p className="text-sm uppercase tracking-[.2em] text-bone/48">{isArchive ? `${language === "it" ? "Archivio · giro" : "Archive · run"} ${selectedRun}` : currentSnapshot.session.status}</p><h1 className="mt-2 font-heading text-5xl text-bone">{displayed.session.title}</h1><p className="mt-3 text-bone/58">{results.participantCount} {language === "it" ? "partecipanti" : "participants"} · {results.responseCount} {language === "it" ? "risposte" : "responses"}</p></div>
       <div className="flex flex-wrap gap-3"><ButtonLink href={href("/dashboard")} variant="ghost">{messages.setup.backToDashboard}</ButtonLink>{!isArchive && ["live", "intermission", "closed"].includes(currentSnapshot.session.status) ? <Button disabled={restarting} variant="secondary" onClick={() => void restart()}><RotateCcw size={16} /> {restarting ? messages.live.restartingSession : messages.live.restartSession}</Button> : null}<Button disabled={busy} onClick={() => void save("docx")}><FileText size={16} /> DOCX</Button><Button disabled={busy} variant="secondary" onClick={() => void save("excel")}><FileSpreadsheet size={16} /> XLSX</Button></div>

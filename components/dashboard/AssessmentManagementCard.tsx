@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, MoreHorizontal, Pause, Play, Square, Trash2 } from "lucide-react";
+import { Copy, FileText, MoreHorizontal, Pause, Pencil, Play, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { AssessmentResponse } from "@/types/response";
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
@@ -111,11 +111,12 @@ export function AssessmentManagementCard({
 
   return (
     <Card className="flex h-full flex-col space-y-5">
+      <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} loadOnly />
       <div className="flex items-start justify-between gap-4">
-        <span className={`rounded-full border px-3 py-1 text-sm ${statusClassName()}`}>
-          {statusLabel()}
-        </span>
-        <div className="relative">
+        <span className="rounded-full border border-bone/15 bg-night/50 px-3 py-1 text-sm font-medium text-bone/72">Assessment</span>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full border px-3 py-1 text-sm ${statusClassName()}`}>{statusLabel()}</span>
+          <div className="relative">
           <Button
             type="button"
             variant="ghost"
@@ -129,34 +130,44 @@ export function AssessmentManagementCard({
           {menuOpen ? (
             <div className="ritual-popover-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border p-1">
               {assessment.status !== "draft" ? (
-                <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="w-full justify-start px-3">
-                  {messages.dashboard.edit}
+                <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
+                  <Pencil size={16} /> <span>{messages.dashboard.edit}</span>
                 </ButtonLink>
               ) : null}
+              <AssessmentCollaborators
+                assessmentId={assessment.id}
+                onManagerRoleChange={setManagerRole}
+                triggerVariant="ghost"
+                triggerClassName="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"
+              />
+              <ButtonLink href={href(`/assessments/${assessment.id}/results`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
+                <FileText size={16} /> <span>{messages.dashboard.viewResults}</span>
+              </ButtonLink>
               {assessment.status === "published" ? (
                 <>
-                  <Button type="button" variant="ghost" className="w-full justify-start px-3" onClick={() => { setMenuOpen(false); setStatusAction("pause"); }}>
-                    <Pause size={16} /> {messages.dashboard.pauseCollection}
+                  <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("pause"); }}>
+                    <Pause size={16} /> <span>{messages.dashboard.pauseCollection}</span>
                   </Button>
-                  <Button type="button" variant="ghost" className="w-full justify-start px-3" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
-                    <Square size={16} /> {messages.dashboard.endCollection}
+                  <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
+                    <Square size={16} /> <span>{messages.dashboard.endCollection}</span>
                   </Button>
                 </>
               ) : assessment.status === "paused" ? (
-                <Button type="button" variant="ghost" className="w-full justify-start px-3" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
-                  <Square size={16} /> {messages.dashboard.endCollection}
+                <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
+                  <Square size={16} /> <span>{messages.dashboard.endCollection}</span>
                 </Button>
               ) : null}
               {managerRole ? (
                 <>
                   <div className="my-1 border-t border-bone/10" />
-                  <Button type="button" variant="ghost" className="w-full justify-start px-3 text-orange hover:text-orange" onClick={() => { setMenuOpen(false); setDeleteOpen(true); }}>
-                    <Trash2 size={16} /> {messages.dashboard.delete}
+                  <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left text-orange hover:text-orange" onClick={() => { setMenuOpen(false); setDeleteOpen(true); }}>
+                    <Trash2 size={16} /> <span>{messages.dashboard.delete}</span>
                   </Button>
                 </>
               ) : null}
             </div>
           ) : null}
+          </div>
         </div>
       </div>
 
@@ -185,12 +196,6 @@ export function AssessmentManagementCard({
             <Play size={16} /> {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
           </Button>
         )}
-        <div className="grid grid-cols-2 gap-3 [&>button]:w-full">
-          <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} />
-          <ButtonLink href={href(`/assessments/${assessment.id}/results`)} variant="secondary" className={managerRole ? "w-full" : "col-span-2 w-full"}>
-            {messages.dashboard.viewResults}
-          </ButtonLink>
-        </div>
       </div>
 
       {deleteOpen ? (

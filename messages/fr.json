@@ -126,6 +126,45 @@
     "noResponsesToExport": "Aucune reponse disponible a exporter pour le moment.",
     "noCustomResponses": "Aucune reponse personnalisee ajoutee."
   },
+  "liveSessions": {
+    "type": "Session live",
+    "updated": "Mise à jour",
+    "settings": "Paramètres de la session live",
+    "statuses": {
+      "draft": "Brouillon",
+      "setup": "Configuration",
+      "lobby": "Prête",
+      "live": "En cours",
+      "intermission": "Entre les activités",
+      "closed": "Terminée"
+    },
+    "primary": {
+      "draft": "Continuer la configuration",
+      "setup": "Continuer la configuration",
+      "lobby": "Ouvrir le lobby",
+      "live": "Ouvrir la session",
+      "intermission": "Ouvrir la session",
+      "closed": "Voir les résultats"
+    },
+    "manageActivities": "Gérer les activités",
+    "duplicate": "Dupliquer",
+    "duplicating": "Duplication…",
+    "restart": "Redémarrer",
+    "restarting": "Redémarrage…",
+    "results": "Résultats",
+    "downloadWord": "Télécharger Word",
+    "downloadExcel": "Télécharger Excel",
+    "preparing": "Préparation…",
+    "delete": "Supprimer la session",
+    "deleteTitle": "Supprimer cette session live ?",
+    "deleteBody": "Cette action supprime définitivement la session, ses activités, les données des participants et les réponses live.",
+    "deleting": "Suppression…",
+    "notFound": "Session live introuvable.",
+    "downloadError": "Impossible de télécharger ce rapport.",
+    "deleteError": "Seul le propriétaire ou un copropriétaire peut supprimer cette session live.",
+    "duplicateError": "Impossible de dupliquer cette session live.",
+    "restartError": "Impossible de redémarrer la session."
+  },
   "assessmentCreate": {
     "title": "Creer un assessment",
     "helper": "Choisissez comment commencer.",
