@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
@@ -30,6 +30,11 @@ type FieldErrors = {
 };
 
 type AuthMode = "sign-in" | "sign-up" | "reset-request" | "new-password" | "verification-pending";
+type LoginContentProps = {
+  onBusyChange?: (pending: boolean) => void;
+  className?: string;
+  embedded?: boolean;
+};
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -37,6 +42,11 @@ function isValidEmail(value: string) {
 
 function hasSecurePassword(value: string) {
   return value.length >= PASSWORD_MIN_LENGTH && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value);
+}
+
+function safeNextPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
 }
 
 export default function LoginPage() {
@@ -47,14 +57,14 @@ export default function LoginPage() {
   );
 }
 
-function LoginContent() {
+export function LoginContent({ onBusyChange, className, embedded = false }: LoginContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { messages, href } = useLocale();
   const passwordReset = searchParams.get("reset") === "1";
   const emailConfirmed = searchParams.get("confirmed") === "1";
-  const requestedMode = searchParams.get("mode");
-  const next = searchParams.get("next") || "/dashboard";
+  const requestedMode = searchParams.get("mode") ?? searchParams.get("auth");
+  const next = safeNextPath(searchParams.get("next"));
   const [mode, setMode] = useState<AuthMode>(() => passwordReset ? "new-password" : requestedMode === "sign-up" ? "sign-up" : "sign-in");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -77,6 +87,10 @@ function LoginContent() {
   );
 
   const resendSeconds = Math.max(0, Math.ceil((resendAvailableAt - now) / 1000));
+
+  useEffect(() => {
+    onBusyChange?.(pending);
+  }, [onBusyChange, pending]);
 
   useEffect(() => {
     if (!resendAvailableAt) return;
@@ -201,20 +215,15 @@ function LoginContent() {
   }
 
   return (
-    <AppShell compact>
-      <Card>
-        <div className="flex items-start gap-4">
-          <span className="grid h-11 w-11 place-items-center rounded-full border border-mint/25 bg-mint/10 text-mint">
-            <Lock size={19} />
-          </span>
-          <div>
-            <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
-              {mode === "sign-up" ? messages.auth.signUpTitle : mode === "verification-pending" ? messages.auth.verificationTitle : messages.auth.title}
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-bone/58">
-              {mode === "sign-up" ? messages.auth.signUpBody : mode === "verification-pending" ? messages.auth.verificationBody : messages.auth.body}
-            </p>
-          </div>
+    <AuthContainer embedded={embedded}>
+      <Card className={className}>
+        <div>
+          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
+            {mode === "sign-up" ? messages.auth.signUpTitle : mode === "verification-pending" ? messages.auth.verificationTitle : messages.auth.title}
+          </h1>
+          {mode !== "sign-up" ? <p className="mt-2 text-sm leading-6 text-bone/58">
+            {mode === "verification-pending" ? messages.auth.verificationBody : messages.auth.body}
+          </p> : null}
         </div>
         {!isSupabaseConfigured ? (
           <p className="mt-7 rounded-md border border-orange/30 bg-orange/10 p-4 text-sm leading-6 text-bone/72">{messages.auth.supabaseRequired}</p>
@@ -279,7 +288,7 @@ function LoginContent() {
           </div>
         ) : (
           <form
-            className="mt-7 space-y-4"
+            className="mt-5 space-y-3"
             noValidate
             onSubmit={(event) => {
               event.preventDefault();
@@ -432,6 +441,10 @@ function LoginContent() {
           </form>
         )}
       </Card>
-    </AppShell>
+    </AuthContainer>
   );
+}
+
+function AuthContainer({ children, embedded }: { children: React.ReactNode; embedded: boolean }) {
+  return embedded ? <>{children}</> : <AppShell compact>{children}</AppShell>;
 }

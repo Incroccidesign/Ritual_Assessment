@@ -112,6 +112,6 @@ export async function POST(request: Request, { params }: RouteContext) {
   } catch (error) {
     if (duplicatedSessionId) await createSupabaseAdminClient().from("live_sessions").delete().eq("id", duplicatedSessionId);
     if (error instanceof Response) return error;
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to duplicate the Live Session." }, { status: 500 });
+    return NextResponse.json({ error: "Unable to duplicate the Live Session." }, { status: 500 });
   }
 }

@@ -1,45 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
-import { ArrowRight, LogIn } from "lucide-react";
-import { AmbientBackground } from "@/components/ambient/AmbientBackground";
-import { AppShell } from "@/components/layout/AppShell";
-import { ButtonLink } from "@/components/ritual-ui";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { ArrowRight, UserRound, UsersRound, X } from "lucide-react";
+import { LoginContent } from "@/app/login/page";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { LegalFooter } from "@/components/legal/LegalFooter";
+import { Button } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 
-const introOffsets = [
-  { x: "-10px", y: "16px" },
-  { x: "8px", y: "18px" },
-  { x: "-12px", y: "14px" },
-  { x: "10px", y: "20px" },
-  { x: "-8px", y: "12px" },
-  { x: "12px", y: "16px" }
-];
-
-function AnimatedHeadline({ text }: { text: string }) {
-  const segments = text.split(" ");
-
-  return (
-    <h1 className="max-w-6xl font-heading text-6xl font-semibold leading-[0.94] text-bone md:text-8xl">
-      {segments.map((segment, index) => {
-        const offset = introOffsets[index % introOffsets.length];
-        return (
-          <span
-            key={`${segment}-${index}`}
-            className="innesco-word mr-[0.22em] inline-block"
-            style={{
-              animationDelay: `${index * 55}ms`,
-              ["--intro-x" as string]: offset.x,
-              ["--intro-y" as string]: offset.y
-            }}
-          >
-            {segment}
-          </span>
-        );
-      })}
-    </h1>
-  );
-}
+type HomeAuthMode = "sign-in" | "sign-up";
 
 export default function HomePage() {
   return (
@@ -50,39 +22,175 @@ export default function HomePage() {
 }
 
 function HomeContent() {
-  const { messages, href } = useLocale();
+  const { messages, href, direction } = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const authParam = searchParams.get("auth");
+  const authMode: HomeAuthMode | null = authParam === "sign-in" || authParam === "sign-up" ? authParam : null;
+  const [authPending, setAuthPending] = useState(false);
+
+  const openAuth = useCallback((mode: HomeAuthMode, next?: string) => {
+    const params = new URLSearchParams({ auth: mode });
+    if (next) params.set("next", next);
+    setAuthPending(false);
+    router.replace(href(`/?${params.toString()}`));
+  }, [href, router]);
+
+  const closeAuth = useCallback(() => {
+    if (!authPending) router.replace(href("/"));
+  }, [authPending, href, router]);
 
   return (
-    <AppShell wide showHeaderDivider={false}>
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <AmbientBackground intensity="medium" />
-      </div>
-      <div
-        className="pointer-events-none fixed inset-0 z-[1]"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(8, 13, 20, 0.78) 0%, rgba(8, 13, 20, 0.34) 24%, rgba(8, 13, 20, 0) 52%), radial-gradient(ellipse at 28% 66%, rgba(8, 13, 20, 0.66) 0%, rgba(8, 13, 20, 0.28) 34%, rgba(8, 13, 20, 0) 66%)"
-        }}
-      />
-      <section className="relative z-10 flex min-h-[70vh] items-end pb-24">
-        <div className="max-w-5xl">
-          <AnimatedHeadline text={messages.home.title} />
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-bone/78">
-            {messages.home.body}
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink href={href("/login?next=%2Fdashboard%3Fcreate%3D1")} className="min-h-12 bg-mint px-6 py-3 text-base text-night hover:bg-mint/85">
-              {messages.home.cta} <ArrowRight size={17} />
-            </ButtonLink>
-            <ButtonLink href={href("/login?next=%2Fdashboard")} variant="secondary" className="min-h-12 border-bone/10 bg-night/50 px-6 py-3 text-base hover:bg-night/65">
-              {messages.home.secondary} <LogIn size={17} />
-            </ButtonLink>
-            <ButtonLink href={href("/login?mode=sign-up&next=%2Fdashboard")} variant="ghost" className="min-h-12 px-4 py-3 text-base">
-              {messages.home.tertiary}
-            </ButtonLink>
+    <>
+    <main dir={direction} className="min-h-screen bg-night text-bone">
+      <section className="relative flex min-h-[100svh] overflow-hidden">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/video/Hero_Ritual.webm" type="video/webm" />
+        </video>
+        <div className="pointer-events-none absolute inset-0 bg-[#01060e]/45" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-[#01060e]/80 to-transparent" />
+
+        <header className="absolute inset-x-0 top-0 z-20 mx-auto flex w-full max-w-[92rem] items-center justify-between gap-4 px-5 py-7 md:px-10">
+          <Link href={href("/")} className="block py-1 focus:outline-none focus:ring-2 focus:ring-mint">
+            <Image src="/ritual-logo-white.svg" alt="Ritual" width={516} height={128} priority className="h-auto w-24 sm:w-28" />
+          </Link>
+          <div className="flex max-w-[15rem] flex-wrap items-center justify-end gap-2 sm:max-w-none sm:flex-nowrap sm:gap-3">
+            <button
+              type="button"
+              onClick={() => openAuth("sign-in")}
+              className="inline-flex min-h-10 items-center justify-center px-2 text-sm font-semibold text-bone/78 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint"
+            >
+              {messages.auth.signIn}
+            </button>
+            <button
+              type="button"
+              onClick={() => openAuth("sign-up")}
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-bone/45 px-3 text-sm font-semibold text-bone transition hover:bg-bone/10 focus:outline-none focus:ring-2 focus:ring-mint sm:px-4"
+            >
+              {messages.auth.signUp}
+            </button>
+            <Suspense fallback={null}>
+              <LanguageSwitcher variant="dropdown" />
+            </Suspense>
+          </div>
+        </header>
+
+        <div className="relative z-10 flex w-full items-center justify-center px-5 py-28 text-center">
+          <div className="flex max-w-2xl flex-col items-center">
+            <p className="font-heading text-4xl font-semibold leading-tight text-bone sm:text-5xl md:text-6xl">
+              {messages.home.heroClaim}
+            </p>
+            <Button
+              type="button"
+              onClick={() => openAuth("sign-up", "/dashboard?create=1")}
+              className="mt-8 min-h-14 bg-bone px-7 py-3 text-base text-night hover:bg-bone/90"
+            >
+              {messages.home.heroCta} <ArrowRight size={18} />
+            </Button>
           </div>
         </div>
       </section>
-    </AppShell>
+
+      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+        <p className="max-w-3xl font-heading text-3xl font-semibold leading-tight text-bone md:text-4xl">
+          {messages.home.overview}
+        </p>
+      </section>
+
+      <section>
+        <div className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+          <div className="grid gap-10 md:grid-cols-2 md:gap-16">
+            <article>
+              <UsersRound aria-hidden="true" size={56} strokeWidth={1.35} className="text-bone/80" />
+              <h2 className="mt-6 font-heading text-2xl font-semibold text-bone">{messages.home.collectiveEyebrow}</h2>
+              <p className="mt-3 max-w-md text-base leading-7 text-bone/68">{messages.home.collectiveTitle}</p>
+            </article>
+            <article>
+              <UserRound aria-hidden="true" size={56} strokeWidth={1.35} className="text-bone/80" />
+              <h2 className="mt-6 font-heading text-2xl font-semibold text-bone">{messages.home.individualEyebrow}</h2>
+              <p className="mt-3 max-w-md text-base leading-7 text-bone/68">{messages.home.individualTitle}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-5xl px-5 pb-8 md:px-10">
+        <LegalFooter />
+      </div>
+    </main>
+    {authMode ? <HomeAuthDialog pending={authPending} onClose={closeAuth}>
+      <LoginContent embedded onBusyChange={setAuthPending} className="ritual-overlay-surface auth-dialog-panel auth-dialog-scroll max-h-[calc(100dvh-3rem)] overflow-y-auto p-6 pb-12 sm:p-8 sm:pb-12" />
+    </HomeAuthDialog> : null}
+    </>
+  );
+}
+
+function HomeAuthDialog({ children, onClose, pending }: { children: React.ReactNode; onClose: () => void; pending: boolean }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusFirst = () => {
+      const focusable = dialogRef.current?.querySelector<HTMLElement>("button:not([disabled]), input:not([disabled]), a[href], select:not([disabled]), textarea:not([disabled])");
+      focusable?.focus();
+    };
+    const frame = window.requestAnimationFrame(focusFirst);
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !pending) {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), a[href], select:not([disabled]), textarea:not([disabled])"));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [onClose, pending]);
+
+  return (
+    <div className="auth-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#01060e]/74 px-4 py-6 backdrop-blur-md" onMouseDown={() => !pending && onClose()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Authentication"
+        className="relative w-full max-w-xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button type="button" aria-label="Close" disabled={pending} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50">
+          <X size={18} aria-hidden="true" />
+        </button>
+        {children}
+      </div>
+    </div>
   );
 }

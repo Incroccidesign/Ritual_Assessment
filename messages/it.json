@@ -201,8 +201,8 @@
     }
   },
   "auth": {
-    "title": "Accesso designer",
-    "body": "Accedi per gestire gli assessment e leggere i risultati privati. I partecipanti non hanno bisogno di account.",
+    "title": "Bentornato",
+    "body": "Accedi per continuare.",
     "signUpTitle": "Crea il tuo account",
     "signUpBody": "Configura il tuo account Ritual per creare assessment e collaborare in sicurezza.",
     "verificationTitle": "Controlla la tua email",
@@ -284,6 +284,17 @@
   "home": {
     "title": "Costruisci un assessment visuale guidato",
     "body": "Un percorso ispirato a Ritual per designer e ricercatori che raccolgono evidenze qualitative e semi-strutturate senza trasformare l'esperienza in un questionario classico.",
+    "heroClaim": "Ogni prospettiva conta.",
+    "heroCta": "Inizia un rituale",
+    "overview": "Riunisci le persone, condividi prospettive e trasforma le idee in esiti collettivi.",
+    "modesEyebrow": "Due modalità",
+    "modesTitle": "Scegli il ritmo giusto per il tuo rituale.",
+    "collectiveEyebrow": "Collettivo",
+    "collectiveTitle": "Insieme, in tempo reale.",
+    "collectiveBody": "Facilita una sessione dal vivo in cui tutte le persone contribuiscono nello stesso momento.",
+    "individualEyebrow": "Individuale",
+    "individualTitle": "Da completare in autonomia.",
+    "individualBody": "Condividi un percorso guidato che ogni persona può completare con i propri tempi.",
     "cta": "Crea assessment",
     "secondary": "Accedi",
     "tertiary": "Registrati"
@@ -326,6 +337,7 @@
   },
   "builder": {
     "title": "Builder assessment",
+    "individualTitle": "Rituale individuale",
     "assessmentDetails": "Informazioni generali",
     "assessmentFlow": "Struttura del questionario",
     "assessmentFlowHelper": "Organizza gli step che i partecipanti completeranno.",

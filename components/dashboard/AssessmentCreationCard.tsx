@@ -47,7 +47,7 @@ function ChoiceCard({
   onClick
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
   onClick: () => void;
 }) {
@@ -62,7 +62,7 @@ function ChoiceCard({
     >
       <div>
         <h3 className="font-heading text-xl font-semibold text-bone">{title}</h3>
-        <p className="mt-2 max-w-xs text-sm font-medium leading-5 text-bone/62">{description}</p>
+        {description ? <p className="mt-2 max-w-xs text-sm font-medium leading-5 text-bone/62">{description}</p> : null}
       </div>
       <div className="-mb-2 self-center">{children}</div>
     </button>
@@ -76,7 +76,8 @@ export function AssessmentCreationCard({
   onUseDefaultTemplate,
   onUseUserTemplate,
   onBuildTemplate,
-  onDeleteTemplate
+  onDeleteTemplate,
+  embedded = false
 }: {
   creating: boolean;
   userTemplates: Assessment[];
@@ -85,6 +86,7 @@ export function AssessmentCreationCard({
   onUseUserTemplate: (assessment: Assessment) => void;
   onBuildTemplate: () => void;
   onDeleteTemplate: (assessment: Assessment) => void;
+  embedded?: boolean;
 }) {
   const { messages } = useLocale();
   const [mode, setMode] = useState<"choices" | "templates">("choices");
@@ -113,30 +115,40 @@ export function AssessmentCreationCard({
     setDeleteTemplate(null);
   }
 
-  return (
-    <Card className="ritual-popover-surface relative z-30 w-[min(calc(100vw-2rem),42rem)] border p-0">
-      <div className="space-y-5 rounded-lg p-4">
-        <div>
-          <h2 className="font-heading text-2xl font-semibold text-bone">
-            {mode === "choices" ? messages.assessmentCreate.title : messages.assessmentCreate.templates.title}
+  const content = (
+      <div className={embedded ? "mx-auto max-w-4xl space-y-7" : "space-y-1 rounded-lg p-3"}>
+        {embedded || mode === "templates" ? <div>
+          <h2 className={cn("font-heading font-semibold text-bone", embedded ? "text-3xl leading-tight md:text-4xl" : "text-2xl")}>
+            {mode === "choices" && embedded ? messages.builder.individualTitle : mode === "choices" ? messages.assessmentCreate.title : messages.assessmentCreate.templates.title}
           </h2>
-          <p className="mt-1 max-w-xl text-sm leading-6 text-bone/60">
-            {mode === "choices" ? messages.assessmentCreate.helper : messages.assessmentCreate.templates.description}
-          </p>
-        </div>
+          {!embedded ? <p className="mt-1 max-w-xl text-sm leading-6 text-bone/60">
+              {mode === "choices" ? messages.assessmentCreate.helper : messages.assessmentCreate.templates.description}
+            </p> : null}
+        </div> : null}
 
-        {mode === "choices" ? (
+        {mode === "choices" && !embedded ? (
+          <>
+            <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={onCreateBlank}>
+              <h2 className="font-heading text-xl font-semibold text-bone">{messages.assessmentCreate.startFromScratch.title}</h2>
+              <p className="mt-1 text-sm leading-5 text-bone/60">{messages.assessmentCreate.startFromScratch.description}</p>
+            </button>
+            <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => setMode("templates")}>
+              <h2 className="font-heading text-xl font-semibold text-bone">{messages.assessmentCreate.templates.title}</h2>
+              <p className="mt-1 text-sm leading-5 text-bone/60">{messages.assessmentCreate.templates.choiceDescription}</p>
+            </button>
+          </>
+        ) : mode === "choices" ? (
           <div className="grid gap-3 sm:grid-cols-2">
             <ChoiceCard
               title={messages.assessmentCreate.startFromScratch.title}
-              description={messages.assessmentCreate.startFromScratch.description}
+              description={embedded ? undefined : messages.assessmentCreate.startFromScratch.description}
               onClick={onCreateBlank}
             >
               <ScratchIllustration />
             </ChoiceCard>
             <ChoiceCard
               title={messages.assessmentCreate.templates.title}
-              description={messages.assessmentCreate.templates.choiceDescription}
+              description={embedded ? undefined : messages.assessmentCreate.templates.choiceDescription}
               onClick={() => setMode("templates")}
             >
               <TemplateIllustration />
@@ -179,7 +191,11 @@ export function AssessmentCreationCard({
           </div>
         )}
       </div>
+  );
 
+  return (
+    <>
+      {embedded ? content : <Card className="ritual-popover-surface relative z-30 w-[min(calc(100vw-2rem),24rem)] border p-0">{content}</Card>}
       {deleteTemplate ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="ritual-overlay-surface w-full max-w-md border">
@@ -196,6 +212,6 @@ export function AssessmentCreationCard({
           </Card>
         </div>
       ) : null}
-    </Card>
+    </>
   );
 }

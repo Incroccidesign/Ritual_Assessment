@@ -3,6 +3,9 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { X } from "lucide-react";
+import { SetupContent } from "@/app/live/setup/page";
+import { AssessmentBuilder } from "@/components/builder/AssessmentBuilder";
 import { Designer } from "@/lib/auth/designerAuth";
 import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreationCard";
@@ -50,6 +53,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [loading, setLoading] = useState(true);
   const [creationOpen, setCreationOpen] = useState(false);
   const [creationType, setCreationType] = useState<"choose" | "assessment">("choose");
+  const [liveSetupOpen, setLiveSetupOpen] = useState(false);
+  const [liveCloseRequested, setLiveCloseRequested] = useState(false);
+  const [individualSetup, setIndividualSetup] = useState<{ assessmentId: string; templateMode: boolean } | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const creationPopoverRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +70,21 @@ function DashboardContent({ designer }: { designer: Designer }) {
     () => bundles.filter((bundle) => !templateIds.has(bundle.assessment.id)),
     [bundles, templateIds]
   );
+
+  useEffect(() => {
+    if (!creationOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+      if (creationPopoverRef.current?.contains(target)) return;
+      if (newAssessmentButtonRef.current?.contains(target)) return;
+      setCreationOpen(false);
+      setCreationType("choose");
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [creationOpen]);
 
   useEffect(() => {
     let active = true;
@@ -106,20 +127,6 @@ function DashboardContent({ designer }: { designer: Designer }) {
   }, [designer.id]);
 
   useEffect(() => {
-    if (!creationOpen) return;
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target as Node;
-      if (creationPopoverRef.current?.contains(target)) return;
-      if (newAssessmentButtonRef.current?.contains(target)) return;
-      setCreationOpen(false);
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [creationOpen]);
-
-  useEffect(() => {
     if (searchParams.get("create") !== "1") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCreationOpen(true);
@@ -142,13 +149,38 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setLiveSessions((current) => current.filter((session) => session.id !== sessionId));
   }
 
+  async function handleCloseLiveSetup() {
+    setLiveSetupOpen(false);
+    setCreationOpen(false);
+    setCreationType("choose");
+    setLiveCloseRequested(false);
+    try {
+      setLiveSessions(await listLiveSessions() as LiveSession[]);
+    } catch (liveError) {
+      setError(getErrorMessage(liveError, messages.auth.signInError));
+    }
+  }
+
+  async function handleCloseIndividualSetup() {
+    setIndividualSetup(null);
+    setCreationOpen(false);
+    setCreationType("choose");
+    try {
+      setBundles(await fetchDesignerAssessmentBundles(designer.id));
+    } catch (dashboardError) {
+      setError(getErrorMessage(dashboardError, messages.auth.signInError));
+    }
+  }
+
   async function handleCreateBlankAssessment() {
     if (!isSupabaseConfigured || creating) return;
     setCreating(true);
     setError(null);
     try {
       const assessment = await createSupabaseAssessment(locale);
-      router.push(href(`/assessments/${assessment.id}/builder`));
+      setCreationOpen(false);
+      setCreationType("choose");
+      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.auth.signInError));
     } finally {
@@ -163,7 +195,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
     try {
       const assessment = await createSupabaseAssessment(locale);
       markAssessmentAsTemplate(assessment.id, designer.id);
-      router.push(href(`/assessments/${assessment.id}/builder?template=1`));
+      setCreationOpen(false);
+      setCreationType("choose");
+      setIndividualSetup({ assessmentId: assessment.id, templateMode: true });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -177,7 +211,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setError(null);
     try {
       const assessment = await createSupabaseAssessmentFromTemplate(template);
-      router.push(href(`/assessments/${assessment.id}/builder`));
+      setCreationOpen(false);
+      setCreationType("choose");
+      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -191,7 +227,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setError(null);
     try {
       const assessment = await createSupabaseAssessmentFromExistingTemplate(templateAssessment);
-      router.push(href(`/assessments/${assessment.id}/builder`));
+      setCreationOpen(false);
+      setCreationType("choose");
+      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -243,7 +281,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
             <Button
               type="button"
               disabled={!isSupabaseConfigured}
-              onClick={() => setCreationOpen((open) => !open)}
+              onClick={() => {
+                setCreationOpen((open) => !open);
+                setCreationType("choose");
+              }}
             >
               New ritual
             </Button>
@@ -252,7 +293,11 @@ function DashboardContent({ designer }: { designer: Designer }) {
                 {creationType === "choose" ? (
                   <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),24rem)] border p-3">
                     <div className="space-y-1">
-                      <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => router.push(href("/live/setup"))}>
+                      <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => {
+                        setCreationOpen(false);
+                        setLiveCloseRequested(false);
+                        setLiveSetupOpen(true);
+                      }}>
                         <h2 className="font-heading text-xl font-semibold text-bone">Collective</h2>
                         <p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p>
                       </button>
@@ -304,10 +349,44 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <EmptyState
             title={messages.dashboard.emptyTitle}
             body={messages.dashboard.emptyBody}
-            action={<Button type="button" onClick={() => setCreationOpen(true)}>{messages.assessmentCreate.newAssessment}</Button>}
+            action={<Button type="button" onClick={() => {
+              setCreationType("choose");
+              setCreationOpen(true);
+            }}>{messages.assessmentCreate.newAssessment}</Button>}
           />
         )}
       </div>
+      {liveSetupOpen ? <CreationDialog label={messages.home.collectiveEyebrow} closing={liveCloseRequested} onClose={() => setLiveCloseRequested(true)}>
+        <SetupContent embedded closeRequested={liveCloseRequested} onDismiss={() => void handleCloseLiveSetup()} />
+      </CreationDialog> : null}
+      {individualSetup ? <CreationDialog label={messages.builder.individualTitle} onClose={() => void handleCloseIndividualSetup()}>
+        <AssessmentBuilder
+          assessmentId={individualSetup.assessmentId}
+          ownerId={designer.id}
+          initialTemplateMode={individualSetup.templateMode}
+          embedded
+          onDismiss={() => void handleCloseIndividualSetup()}
+        />
+      </CreationDialog> : null}
     </>
+  );
+}
+
+function CreationDialog({ children, label, onClose, closing = false }: { children: React.ReactNode; label: string; onClose?: () => void; closing?: boolean }) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#01060e]/74 p-4 backdrop-blur-md" onMouseDown={() => !closing && onClose?.()}>
+      <div role="dialog" aria-modal="true" aria-label={label} className="ritual-overlay-surface modal-scroll relative max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-lg border p-5 sm:p-8" onMouseDown={(event) => event.stopPropagation()}>
+        {onClose ? <button type="button" aria-label="Close" disabled={closing} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50"><X size={18} aria-hidden="true" /></button> : null}
+        {children}
+      </div>
+    </div>
   );
 }

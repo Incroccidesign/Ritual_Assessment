@@ -1,0 +1,13 @@
+{
+  "gates": [
+    { "name": "lint", "severity": "advisory", "applicability": "applicable", "command": "npm run lint", "manual_review": false },
+    { "name": "typecheck", "severity": "blocking", "applicability": "applicable", "command": "npx tsc --noEmit", "manual_review": false },
+    { "name": "critical-tests", "severity": "blocking", "applicability": "applicable", "command": "npx playwright test", "manual_review": false },
+    { "name": "build", "severity": "blocking", "applicability": "applicable", "command": "npm run build", "manual_review": false },
+    { "name": "security-scan", "severity": "blocking", "applicability": "applicable", "command": "npm audit --omit=dev", "manual_review": false },
+    { "name": "migration-check", "severity": "blocking", "applicability": "applicable", "command": "local restore and production read-only query", "manual_review": true },
+    { "name": "duplication", "severity": "advisory", "applicability": "not_applicable", "command": "", "manual_review": false },
+    { "name": "complexity", "severity": "advisory", "applicability": "not_applicable", "command": "", "manual_review": false },
+    { "name": "visual-drift", "severity": "advisory", "applicability": "applicable", "command": "focused manual visual review", "manual_review": true }
+  ]
+}

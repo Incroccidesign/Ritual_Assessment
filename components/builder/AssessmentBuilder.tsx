@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Activity, ActivityType } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
@@ -53,11 +53,15 @@ function formatEstimatedDuration(min: number, max: number, locale: Locale) {
 export function AssessmentBuilder({
   assessmentId,
   ownerId,
-  initialTemplateMode = false
+  initialTemplateMode = false,
+  embedded = false,
+  onDismiss
 }: {
   assessmentId: string;
   ownerId: string;
   initialTemplateMode?: boolean;
+  embedded?: boolean;
+  onDismiss?: () => void;
 }) {
   const { messages } = useLocale();
   const router = useRouter();
@@ -66,7 +70,6 @@ export function AssessmentBuilder({
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [activityPendingDeletion, setActivityPendingDeletion] = useState<Activity | null>(null);
   const [activityResponseCounts, setActivityResponseCounts] = useState<Record<string, number>>({});
@@ -128,8 +131,6 @@ export function AssessmentBuilder({
     try {
       const result = await operation();
       onSuccess?.(result);
-      setSaved(true);
-      window.setTimeout(() => setSaved(false), 1200);
       window.dispatchEvent(new Event("ritual-assessment-storage"));
       return result;
     } catch (saveError) {
@@ -257,7 +258,8 @@ export function AssessmentBuilder({
     try {
       await deleteSupabaseAssessment(assessment.id);
       window.dispatchEvent(new Event("ritual-assessment-storage"));
-      router.push("/dashboard");
+      if (embedded) onDismiss?.();
+      else router.push("/dashboard");
     } catch (deleteError) {
       setError(getErrorMessage(deleteError, messages.dashboard.deleteError));
     } finally {
@@ -279,35 +281,46 @@ export function AssessmentBuilder({
 
   if (loading) {
     return (
-      <BuilderShell>
+      <BuilderFrame embedded={embedded}>
         <Card>
           <p className="text-bone/50">{messages.app.loading}</p>
         </Card>
-      </BuilderShell>
+      </BuilderFrame>
     );
   }
 
   if (!assessment) {
     return (
-      <BuilderShell>
+      <BuilderFrame embedded={embedded}>
         <Card>
           <p className="text-bone/50">{error ?? messages.common.empty}</p>
         </Card>
-      </BuilderShell>
+      </BuilderFrame>
     );
   }
 
   return (
-    <BuilderShell>
-      <div className="flex flex-wrap items-start justify-between gap-5">
-        <div className="space-y-5">
+    <BuilderFrame embedded={embedded}>
+      <div className={embedded ? "mx-auto max-w-5xl route-page-fade" : undefined}>
+        {embedded ? (
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-heading text-3xl font-semibold leading-tight text-bone md:text-4xl">{messages.builder.individualTitle}</h1>
+              {!saving ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-mint text-night" title={messages.builder.savedAutomatically}><Check size={13} strokeWidth={3} aria-hidden="true" /></span> : null}
+            </div>
+            {assessment.description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-bone/60">{assessment.description}</p> : null}
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="space-y-5">
           <ButtonLink href="/dashboard" variant="ghost" className="min-h-10 px-0 text-bone/70 hover:text-bone">
             <ArrowLeft size={17} />
             {messages.nav.dashboard}
           </ButtonLink>
           <StepHeader title={messages.builder.title} body={assessment.description} />
-        </div>
-      </div>
+            </div>
+          </div>
+        )}
       {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
       {assessment.status === "published" ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
@@ -362,27 +375,22 @@ export function AssessmentBuilder({
         </div>
       ) : null}
 
-      <div className="mt-8">
+      <div className={embedded ? "mt-7" : "mt-8"}>
         <div className="mx-auto max-w-5xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-bone/12 bg-night/45 px-5 py-4">
-            <p className="text-sm font-semibold text-bone/58">
-              {saving ? messages.builder.saving : saved ? messages.builder.savedAutomatically : messages.builder.savedAutomatically}
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              {assessment.status === "draft" && isOwner ? (
-                <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)} disabled={deleting}>
-                  {messages.builder.deleteDraft}
-                </Button>
-              ) : null}
-              <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} compact />
-            </div>
+          <div className="flex flex-wrap justify-end gap-3">
+            {assessment.status === "draft" && isOwner ? (
+              <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)} disabled={deleting}>
+                {messages.builder.deleteDraft}
+              </Button>
+            ) : null}
+            <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} compact />
           </div>
           {assessment.status === "paused" ? (
             <p className="rounded-lg border border-mint/20 bg-mint/10 px-5 py-4 text-sm leading-6 text-bone/76">
               {messages.builder.collectionPausedNotice}
             </p>
           ) : null}
-          <Card className="space-y-5">
+          <section className="space-y-5">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentDetails}</h2>
             <Field label={messages.builder.titleLabel}>
               <input className={inputClass} value={assessment.title} onChange={(event) => updateAssessment({ title: event.target.value })} />
@@ -464,8 +472,8 @@ export function AssessmentBuilder({
               />
               <span>{messages.builder.templateToggle.label}</span>
             </label>
-          </Card>
-          <Card>
+          </section>
+          <section className="border-t border-bone/10 pt-6">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="space-y-2">
                 <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentFlow}</h2>
@@ -484,9 +492,14 @@ export function AssessmentBuilder({
                 <ActivityEditor activity={activity} activities={activities} onChange={updateActivity} embedded />
               )}
             />
-          </Card>
+          </section>
         </div>
       </div>
-    </BuilderShell>
+      </div>
+    </BuilderFrame>
   );
+}
+
+function BuilderFrame({ children, embedded }: { children: React.ReactNode; embedded: boolean }) {
+  return embedded ? <>{children}</> : <BuilderShell>{children}</BuilderShell>;
 }

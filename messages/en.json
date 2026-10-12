@@ -201,8 +201,8 @@
     }
   },
   "auth": {
-    "title": "Sign in",
-    "body": "Manage your assessments and review results in one place.",
+    "title": "Welcome back",
+    "body": "Sign in to continue.",
     "signUpTitle": "Create your account",
     "signUpBody": "Set up your Ritual account to create assessments and collaborate securely.",
     "verificationTitle": "Check your email",
@@ -284,6 +284,17 @@
   "home": {
     "title": "Build a guided visual assessment",
     "body": "Build guided assessments, share them with participants, and turn responses into structured insights you can review and export.",
+    "heroClaim": "Every perspective matters.",
+    "heroCta": "Start a Ritual",
+    "overview": "Bring people together, share perspectives, and turn ideas into collective outcomes.",
+    "modesEyebrow": "Two ways to work",
+    "modesTitle": "Choose the rhythm that fits your ritual.",
+    "collectiveEyebrow": "Collective",
+    "collectiveTitle": "Together, in real time.",
+    "collectiveBody": "Facilitate a live session where everyone contributes in the same moment.",
+    "individualEyebrow": "Individual",
+    "individualTitle": "Completed independently.",
+    "individualBody": "Share a guided path that people can complete in their own time.",
     "cta": "Create assessment",
     "secondary": "Sign in",
     "tertiary": "Sign up"
@@ -326,6 +337,7 @@
   },
   "builder": {
     "title": "Assessment builder",
+    "individualTitle": "Individual ritual",
     "assessmentDetails": "General information",
     "assessmentFlow": "Questionnaire structure",
     "assessmentFlowHelper": "Organize the steps participants will complete.",

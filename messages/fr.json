@@ -201,8 +201,8 @@
     }
   },
   "auth": {
-    "title": "Se connecter",
-    "body": "Gerez vos evaluations et consultez les resultats au meme endroit.",
+    "title": "Bon retour",
+    "body": "Connectez-vous pour continuer.",
     "signUpTitle": "Creez votre compte",
     "signUpBody": "Configurez votre compte Ritual pour creer des evaluations et collaborer en securite.",
     "verificationTitle": "Verifiez votre email",
@@ -284,6 +284,17 @@
   "home": {
     "title": "Construire une evaluation visuelle guidee",
     "body": "Creez des evaluations guidees, partagez-les avec les participants, puis transformez les reponses en insights structures que vous pouvez consulter et exporter.",
+    "heroClaim": "Chaque perspective compte.",
+    "heroCta": "Commencer un rituel",
+    "overview": "Rassemblez les personnes, partagez les points de vue et transformez les idées en résultats collectifs.",
+    "modesEyebrow": "Deux façons de faire",
+    "modesTitle": "Choisissez le rythme adapté à votre rituel.",
+    "collectiveEyebrow": "Collectif",
+    "collectiveTitle": "Ensemble, en temps réel.",
+    "collectiveBody": "Animez une session en direct où chacun contribue au même moment.",
+    "individualEyebrow": "Individuel",
+    "individualTitle": "À compléter de manière autonome.",
+    "individualBody": "Partagez un parcours guidé que chacun peut réaliser à son propre rythme.",
     "cta": "Creer une evaluation",
     "secondary": "Se connecter",
     "tertiary": "Creer un compte"
@@ -326,6 +337,7 @@
   },
   "builder": {
     "title": "Constructeur d'evaluation",
+    "individualTitle": "Rituel individuel",
     "assessmentDetails": "Informations generales",
     "assessmentFlow": "Structure du questionnaire",
     "assessmentFlowHelper": "Organisez les etapes que les participants completeront.",

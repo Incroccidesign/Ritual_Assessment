@@ -1,0 +1,7 @@
+{
+  "framework": "codex-engineering-framework",
+  "framework_version": "1.0.0-rc12",
+  "adoption_mode": "existing",
+  "update_policy": "propose-only",
+  "status": "ready"
+}

@@ -33,6 +33,6 @@ export async function POST(request: Request) {
   } catch (error) {
     if (sessionId) await createSupabaseAdminClient().from("live_sessions").delete().eq("id", sessionId);
     if (error instanceof Response) return error;
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to create Live Session." }, { status: 500 });
+    return NextResponse.json({ error: "Unable to create Live Session." }, { status: 500 });
   }
 }

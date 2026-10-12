@@ -13,12 +13,14 @@
     "@supabase/supabase-js": "^2.49.1",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
+    "exceljs": "^4.4.0",
     "lucide-react": "^0.468.0",
-    "next": "16.3.5",
+    "next": "^16.4.0",
     "qrcode.react": "^4.2.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "xlsx": "^0.18.5"
+    "sharp": "^0.35.5",
+    "source-map-js": "^1.2.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -27,13 +29,14 @@
     "@types/react-dom": "19.3.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.5",
+    "eslint-config-next": "^16.4.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
   },
   "overrides": {
     "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0"
+    "@types/react-dom": "19.3.0",
+    "uuid": "11.1.1"
   }
 }

@@ -9,7 +9,6 @@ import { safeFilename } from "@/lib/utils/text";
 
 type RowValue = string | number | boolean | null;
 type SheetRow = Record<string, RowValue>;
-type XLSXModule = typeof import("xlsx");
 
 const ORGANIZATION_NAME_ALIASES = new Set([
   "organizationname",
@@ -57,8 +56,8 @@ export async function exportAssessmentExcel(
   messages: Messages
 ) {
   void messages;
-  const XLSX = await import("xlsx");
-  const workbook = XLSX.utils.book_new();
+  const ExcelJS = (await import("exceljs")).default;
+  const workbook = new ExcelJS.Workbook();
   const sortedActivities = [...assessment.activities].sort((a, b) => a.orderIndex - b.orderIndex);
   const submittedResponses = responses.filter((response) => response.status === "submitted");
   const submittedParticipantIds = new Set(submittedResponses.map((response) => response.participantId));
@@ -67,9 +66,8 @@ export async function exportAssessmentExcel(
   const organizationNames = buildOrganizationNameMap(submittedParticipants, submittedResponses, sortedActivities);
   const sectionRows = buildSectionRows(submittedResponses, sortedActivities, participantById, organizationNames);
 
-  appendSheet(XLSX, workbook, "00_Overview", buildOverviewRows(assessment, submittedParticipants, submittedResponses, sectionRows, organizationNames));
+  appendSheet(workbook, "00_Overview", buildOverviewRows(assessment, submittedParticipants, submittedResponses, sectionRows, organizationNames));
   appendSheet(
-    XLSX,
     workbook,
     "01_Participants",
     buildParticipantRows(submittedParticipants, submittedResponses, sortedActivities, organizationNames),
@@ -80,10 +78,10 @@ export async function exportAssessmentExcel(
   sortedActivities.forEach((activity, index) => {
     const rows = sectionRows.get(activity.id) ?? [];
     const sheetName = createUniqueSheetName(`${String(index + 2).padStart(2, "0")}_`, activity.title, usedNames);
-    appendSheet(XLSX, workbook, sheetName, rows, SECTION_HEADERS);
+    appendSheet(workbook, sheetName, rows, SECTION_HEADERS);
   });
 
-  appendSheet(XLSX, workbook, "99_Raw_json", buildRawJsonRows(submittedResponses, organizationNames), [
+  appendSheet(workbook, "99_Raw_json", buildRawJsonRows(submittedResponses, organizationNames), [
     "id",
     "participant_id",
     "organization_name",
@@ -92,7 +90,7 @@ export async function exportAssessmentExcel(
     "answer_json"
   ]);
 
-  XLSX.writeFileXLSX(workbook, `${safeFilename(assessment.title)}-report.xlsx`);
+  await downloadWorkbook(workbook, `${safeFilename(assessment.title)}-report.xlsx`);
 }
 
 function buildOrganizationNameMap(
@@ -444,25 +442,26 @@ function getFramingQuestionRow(
 }
 
 function appendSheet(
-  XLSX: XLSXModule,
-  workbook: ReturnType<XLSXModule["utils"]["book_new"]>,
+  workbook: import("exceljs").Workbook,
   name: string,
   rows: SheetRow[],
   header?: string[]
 ) {
   const headers = header ?? getHeaders(rows);
-  const worksheetRows = [
-    headers,
-    ...rows.map((row) => headers.map((headerName) => normalizeCellValue(row[headerName])))
-  ];
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetRows);
+  const worksheet = workbook.addWorksheet(name);
+  worksheet.columns = headers.map((headerName) => ({ header: headerName, key: headerName, width: getColumnWidth(headerName, rows) }));
+  worksheet.addRows(rows.map((row) => Object.fromEntries(headers.map((headerName) => [headerName, normalizeCellValue(row[headerName])]))));
+  if (headers.length) worksheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: headers.length } };
+}
 
-  worksheet["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: worksheetRows.length - 1, c: headers.length - 1 } }) };
-  worksheet["!cols"] = headers.map((headerName) => ({
-    wch: getColumnWidth(headerName, rows)
-  }));
-
-  XLSX.utils.book_append_sheet(workbook, worksheet, name);
+async function downloadWorkbook(workbook: import("exceljs").Workbook, name: string) {
+  const buffer = await workbook.xlsx.writeBuffer();
+  const url = URL.createObjectURL(new Blob([new Uint8Array(buffer)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = name;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 function getHeaders(rows: SheetRow[]) {

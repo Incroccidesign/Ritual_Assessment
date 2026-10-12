@@ -46,7 +46,13 @@ export default function SetupPage() {
   );
 }
 
-function SetupContent() {
+type SetupContentProps = {
+  embedded?: boolean;
+  onDismiss?: () => void;
+  closeRequested?: boolean;
+};
+
+export function SetupContent({ embedded = false, onDismiss, closeRequested = false }: SetupContentProps) {
   const router = useRouter();
   const params = useSearchParams();
   const { language, messages, href } = useLanguage();
@@ -66,6 +72,7 @@ function SetupContent() {
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const closeStarted = useRef(false);
 
   const selectedContext = useMemo(() => messages.setup.contexts.find((context) => context.id === contextId), [contextId, messages.setup.contexts]);
   const availableRoles = useMemo(
@@ -409,8 +416,22 @@ function SetupContent() {
   async function returnToDashboard() {
     const persistedSessionId = await persistConfiguration(true);
     if (!persistedSessionId) return;
+    if (embedded) {
+      onDismiss?.();
+      return;
+    }
     router.push(href("/dashboard"));
   }
+
+  useEffect(() => {
+    if (!embedded || !closeRequested) {
+      closeStarted.current = false;
+      return;
+    }
+    if (closeStarted.current) return;
+    closeStarted.current = true;
+    void returnToDashboard();
+  }, [closeRequested, embedded]);
 
   function saveRitualFile() {
     const file = buildRitualFileFromDraft({
@@ -427,27 +448,27 @@ function SetupContent() {
 
   if (sessionId && sessionLoading) {
     return (
-      <AuthenticatedLiveShell>
+      <SetupShell embedded={embedded}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.loading}</p></section>
         </div>
-      </AuthenticatedLiveShell>
+      </SetupShell>
     );
   }
 
   if (sessionId && !snapshot) {
     return (
-      <AuthenticatedLiveShell>
+      <SetupShell embedded={embedded}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={panelClass}><p className="text-bone/55">{messages.common.sessionNotFound}</p></section>
         </div>
-      </AuthenticatedLiveShell>
+      </SetupShell>
     );
   }
 
   if (snapshot && !["draft", "setup", "lobby"].includes(snapshot.session.status)) {
     return (
-      <AuthenticatedLiveShell>
+      <SetupShell embedded={embedded}>
         <div className="mx-auto max-w-4xl route-page-fade">
           <section className={cn(panelClass, "space-y-5")}>
             <h1 className="font-heading text-3xl font-semibold text-bone">{messages.setup.editUnavailableTitle}</h1>
@@ -455,32 +476,39 @@ function SetupContent() {
             <RitualButtonLink href={href("/dashboard")} variant="secondary">{messages.setup.backToDashboard}</RitualButtonLink>
           </section>
         </div>
-      </AuthenticatedLiveShell>
+      </SetupShell>
     );
   }
 
   return (
-    <AuthenticatedLiveShell>
+    <SetupShell embedded={embedded}>
       <div className="mx-auto max-w-6xl route-page-fade">
-        <div className="mb-10">
+        {!embedded ? <div className="mb-10">
           <Button type="button" variant="ghost" disabled={saving} onClick={() => void returnToDashboard()}><ArrowLeft size={16} /> {messages.setup.backToDashboard}</Button>
-        </div>
-        <aside className="mx-auto max-w-3xl pt-2 text-center">
-          <p className="text-sm uppercase tracking-[0.28em] text-mint">{messages.setup.eyebrow}</p>
-          <h1 className="mt-4 font-heading text-5xl font-semibold leading-none text-bone md:text-6xl">{messages.setup.title}</h1>
-          <p className="mx-auto mt-5 max-w-2xl leading-7 text-bone/58">{messages.setup.body}</p>
+        </div> : null}
+        <aside className={cn(
+          "mx-auto",
+          embedded ? "mb-7 max-w-4xl text-left" : "max-w-3xl pt-2 text-center"
+        )}>
+          <h1 className={cn(
+            "font-heading font-semibold text-bone",
+            embedded ? "text-3xl leading-tight md:text-4xl" : "text-5xl leading-none md:text-6xl"
+          )}>{messages.setup.title}</h1>
         </aside>
 
         <form
-          className={cn(panelClass, "mx-auto mt-10 max-w-4xl space-y-9")}
+          className={cn(
+            "mx-auto max-w-4xl",
+            embedded ? "space-y-7" : cn(panelClass, "mt-10 space-y-9")
+          )}
           onSubmit={(event) => {
             event.preventDefault();
             openLobby();
           }}
         >
           <section>
-            <div className="space-y-8">
-              <section className="space-y-6">
+            <div className={embedded ? "space-y-6" : "space-y-8"}>
+              <section className={embedded ? "space-y-5" : "space-y-6"}>
               <SetupSectionTitle>{messages.setup.sections.ritualSettings}</SetupSectionTitle>
               <Field label={messages.setup.labels.ritualName}>
                 <input className={inputClass} value={title} onChange={(event) => setTitle(event.target.value)} required />
@@ -512,7 +540,7 @@ function SetupContent() {
               </Field>
               </section>
 
-              <section className="space-y-6 border-t border-bone/10 pt-8">
+              <section className={cn("border-t border-bone/10", embedded ? "space-y-5 pt-6" : "space-y-6 pt-8")}>
               <SetupSectionTitle>{messages.setup.sections.participants}</SetupSectionTitle>
               <Field label={messages.setup.labels.roles} hint={selectedContext ? messages.setup.rolesHintWithContext : messages.setup.rolesHintWithoutContext}>
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
@@ -1081,8 +1109,12 @@ function SetupContent() {
           ) : null}
         </form>
       </div>
-    </AuthenticatedLiveShell>
+    </SetupShell>
   );
+}
+
+function SetupShell({ children, embedded }: { children: React.ReactNode; embedded: boolean }) {
+  return embedded ? <>{children}</> : <AuthenticatedLiveShell>{children}</AuthenticatedLiveShell>;
 }
 
 function PriorityManualItemsEditor({

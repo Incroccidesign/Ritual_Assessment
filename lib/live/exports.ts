@@ -36,8 +36,14 @@ export async function exportLiveDocx(snapshot: LiveSessionSnapshot, language: La
 }
 
 export async function buildLiveWorkbook(snapshot: LiveSessionSnapshot, language: Language = "it") {
-  const XLSX = await import("xlsx"); const data = buildLiveReport(snapshot, language); const book = XLSX.utils.book_new();
-  const add = (name: string, rows: object[]) => XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), name);
+  const ExcelJS = (await import("exceljs")).default; const data = buildLiveReport(snapshot, language); const book = new ExcelJS.Workbook();
+  const add = (name: string, rows: Record<string, unknown>[]) => {
+    const sheet = book.addWorksheet(name);
+    const headers = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+    sheet.columns = headers.map((header) => ({ header, key: header, width: Math.min(Math.max(header.length + 2, 16), 48) }));
+    sheet.addRows(rows);
+    if (headers.length) sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: headers.length } };
+  };
   add("Session", [{ id: snapshot.session.id, run: snapshot.session.run_number ?? 1, title: snapshot.session.title, status: snapshot.session.status, facilitator: snapshot.session.facilitator_name, context: snapshot.session.context_label, started_at: snapshot.session.ritual_started_at, ended_at: snapshot.session.ritual_ended_at }]);
   add("Activities", snapshot.activities.map((a) => ({ activity_id: a.id, order: a.order_index + 1, type: a.activity_type, label: a.instance_label, prompt: a.prompt, state: a.state, note: a.facilitator_note, votes_per_participant: a.votes_per_participant, started_at: a.started_at, ended_at: a.ended_at, categories: JSON.stringify(a.surface_input_types) })));
   add("Participants", snapshot.participants.map((p) => ({ participant_id: p.id, role: p.role_name, name: participantDisplayName(p, getMessages(language).common.participant), organization: p.organization, joined_at: p.joined_at })));
@@ -51,6 +57,7 @@ export async function buildLiveWorkbook(snapshot: LiveSessionSnapshot, language:
 }
 
 export async function exportLiveXlsx(snapshot: LiveSessionSnapshot, language: Language = "it") {
-  const XLSX = await import("xlsx");
-  XLSX.writeFileXLSX(await buildLiveWorkbook(snapshot, language), `${filename(snapshot)}.xlsx`);
+  const workbook = await buildLiveWorkbook(snapshot, language);
+  const buffer = await workbook.xlsx.writeBuffer();
+  download(new Blob([new Uint8Array(buffer)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${filename(snapshot)}.xlsx`);
 }
