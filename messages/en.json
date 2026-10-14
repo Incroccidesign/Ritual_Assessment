@@ -149,8 +149,8 @@
     "manageActivities": "Manage activities",
     "duplicate": "Duplicate",
     "duplicating": "Duplicating…",
-    "restart": "Restart",
-    "restarting": "Restarting…",
+    "restart": "Restart ritual",
+    "restarting": "Restarting ritual…",
     "results": "Results",
     "downloadWord": "Download Word",
     "downloadExcel": "Download Excel",
@@ -296,7 +296,7 @@
     "individualTitle": "Completed independently.",
     "individualBody": "Share a guided path that people can complete in their own time.",
     "cta": "Create assessment",
-    "secondary": "Sign in",
+    "secondary": "Log in",
     "tertiary": "Sign up"
   },
   "presets": {

@@ -40,9 +40,8 @@ function Content() {
   async function restart() {
     setRestarting(true); setError(null);
     try {
-      const status = await restartLiveSession(currentSnapshot.session);
-      if (status === "lobby") router.push(href(`/live/lobby?id=${encodeURIComponent(currentSnapshot.session.id)}`));
-      else router.push(href(`/live?id=${encodeURIComponent(currentSnapshot.session.id)}`));
+      await restartLiveSession(currentSnapshot.session);
+      router.push(href(`/live?id=${encodeURIComponent(currentSnapshot.session.id)}`));
     } catch (cause) { setError(cause instanceof Error ? cause.message : messages.common.sessionNotFound); }
     finally { setRestarting(false); }
   }

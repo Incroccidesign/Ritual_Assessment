@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ChevronDown, Share2, UserMinus, UserPlus } from "lucide-react";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { supabase } from "@/lib/supabase/client";
 
 type CollaborationRole = "editor" | "co_owner";
@@ -57,11 +58,13 @@ function RoleSelector({
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
   const options: Array<{ value: CollaborationRole; label: string; description: string }> = [
     { value: "editor", label: editorLabel, description: editorDescription },
     { value: "co_owner", label: coOwnerLabel, description: coOwnerDescription }
   ];
   const selected = options.find((option) => option.value === value) ?? options[0];
+  useDismissiblePopover(open, popoverRef, () => setOpen(false));
 
   function choose(nextRole: CollaborationRole) {
     setOpen(false);
@@ -69,7 +72,7 @@ function RoleSelector({
   }
 
   return (
-    <div className="relative">
+    <div ref={popoverRef} className="relative">
       <button
         type="button"
         aria-label={ariaLabel}

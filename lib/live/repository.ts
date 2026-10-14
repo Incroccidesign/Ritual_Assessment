@@ -50,10 +50,10 @@ export async function generateLiveJoinLink(sessionId: string) {
   return payload.joinToken;
 }
 
-export async function restartLiveSession(session: LiveSessionSnapshot["session"]): Promise<"live" | "lobby"> {
+export async function restartLiveSession(session: LiveSessionSnapshot["session"]): Promise<"live"> {
   const { data, error } = await liveClient().rpc("restart_live_session", { target_session_id: session.id, expected_run: session.run_number ?? 1 });
   if (error) throw new Error(error.message);
-  if (data !== "live" && data !== "lobby") throw new Error("Unable to restart this session.");
+  if (data !== "live") throw new Error("Unable to start a new run.");
   return data;
 }
 
@@ -170,6 +170,22 @@ export async function startNextLiveActivity(sessionId: string) {
       if (labels.length) { const { error } = await client.from("live_priority_items").insert(labels.map((label) => ({ live_session_id: sessionId, live_activity_id: next.id, source_type: "previous_activity", label }))); if (error) fail("live_priority_items:insert", error); }
     }
   }
+  const preparedProposal = next.activity_type === "patto" && next.pact_statement_mode === "predefined" ? next.pact_text?.trim() : "";
+  if (preparedProposal && !snapshot.pacts.some((pact) => pact.live_activity_id === next.id)) {
+    const { error } = await client.from("live_pacts").insert({
+      live_session_id: sessionId,
+      live_activity_id: next.id,
+      pact_text: preparedProposal,
+      pact_statement_mode: "predefined",
+      facilitator_note: next.facilitator_note,
+      pact_rounds: [{ roundNumber: 1, proposalText: preparedProposal, agreementCounts: { agree: 0, partial: 0, disagree: 0 }, confirmed: false }],
+      current_round_number: 1,
+      confirmed_pact_proposal: null,
+      confirmed_round_number: null,
+      resolved_final_statement: preparedProposal
+    });
+    if (error) fail("live_pacts:insert", error);
+  }
   await update(client, "live_activities", { state: "live", started_at: next.started_at ?? timestamp, timer_anchor_at: timestamp, paused_remaining_seconds: null }, next.id);
   await update(client, "live_sessions", { status: "live", ritual_started_at: snapshot.session.ritual_started_at ?? timestamp }, sessionId);
 }
@@ -203,7 +219,28 @@ export async function joinLiveSession(sessionId: string, joinToken: string, role
 }
 export async function submitLiveResponse(sessionId: string, access: LiveParticipantAccess, activityId: string, activityType: LiveActivity["activity_type"], text: string, category: string | null = null) { const { error } = await liveClient(access).from("live_responses").insert({ live_session_id: sessionId, live_activity_id: activityId, participant_id: access.participantId, activity_type: activityType, response_text: text, response_category: category }); if (error) fail("live_responses:insert", error); }
 export async function submitLivePriorityVotes(sessionId: string, access: LiveParticipantAccess, activityId: string, itemIds: string[]) { const client = liveClient(access); const { error: removeError } = await client.from("live_priority_votes").delete().eq("live_session_id", sessionId).eq("live_activity_id", activityId).eq("participant_id", access.participantId); if (removeError) fail("live_priority_votes:delete", removeError); if (itemIds.length) { const { error } = await client.from("live_priority_votes").insert(itemIds.map((live_priority_item_id) => ({ live_session_id: sessionId, live_activity_id: activityId, participant_id: access.participantId, live_priority_item_id }))); if (error) fail("live_priority_votes:insert", error); } }
-export async function submitLivePactVote(sessionId: string, access: LiveParticipantAccess, activityId: string, level: LiveAdhesionLevel) { const snapshot = await fetchLiveSnapshot(sessionId, access); const pact = snapshot?.pacts.find((item) => item.live_activity_id === activityId); if (!pact?.current_round_number) return; const client = liveClient(access); await client.from("live_pact_votes").delete().eq("live_session_id", sessionId).eq("live_activity_id", activityId).eq("participant_id", access.participantId).eq("round_number", pact.current_round_number); const { error } = await client.from("live_pact_votes").insert({ live_session_id: sessionId, live_activity_id: activityId, participant_id: access.participantId, round_number: pact.current_round_number, adhesion_level: level }); if (error) fail("live_pact_votes:insert", error); }
+export async function submitLivePactVote(sessionId: string, access: LiveParticipantAccess, activityId: string, level: LiveAdhesionLevel) {
+  const snapshot = await fetchLiveSnapshot(sessionId, access);
+  const pact = snapshot?.pacts.find((item) => item.live_activity_id === activityId);
+  if (!pact?.current_round_number) throw new Error("No pact proposal is active yet.");
+  const client = liveClient(access);
+  const { error: removeError } = await client
+    .from("live_pact_votes")
+    .delete()
+    .eq("live_session_id", sessionId)
+    .eq("live_activity_id", activityId)
+    .eq("participant_id", access.participantId)
+    .eq("round_number", pact.current_round_number);
+  if (removeError) fail("live_pact_votes:delete", removeError);
+  const { error } = await client.from("live_pact_votes").insert({
+    live_session_id: sessionId,
+    live_activity_id: activityId,
+    participant_id: access.participantId,
+    round_number: pact.current_round_number,
+    adhesion_level: level
+  });
+  if (error) fail("live_pact_votes:insert", error);
+}
 const pactCounts = (votes: LiveSessionSnapshot["pactVotes"]) => votes.reduce((counts, vote) => ({ ...counts, [vote.adhesion_level === "Concordo" ? "agree" : vote.adhesion_level === "Parzialmente" ? "partial" : "disagree"]: counts[vote.adhesion_level === "Concordo" ? "agree" : vote.adhesion_level === "Parzialmente" ? "partial" : "disagree"] + 1 }), { agree: 0, partial: 0, disagree: 0 });
 export async function startLivePactRound(sessionId: string, activityId: string, proposal: string, mode: "build_live" | "predefined", note: string | null = null) { const snapshot = await fetchLiveSnapshot(sessionId); const current = snapshot?.pacts.find((item) => item.live_activity_id === activityId); const round = Math.max(0, ...(current?.pact_rounds ?? []).map((item) => item.roundNumber)) + 1; const rounds = [...(current?.pact_rounds ?? []), { roundNumber: round, proposalText: proposal.trim(), agreementCounts: { agree: 0, partial: 0, disagree: 0 }, confirmed: false }]; const values = { live_session_id: sessionId, live_activity_id: activityId, pact_text: proposal.trim(), pact_statement_mode: mode, facilitator_note: note, pact_rounds: rounds, current_round_number: round, confirmed_pact_proposal: current?.confirmed_pact_proposal ?? null, confirmed_round_number: current?.confirmed_round_number ?? null, resolved_final_statement: current?.resolved_final_statement ?? proposal.trim() }; const client = liveClient(); if (current) { const { error } = await client.from("live_pacts").update(values).eq("id", current.id); if (error) fail("live_pacts:update", error); } else { const { error } = await client.from("live_pacts").insert(values); if (error) fail("live_pacts:insert", error); } }
 export async function refreshLivePactResults(sessionId: string, activityId: string) { const snapshot = await fetchLiveSnapshot(sessionId); const pact = snapshot?.pacts.find((item) => item.live_activity_id === activityId); if (!snapshot || !pact?.current_round_number) return; const counts = pactCounts(snapshot.pactVotes.filter((vote) => vote.live_activity_id === activityId && vote.round_number === pact.current_round_number)); const rounds = pact.pact_rounds.map((round) => round.roundNumber === pact.current_round_number ? { ...round, agreementCounts: counts } : round); await update(liveClient(), "live_pacts", { pact_rounds: rounds }, pact.id); }

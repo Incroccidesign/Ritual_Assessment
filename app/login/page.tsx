@@ -4,7 +4,8 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
-import { AppShell } from "@/components/layout/AppShell";
+import { PublicHeader } from "@/components/layout/PublicHeader";
+import { LegalFooter } from "@/components/legal/LegalFooter";
 import { Button, Card, Field, inputClass } from "@/components/ritual-ui";
 import {
   getCurrentDesigner,
@@ -215,7 +216,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
   }
 
   return (
-    <AuthContainer embedded={embedded}>
+    <AuthContainer embedded={embedded} header={<PublicHeader onSignIn={() => setMode("sign-in")} onSignUp={() => setMode("sign-up")} className="mb-10" />}>
       <Card className={className}>
         <div>
           <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
@@ -445,6 +446,6 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
   );
 }
 
-function AuthContainer({ children, embedded }: { children: React.ReactNode; embedded: boolean }) {
-  return embedded ? <>{children}</> : <AppShell compact>{children}</AppShell>;
+function AuthContainer({ children, embedded, header }: { children: React.ReactNode; embedded: boolean; header: React.ReactNode }) {
+  return embedded ? <>{children}</> : <main className="min-h-screen px-4 py-5"><div className="route-page-fade mx-auto w-full max-w-md">{header}{children}<LegalFooter /></div></main>;
 }

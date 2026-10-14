@@ -1,16 +1,29 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, MoreHorizontal, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ElementType, ExplorationActivity, ExplorationResponseMode } from "@/types/activity";
 import { Button, Field, inputClass, selectClass, SubtlePanel } from "@/components/ritual-ui";
 import { groupedExplorationOptions, orderedOptionGroups, optionGroupIdFor } from "@/lib/activities/explorationOptionGroups";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { cn } from "@/lib/utils/cn";
 import { uid } from "@/lib/utils/ids";
 
 const elementTypes: ElementType[] = ["problems", "objectives", "criticalities", "barriers", "opportunities", "other"];
 const responseModes: ExplorationResponseMode[] = ["closed_list", "open_list", "free_input"];
+
+function ActionMenu({ children, label }: { children: React.ReactNode; label: string }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  useDismissiblePopover(open, menuRef, () => setOpen(false));
+  return <div ref={menuRef} className="relative">
+    <button type="button" className="rounded-md p-2 text-bone/50 transition hover:bg-bone/8 hover:text-bone" onClick={() => setOpen((current) => !current)} aria-label={label} aria-haspopup="menu" aria-expanded={open}>
+      <MoreHorizontal size={17} />
+    </button>
+    {open ? <div role="menu" onClick={() => setOpen(false)} className="ritual-popover-surface absolute right-0 top-full z-20 mt-2 w-52 rounded-md border p-2">{children}</div> : null}
+  </div>;
+}
 
 export function ExplorationEditor({
   activity,
@@ -20,8 +33,6 @@ export function ExplorationEditor({
   onChange: (activity: ExplorationActivity) => void;
 }) {
   const { messages } = useLocale();
-  const [openGroupMenu, setOpenGroupMenu] = useState<string | null>(null);
-  const [openOptionMenu, setOpenOptionMenu] = useState<number | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const groups = orderedOptionGroups(activity);
   const groupedOptions = groupedExplorationOptions(activity, true, true);
@@ -56,7 +67,6 @@ export function ExplorationEditor({
       nextAssignments[String(optionIndex > index ? optionIndex - 1 : optionIndex)] = groupId;
     });
     onChange({ ...activity, options: nextOptions, optionGroupAssignments: cleanAssignments(nextAssignments, nextOptions.length) });
-    setOpenOptionMenu(null);
   }
 
   function moveOption(index: number, direction: -1 | 1) {
@@ -86,7 +96,6 @@ export function ExplorationEditor({
     if (groupId) assignments[String(index)] = groupId;
     else delete assignments[String(index)];
     onChange({ ...activity, optionGroupAssignments: cleanAssignments(assignments, activity.options.length) });
-    setOpenOptionMenu(null);
   }
 
   function addGroup() {
@@ -118,7 +127,6 @@ export function ExplorationEditor({
       ...activity,
       optionGroups: nextGroups.map((group, index) => ({ ...group, orderIndex: index }))
     });
-    setOpenGroupMenu(null);
   }
 
   function removeGroup(groupId: string) {
@@ -131,7 +139,6 @@ export function ExplorationEditor({
       optionGroups: groups.filter((group) => group.id !== groupId).map((group, index) => ({ ...group, orderIndex: index })),
       optionGroupAssignments: cleanAssignments(assignments, activity.options.length)
     });
-    setOpenGroupMenu(null);
   }
 
   function toggleGroup(groupId: string) {
@@ -219,16 +226,7 @@ export function ExplorationEditor({
                       <span className="shrink-0 text-xs font-semibold text-bone/38">
                         {options.length} {options.length === 1 ? messages.activities.exploration.optionSingular : messages.activities.exploration.optionPlural}
                       </span>
-                      <button
-                        type="button"
-                        className="rounded-md p-2 text-bone/50 transition hover:bg-bone/8 hover:text-bone"
-                        onClick={() => setOpenGroupMenu(openGroupMenu === group.id ? null : group.id)}
-                        aria-label={messages.common.actions}
-                      >
-                        <MoreHorizontal size={17} />
-                      </button>
-                      {openGroupMenu === group.id ? (
-                        <div className="absolute right-0 top-full z-20 mt-2 w-52 rounded-md border border-bone/15 bg-night p-2 shadow-2xl shadow-black/45">
+                      <ActionMenu label={messages.common.actions}>
                           <MenuButton disabled={groups[0]?.id === group.id} onClick={() => moveGroup(group.id, -1)}>
                             {messages.activities.exploration.moveGroupUp}
                           </MenuButton>
@@ -238,8 +236,7 @@ export function ExplorationEditor({
                           <MenuButton danger onClick={() => removeGroup(group.id)}>
                             {messages.activities.exploration.deleteGroup}
                           </MenuButton>
-                        </div>
-                      ) : null}
+                      </ActionMenu>
                     </div>
                   ) : null}
 
@@ -253,8 +250,6 @@ export function ExplorationEditor({
                           value={option.label}
                           currentGroupId={option.groupId}
                           groups={groups}
-                          open={openOptionMenu === option.index}
-                          onOpen={() => setOpenOptionMenu(openOptionMenu === option.index ? null : option.index)}
                           onMoveUp={() => moveOption(option.index, -1)}
                           onMoveDown={() => moveOption(option.index, 1)}
                           onChange={(value) => updateOption(option.index, value)}
@@ -295,8 +290,6 @@ function OptionRow({
   value,
   currentGroupId,
   groups,
-  open,
-  onOpen,
   onMoveUp,
   onMoveDown,
   onChange,
@@ -308,8 +301,6 @@ function OptionRow({
   value: string;
   currentGroupId?: string;
   groups: ReturnType<typeof orderedOptionGroups>;
-  open: boolean;
-  onOpen: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onChange: (value: string) => void;
@@ -346,16 +337,8 @@ function OptionRow({
         </button>
       </div>
       <input className={inputClass} value={value} onChange={(event) => onChange(event.target.value)} />
-      <button
-        type="button"
-        className="rounded-md border border-bone/10 bg-night/45 text-bone/55 transition hover:border-mint/45 hover:text-bone"
-        onClick={onOpen}
-        aria-label={messages.common.actions}
-      >
-        <MoreHorizontal size={17} className="mx-auto" />
-      </button>
-      {open ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-64 rounded-md border border-bone/15 bg-night p-2 shadow-2xl shadow-black/45">
+      <div className="flex justify-end">
+        <ActionMenu label={messages.common.actions}>
           <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-bone/40">{messages.activities.exploration.moveToGroup}</p>
           {groups.map((group) => (
             <MenuButton key={group.id} disabled={group.id === currentGroupId} onClick={() => onAssignGroup(group.id)}>
@@ -368,8 +351,8 @@ function OptionRow({
           <MenuButton danger onClick={onDelete}>
             <Trash2 size={14} /> {messages.activities.exploration.deleteOption}
           </MenuButton>
-        </div>
-      ) : null}
+        </ActionMenu>
+      </div>
     </div>
   );
 }

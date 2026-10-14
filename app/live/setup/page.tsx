@@ -73,6 +73,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const closeStarted = useRef(false);
+  const returnToDashboardRef = useRef<() => Promise<void>>(async () => undefined);
 
   const selectedContext = useMemo(() => messages.setup.contexts.find((context) => context.id === contextId), [contextId, messages.setup.contexts]);
   const availableRoles = useMemo(
@@ -414,6 +415,15 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
   }
 
   async function returnToDashboard() {
+    // Opening a new setup must not create an empty draft merely by closing it.
+    if (!sessionId && !selectedActivities.length) {
+      if (embedded) {
+        onDismiss?.();
+        return;
+      }
+      router.push(href("/dashboard"));
+      return;
+    }
     const persistedSessionId = await persistConfiguration(true);
     if (!persistedSessionId) return;
     if (embedded) {
@@ -422,6 +432,9 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
     }
     router.push(href("/dashboard"));
   }
+  useEffect(() => {
+    returnToDashboardRef.current = returnToDashboard;
+  });
 
   useEffect(() => {
     if (!embedded || !closeRequested) {
@@ -430,7 +443,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
     }
     if (closeStarted.current) return;
     closeStarted.current = true;
-    void returnToDashboard();
+    void returnToDashboardRef.current();
   }, [closeRequested, embedded]);
 
   function saveRitualFile() {

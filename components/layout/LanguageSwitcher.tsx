@@ -1,8 +1,9 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { cn } from "@/lib/utils/cn";
 
 type LanguageSwitcherProps = {
@@ -12,11 +13,13 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps) {
   const { locale, locales, localeNames, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
   const isMinimal = variant === "minimal";
+  useDismissiblePopover(open, popoverRef, () => setOpen(false));
 
   if (variant === "dropdown") {
     return (
-      <div className="relative">
+      <div ref={popoverRef} className="relative">
         <button
           type="button"
           aria-label="Language"

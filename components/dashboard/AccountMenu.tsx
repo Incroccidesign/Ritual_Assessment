@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserRound } from "lucide-react";
 import { AccountDeletionDialog } from "@/components/dashboard/AccountDeletionDialog";
 import { Designer, signOutDesigner } from "@/lib/auth/designerAuth";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { cn } from "@/lib/utils/cn";
 
 export function AccountMenu({ designer }: { designer: Designer }) {
@@ -15,21 +16,7 @@ export function AccountMenu({ designer }: { designer: Designer }) {
   const [deletionOpen, setDeletionOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent) {
-      if (menuRef.current?.contains(event.target as Node)) return;
-      setOpen(false);
-    }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  useDismissiblePopover(open, menuRef, () => setOpen(false));
 
   async function signOut() {
     await signOutDesigner();

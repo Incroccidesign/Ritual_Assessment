@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import { Activity, PlanningReportActivity, PlanningReportItemConfig, PlanningReportSectionConfig } from "@/types/activity";
 import { Button, Field, inputClass, selectClass, SubtlePanel } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { uid } from "@/lib/utils/ids";
 
 function reportableActivities(activities: Activity[], reportActivityId: string) {
@@ -86,16 +87,15 @@ function activityCountLabel(count: number, singular: string, plural: string) {
 }
 
 function ActionMenu({ children }: { children: React.ReactNode }) {
-  return (
-    <details className="relative">
-      <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-bone/10 text-bone/68 transition hover:border-bone/25 hover:bg-bone/8">
-        <MoreHorizontal size={18} />
-      </summary>
-      <div className="ritual-popover-surface absolute right-0 top-10 z-20 min-w-44 rounded-md border p-1">
-        {children}
-      </div>
-    </details>
-  );
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  useDismissiblePopover(open, menuRef, () => setOpen(false));
+  return <div ref={menuRef} className="relative">
+    <button type="button" aria-label="More actions" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="flex h-9 w-9 items-center justify-center rounded-md border border-bone/10 text-bone/68 transition hover:border-bone/25 hover:bg-bone/8">
+      <MoreHorizontal size={18} />
+    </button>
+    {open ? <div role="menu" onClick={() => setOpen(false)} className="ritual-popover-surface absolute right-0 top-10 z-20 min-w-44 rounded-md border p-1">{children}</div> : null}
+  </div>;
 }
 
 function MenuButton({

@@ -28,6 +28,7 @@ import { useLocale } from "@/lib/i18n/useLocale";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { listLiveSessions } from "@/lib/live/repository";
 import { stashPendingRitualFile, validateRitualFile } from "@/lib/live/ritual-file";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import type { LiveSession } from "@/types/live";
 
 export default function DashboardPage() {
@@ -58,8 +59,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [individualSetup, setIndividualSetup] = useState<{ assessmentId: string; templateMode: boolean } | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const creationPopoverRef = useRef<HTMLDivElement | null>(null);
-  const newAssessmentButtonRef = useRef<HTMLSpanElement | null>(null);
+  const creationPopoverRef = useRef<HTMLSpanElement | null>(null);
   const ritualFileInputRef = useRef<HTMLInputElement | null>(null);
   const templateIds = useMemo(() => templateAssessmentIdsForOwner(designer.id), [designer.id]);
   const templateBundles = useMemo(
@@ -71,20 +71,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
     [bundles, templateIds]
   );
 
-  useEffect(() => {
-    if (!creationOpen) return;
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target as Node;
-      if (creationPopoverRef.current?.contains(target)) return;
-      if (newAssessmentButtonRef.current?.contains(target)) return;
-      setCreationOpen(false);
-      setCreationType("choose");
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [creationOpen]);
+  useDismissiblePopover(creationOpen, creationPopoverRef, () => {
+    setCreationOpen(false);
+    setCreationType("choose");
+  });
 
   useEffect(() => {
     let active = true;
@@ -277,7 +267,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
               event.target.value = "";
             }}
           />
-          <span ref={newAssessmentButtonRef} className="relative inline-flex">
+          <span ref={creationPopoverRef} className="relative inline-flex">
             <Button
               type="button"
               disabled={!isSupabaseConfigured}
@@ -289,7 +279,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
               New ritual
             </Button>
             {creationOpen ? (
-              <div ref={creationPopoverRef} className="absolute left-0 top-[calc(100%+0.625rem)] z-50">
+              <div className="absolute left-0 top-[calc(100%+0.625rem)] z-50">
                 {creationType === "choose" ? (
                   <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),24rem)] border p-3">
                     <div className="space-y-1">
@@ -382,8 +372,8 @@ function CreationDialog({ children, label, onClose, closing = false }: { childre
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#01060e]/74 p-4 backdrop-blur-md" onMouseDown={() => !closing && onClose?.()}>
-      <div role="dialog" aria-modal="true" aria-label={label} className="ritual-overlay-surface modal-scroll relative max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-lg border p-5 sm:p-8" onMouseDown={(event) => event.stopPropagation()}>
+    <div className="ritual-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={() => !closing && onClose?.()}>
+      <div role="dialog" aria-modal="true" aria-label={label} className="ritual-overlay-surface ritual-dialog-panel modal-scroll relative max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-lg border p-5 sm:p-8" onMouseDown={(event) => event.stopPropagation()}>
         {onClose ? <button type="button" aria-label="Close" disabled={closing} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50"><X size={18} aria-hidden="true" /></button> : null}
         {children}
       </div>

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FileText, MoreHorizontal, Pause, Pencil, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { AssessmentResponse } from "@/types/response";
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { deleteSupabaseAssessment, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 
 export function AssessmentManagementCard({
@@ -27,7 +28,9 @@ export function AssessmentManagementCard({
   const [publishing, setPublishing] = useState(false);
   const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [managerRole, setManagerRole] = useState<"owner" | "co_owner" | null>(null);
+  useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
   function statusLabel() {
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
@@ -117,7 +120,7 @@ export function AssessmentManagementCard({
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}><span className={`size-2 rounded-full ${statusIndicatorClassName()}`} />{statusLabel()}</span>
         </div>
         <div className="shrink-0">
-          <div className="relative">
+          <div ref={menuRef} className="relative">
           <Button
             type="button"
             variant="ghost"

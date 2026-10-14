@@ -9,7 +9,6 @@ import { AppShell } from "@/components/live/shell";
 import { buildDisplayName } from "@/lib/live/participant-identity";
 import { joinLiveSession as joinSession, useLiveSessionSnapshot as useSessionSnapshot } from "@/lib/live/repository";
 import { useLanguage } from "@/lib/live/use-language";
-import { cn } from "@/lib/live/utils";
 
 export default function JoinPage() {
   return (
@@ -112,9 +111,10 @@ function JoinContent() {
 
   return (
     <AppShell compact claim={messages.chrome.claim} homeHref={href("/")}>
-      <section className={cn(panelClass, "px-5 py-6 sm:px-7")}>
-        <h1 className="mt-2 font-heading text-4xl font-semibold leading-tight text-bone sm:text-5xl">{snapshot.session.title}</h1>
-        <p className="mt-4 text-base leading-7 text-bone/68">{participantDetailsMode === "identified" ? messages.join.identifiedBody : messages.join.noLink}</p>
+      <section className="py-3 sm:py-5">
+        <p className="text-sm text-bone/55">{messages.join.title}</p>
+        <h1 className="mt-3 font-heading text-[2rem] leading-[1.12] text-bone sm:text-4xl">{snapshot.session.title}</h1>
+        <p className="mt-4 text-base leading-7 text-bone/62">{participantDetailsMode === "identified" ? messages.join.identifiedBody : messages.join.noLink}</p>
         <form
           className="mt-8 space-y-5"
           onSubmit={(event) => {
@@ -138,19 +138,20 @@ function JoinContent() {
           )}
           {participantDetailsMode === "identified" ? (
             <>
-              <h2 className="font-heading text-2xl text-bone">{messages.join.identifiedTitle}</h2>
-              <Field label={messages.join.firstName}>
-                <input className={inputClass} value={firstName} onChange={(event) => setFirstName(event.target.value)} placeholder={messages.join.firstNamePlaceholder} />
-              </Field>
-              <Field label={messages.join.lastName}>
-                <input className={inputClass} value={lastName} onChange={(event) => setLastName(event.target.value)} placeholder={messages.join.lastNamePlaceholder} />
-              </Field>
-              <Field label={messages.join.organization}>
-                <input className={inputClass} value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={messages.join.organizationPlaceholder} />
-              </Field>
-              <Field label={messages.join.contact}>
-                <input className={inputClass} value={contact} onChange={(event) => setContact(event.target.value)} placeholder={messages.join.contactPlaceholder} />
-              </Field>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label={messages.join.firstName}>
+                  <input className={inputClass} value={firstName} onChange={(event) => setFirstName(event.target.value)} placeholder={messages.join.firstNamePlaceholder} />
+                </Field>
+                <Field label={messages.join.lastName}>
+                  <input className={inputClass} value={lastName} onChange={(event) => setLastName(event.target.value)} placeholder={messages.join.lastNamePlaceholder} />
+                </Field>
+                <Field label={messages.join.organization}>
+                  <input className={inputClass} value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={messages.join.organizationPlaceholder} />
+                </Field>
+                <Field label={messages.join.contact}>
+                  <input className={inputClass} value={contact} onChange={(event) => setContact(event.target.value)} placeholder={messages.join.contactPlaceholder} />
+                </Field>
+              </div>
               <Field label={messages.join.displayName} hint={messages.join.displayNameHint}>
                 <input
                   className={inputClass}
@@ -169,7 +170,7 @@ function JoinContent() {
                   placeholder={messages.join.displayNamePlaceholder}
                 />
               </Field>
-              <p className="rounded-md border border-bone/10 bg-night/55 p-4 text-sm leading-6 text-bone/62">{messages.join.identifiedPrivacyNote}</p>
+              <p className="text-sm leading-6 text-bone/50">{messages.join.identifiedPrivacyNote}</p>
             </>
           ) : (
             <Field label={messages.join.nickname} hint={messages.join.nicknameHint}>

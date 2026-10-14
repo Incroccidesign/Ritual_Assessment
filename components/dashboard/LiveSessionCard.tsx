@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, RotateCcw, Settings2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { exportLiveDocx, exportLiveXlsx } from "@/lib/live/exports";
 import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveExport, restartLiveSession } from "@/lib/live/repository";
 import type { LiveSession } from "@/types/live";
@@ -20,6 +21,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   const router = useRouter();
   const { locale, messages, href } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [busy, setBusy] = useState<"docx" | "excel" | "duplicate" | "restart" | "delete" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   const canAccessResults = ["live", "intermission", "closed"].includes(session.status);
   const reportLanguage = locale === "it" ? "it" : "en";
   const hasStatusIndicator = session.status !== "closed";
+  useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
 
   function statusClassName() {
     if (session.status === "live") return "border-mint/20 text-bone";
@@ -85,8 +88,8 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
   async function restart() {
     setBusy("restart"); setNotice(null);
     try {
-      const status = await restartLiveSession(session);
-      router.push(href(`${status === "lobby" ? "/live/lobby" : "/live"}?id=${encodeURIComponent(session.id)}`));
+      await restartLiveSession(session);
+      router.push(href(`/live?id=${encodeURIComponent(session.id)}`));
     } catch (error) { setNotice(error instanceof Error ? error.message : messages.liveSessions.restartError); }
     finally { setBusy(null); }
   }
@@ -102,7 +105,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
           </span>
         </div>
         <div className="shrink-0">
-          <div className="relative">
+          <div ref={menuRef} className="relative">
             <Button type="button" variant="ghost" className="h-11 min-h-11 w-10 min-w-10 !p-0" aria-label={messages.liveSessions.settings} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
               <MoreHorizontal size={19} />
             </Button>
