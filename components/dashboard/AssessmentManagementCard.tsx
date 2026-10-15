@@ -3,20 +3,25 @@
 import { useRef, useState } from "react";
 import { FileText, MoreHorizontal, Pause, Pencil, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
+import { SchedulingActivity } from "@/types/activity";
 import { AssessmentResponse } from "@/types/response";
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
-import { deleteSupabaseAssessment, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
+import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
+import { schedulingVotes, slotLabel } from "@/lib/activities/scheduling";
 
 export function AssessmentManagementCard({
   assessment,
+  responses,
+  currentUserId,
   onDelete,
   onUpdate
 }: {
   assessment: Assessment;
   responses: AssessmentResponse[];
+  currentUserId: string;
   onDelete?: (assessmentId: string) => void;
   onUpdate?: (assessment: Assessment) => void;
 }) {
@@ -27,10 +32,15 @@ export function AssessmentManagementCard({
   const [deleting, setDeleting] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
+  const [closeSlotId, setCloseSlotId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [managerRole, setManagerRole] = useState<"owner" | "co_owner" | null>(null);
+  const [closeResponses, setCloseResponses] = useState(responses);
+  const [loadingCloseResponses, setLoadingCloseResponses] = useState(false);
   useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
+  const scheduling = assessment.activities.find((activity): activity is SchedulingActivity => activity.type === "scheduling");
+  const schedulingSummary = scheduling ? schedulingVotes(scheduling, closeResponses).slice(0, 3) : [];
   function statusLabel() {
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
@@ -87,6 +97,7 @@ export function AssessmentManagementCard({
       setPublishing(true);
       setNotice(null);
       const updated = await setSupabaseAssessmentStatus(assessment, status);
+      if (status === "closed" && scheduling && closeSlotId) await confirmSchedulingSlot(assessment.id, scheduling.id, closeSlotId);
       onUpdate?.(updated);
       window.dispatchEvent(new Event("ritual-assessment-storage"));
     } catch {
@@ -94,6 +105,20 @@ export function AssessmentManagementCard({
     } finally {
       setPublishing(false);
       setStatusAction(null);
+    }
+  }
+
+  async function openCloseDialog() {
+    setMenuOpen(false);
+    setStatusAction("close");
+    if (!scheduling || closeResponses.length || loadingCloseResponses) return;
+    try {
+      setLoadingCloseResponses(true);
+      setCloseResponses(await fetchAssessmentResponses(assessment.id));
+    } catch {
+      setNotice(messages.auth.signInError);
+    } finally {
+      setLoadingCloseResponses(false);
     }
   }
 
@@ -113,7 +138,6 @@ export function AssessmentManagementCard({
 
   return (
     <Card className="flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
-      <AssessmentCollaborators assessmentId={assessment.id} onManagerRoleChange={setManagerRole} loadOnly />
       <div className="flex h-8 items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium text-bone">Assessment</span>
@@ -152,16 +176,16 @@ export function AssessmentManagementCard({
                   <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("pause"); }}>
                     <Pause size={16} /> <span>{messages.dashboard.pauseCollection}</span>
                   </Button>
-                  <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
+                  <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => void openCloseDialog()}>
                     <Square size={16} /> <span>{messages.dashboard.endCollection}</span>
                   </Button>
                 </>
               ) : assessment.status === "paused" ? (
-                <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("close"); }}>
+                <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => void openCloseDialog()}>
                   <Square size={16} /> <span>{messages.dashboard.endCollection}</span>
                 </Button>
               ) : null}
-              {managerRole ? (
+              {assessment.ownerId === currentUserId || managerRole ? (
                 <>
                   <div className="my-1 border-t border-bone/10" />
                   <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left text-orange hover:text-orange" onClick={() => { setMenuOpen(false); setDeleteOpen(true); }}>
@@ -223,6 +247,7 @@ export function AssessmentManagementCard({
             <p className="mt-3 text-sm leading-6 text-bone/62">
               {statusAction === "pause" ? messages.dashboard.pauseBody : messages.dashboard.closeBody}
             </p>
+            {statusAction === "close" && scheduling ? <div className="mt-5 space-y-2 border-t border-bone/10 pt-4"><p className="text-sm font-semibold text-bone">Availability ({closeResponses.filter((response) => response.activityResponses.some((item) => item.activityId === scheduling.id && "slotIds" in item.answer)).length} respondents)</p>{loadingCloseResponses ? <p className="text-sm text-bone/55">{messages.app.loading}</p> : schedulingSummary.map(({ slot, count, percentage }) => <label key={slot.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-bone/10 px-3 py-2 text-sm"><span className="flex items-center gap-2"><input type="radio" name={`confirm-date-${assessment.id}`} checked={closeSlotId === slot.id} onChange={() => setCloseSlotId(slot.id)} />{slotLabel(slot, locale, scheduling.timezone)}</span><span className="text-bone/55">{count} · {percentage}%</span></label>)}<p className="text-xs text-bone/48">Optionally select a date to confirm it when closing.</p></div> : null}
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="ghost" onClick={() => setStatusAction(null)} disabled={publishing}>
                 {messages.common.cancel}

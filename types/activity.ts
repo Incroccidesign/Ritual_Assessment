@@ -1,4 +1,4 @@
-export type ActivityType = "profiling" | "exploration" | "prioritization" | "framing" | "planning_report";
+export type ActivityType = "profiling" | "exploration" | "prioritization" | "framing" | "planning_report" | "scheduling";
 
 export type ElementType = "problems" | "objectives" | "criticalities" | "barriers" | "opportunities" | "other";
 
@@ -101,12 +101,34 @@ export type PlanningReportActivity = BaseActivity & {
   sections: PlanningReportSectionConfig[];
 };
 
+export type SchedulingMode = "weekly" | "monthly";
+
+export type SchedulingSlot = {
+  id: string;
+  /** ISO date in the organiser's IANA timezone. */
+  date: string;
+  /** Local start time for weekly slots, omitted for all-day monthly dates. */
+  startTime?: string;
+  /** Local end time for weekly slots, omitted for all-day monthly dates. */
+  endTime?: string;
+};
+
+export type SchedulingActivity = BaseActivity & {
+  type: "scheduling";
+  mode: SchedulingMode;
+  timezone: string;
+  slotDurationMinutes: number;
+  slots: SchedulingSlot[];
+  confirmedSlotId?: string;
+};
+
 export type Activity =
   | ProfilingActivity
   | ExplorationActivity
   | PrioritizationActivity
   | FramingActivity
-  | PlanningReportActivity;
+  | PlanningReportActivity
+  | SchedulingActivity;
 
 export type ExplorationItem = {
   id: string;
@@ -155,9 +177,15 @@ export type PlanningReportAnswer = {
   viewedAt?: string;
 };
 
+export type SchedulingAnswer = {
+  slotIds: string[];
+  suggestedSlots?: SchedulingSlot[];
+};
+
 export type ActivityAnswer =
   | ProfilingAnswer
   | ExplorationAnswer
   | PrioritizationAnswer
   | FramingAnswer
-  | PlanningReportAnswer;
+  | PlanningReportAnswer
+  | SchedulingAnswer;

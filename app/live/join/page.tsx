@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/live/button";
@@ -24,7 +24,7 @@ function JoinContent() {
   const { messages, href } = useLanguage();
   const sessionId = params.get("id");
   const joinToken = params.get("join") ?? params.get("joinToken");
-  const publicAccess = joinToken ? { joinToken } : undefined;
+  const publicAccess = useMemo(() => joinToken ? { joinToken } : undefined, [joinToken]);
   const { snapshot, loading } = useSessionSnapshot(sessionId, publicAccess);
   const [role, setRole] = useState("");
   const [nickname, setNickname] = useState("");

@@ -106,6 +106,15 @@ select {
   background: rgb(243 239 230 / 0.043);
 }
 
+.home-editorial-row {
+  transition: background-color 180ms ease, padding-inline 180ms ease;
+}
+
+.home-editorial-row:hover {
+  background: rgb(243 239 230 / 0.035);
+  padding-inline: 0.75rem;
+}
+
 select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23F4F0E8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -164,5 +173,9 @@ select {
   .ritual-dialog-backdrop,
   .ritual-dialog-panel {
     animation: none;
+  }
+
+  .home-editorial-row {
+    transition: none;
   }
 }

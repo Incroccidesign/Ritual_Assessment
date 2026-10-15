@@ -17,6 +17,7 @@ export function validateActivityConfig(activity: Activity) {
   if (activity.type === "planning_report") {
     return Boolean(activity.reportTitle.trim()) && activity.sections.some((section) => section.visible && section.title.trim());
   }
+  if (activity.type === "scheduling") return Boolean(activity.timezone);
   return false;
 }
 
@@ -45,5 +46,13 @@ export function validateActivityResponse(activity: Activity, answer: ActivityAns
     return activity.questions.every((question) => question.required === false || Boolean(answer.questionAnswers?.[question.id]?.trim()));
   }
   if (activity.type === "planning_report") return true;
+  if (activity.type === "scheduling") {
+    if (!("slotIds" in answer) || answer.slotIds.length === 0) return false;
+    const suggestedSlots = answer.suggestedSlots ?? [];
+    const suggestedIds = new Set(suggestedSlots.map((slot) => slot.id));
+    const configuredIds = new Set(activity.slots.map((slot) => slot.id));
+    const validSuggestions = suggestedSlots.every((slot) => /^\d{4}-\d{2}-\d{2}$/.test(slot.date) && slot.id.startsWith("suggested:"));
+    return validSuggestions && answer.slotIds.every((id) => configuredIds.has(id) || suggestedIds.has(id));
+  }
   return false;
 }

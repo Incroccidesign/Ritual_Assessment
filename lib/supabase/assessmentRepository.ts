@@ -1,5 +1,5 @@
 import { Assessment, AssessmentStatus } from "@/types/assessment";
-import { Activity, ActivityAnswer, ActivityType, ExplorationOptionGroup, FramingQuestion, PlanningReportItemConfig, PlanningReportSectionConfig } from "@/types/activity";
+import { Activity, ActivityAnswer, ActivityType, ExplorationOptionGroup, FramingQuestion, PlanningReportItemConfig, PlanningReportSectionConfig, SchedulingSlot } from "@/types/activity";
 import { Participant, ParticipantStatus } from "@/types/participant";
 import { ActivityResponse, AssessmentResponse, ResponseStatus } from "@/types/response";
 import { createActivityPreset } from "@/data/activity-presets";
@@ -78,6 +78,23 @@ export type AssessmentBundle = {
   assessment: Assessment;
   participants: Participant[];
   responses: AssessmentResponse[];
+};
+
+export type PublicSchedulingResults = {
+  title: string;
+  description?: string | null;
+  status: "published" | "closed";
+  activities: Array<{
+    id: string;
+    title: string;
+    prompt: string;
+    mode: "weekly" | "monthly";
+    timezone: string;
+    slots: Array<{ id: string; date: string; startTime?: string; endTime?: string }>;
+    confirmedSlotId?: string | null;
+    respondentCount: number;
+    availability: Array<{ slotId: string; count: number; percentage: number }>;
+  }>;
 };
 
 type ResponsePayload = {
@@ -412,6 +429,10 @@ function rowToActivity(row: ActivityRow): Activity {
       sections: sections.length ? sections : preset.sections
     };
   }
+  if (row.type === "scheduling" && preset.type === "scheduling") {
+    const slots = Array.isArray(config.slots) ? config.slots.filter((slot): slot is SchedulingSlot => Boolean(slot) && typeof slot === "object" && typeof (slot as SchedulingSlot).id === "string" && typeof (slot as SchedulingSlot).date === "string") : [];
+    return { ...preset, ...base, type: "scheduling", mode: config.mode === "monthly" ? "monthly" : "weekly", timezone: typeof config.timezone === "string" ? config.timezone : preset.timezone, slotDurationMinutes: typeof config.slotDurationMinutes === "number" ? config.slotDurationMinutes : preset.slotDurationMinutes, slots, confirmedSlotId: typeof config.confirmedSlotId === "string" ? config.confirmedSlotId : undefined };
+  }
   return preset;
 }
 
@@ -431,6 +452,7 @@ function activityConfig(activity: Activity) {
   }
   if (activity.type === "prioritization") return { sourceActivityId: activity.sourceActivityId };
   if (activity.type === "framing") return { mode: activity.mode, sourceActivityId: activity.sourceActivityId, maxLength: activity.maxLength, questions: activity.questions };
+  if (activity.type === "scheduling") return { mode: activity.mode, timezone: activity.timezone, slotDurationMinutes: activity.slotDurationMinutes, slots: activity.slots, confirmedSlotId: activity.confirmedSlotId };
   return { reportTitle: activity.reportTitle, reportSubtitle: activity.reportSubtitle, sections: activity.sections };
 }
 
@@ -673,6 +695,17 @@ function cloneActivityForAssessment(activity: Activity, orderIndex: number, sour
     };
   }
 
+  if (activity.type === "scheduling") {
+    return {
+      ...base,
+      type: "scheduling",
+      mode: activity.mode,
+      timezone: activity.timezone,
+      slotDurationMinutes: activity.slotDurationMinutes,
+      slots: activity.slots.map((slot) => ({ ...slot, id: uid("slot") }))
+    };
+  }
+
   return {
     ...base,
     type: "planning_report",
@@ -741,11 +774,49 @@ export async function fetchAssessmentBundle(assessmentId: string, _ownerId?: str
 }
 
 export async function fetchDesignerAssessmentBundles(ownerId: string): Promise<AssessmentBundle[]> {
+  void ownerId;
   const client = requireSupabase();
-  const { data, error } = await client.from("assessments").select("id").order("updated_at", { ascending: false });
+  const assessmentColumns = "id,owner_id,title,description,data_controller_name,data_controller_contact,estimated_duration,hide_activity_summaries,language,status,public_token,created_at,updated_at,published_at";
+  const activityColumns = "id,assessment_id,type,title,prompt,order_index,config_json,created_at,updated_at";
+  const { data, error } = await client.from("assessments").select(assessmentColumns).order("updated_at", { ascending: false });
   if (error) throw error;
-  const bundles = await Promise.all((data ?? []).map((row) => fetchAssessmentBundle(row.id, ownerId)));
-  return bundles.filter((bundle): bundle is AssessmentBundle => Boolean(bundle));
+  const assessmentRows = (data ?? []) as AssessmentRow[];
+  if (!assessmentRows.length) return [];
+  const { data: activities, error: activitiesError } = await client
+    .from("activities")
+    .select(activityColumns)
+    .in("assessment_id", assessmentRows.map((row) => row.id))
+    .order("order_index");
+  if (activitiesError) throw activitiesError;
+  const activitiesByAssessment = new Map<string, Activity[]>();
+  for (const row of (activities ?? []) as ActivityRow[]) {
+    const current = activitiesByAssessment.get(row.assessment_id) ?? [];
+    current.push(rowToActivity(row));
+    activitiesByAssessment.set(row.assessment_id, current);
+  }
+  return assessmentRows.map((row) => ({
+    assessment: rowToAssessment(row, activitiesByAssessment.get(row.id) ?? []),
+    participants: [],
+    responses: []
+  }));
+}
+
+export async function fetchAssessmentResponses(assessmentId: string): Promise<AssessmentResponse[]> {
+  const client = requireSupabase();
+  const { data: responses, error: responsesError } = await client
+    .from("responses")
+    .select("id,assessment_id,participant_id,status,created_at,updated_at,submitted_at")
+    .eq("assessment_id", assessmentId)
+    .order("created_at", { ascending: false });
+  if (responsesError) throw responsesError;
+  const responseRows = (responses ?? []) as ResponseRow[];
+  if (!responseRows.length) return [];
+  const { data: activityResponses, error: activityResponsesError } = await client
+    .from("activity_responses")
+    .select("id,response_id,activity_id,activity_type,answer_json,created_at,updated_at")
+    .in("response_id", responseRows.map((response) => response.id));
+  if (activityResponsesError) throw activityResponsesError;
+  return buildResponses(responseRows, (activityResponses ?? []) as ActivityResponseRow[]);
 }
 
 export async function updateSupabaseAssessment(assessment: Assessment) {
@@ -882,6 +953,23 @@ export async function fetchPublishedAssessmentByToken(publicToken: string) {
     publicAssessment,
     (publicAssessment.activities ?? []).map(rowToActivity)
   );
+}
+
+export async function fetchPublicSchedulingResults(publicToken: string) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc("get_public_scheduling_results", { target_public_token: publicToken });
+  if (error || !data) return null;
+  return data as PublicSchedulingResults;
+}
+
+export async function confirmSchedulingSlot(assessmentId: string, activityId: string, slotId: string) {
+  const client = requireSupabase();
+  const { error } = await client.rpc("confirm_scheduling_slot", {
+    target_assessment_id: assessmentId,
+    target_activity_id: activityId,
+    target_slot_id: slotId
+  });
+  if (error) throw error;
 }
 
 export async function setSupabaseAssessmentStatus(assessment: Assessment, status: Extract<AssessmentStatus, "paused" | "closed">) {

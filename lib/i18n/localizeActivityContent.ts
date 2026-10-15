@@ -31,6 +31,10 @@ const legacyDefaults = {
   planning_report: {
     title: ["Planning report"],
     prompt: ["This report organizes your answers into a structured planning output."]
+  },
+  scheduling: {
+    title: ["Find a date"],
+    prompt: ["Select every time you are available."]
   }
 } satisfies Record<ActivityType, Record<string, string[]>>;
 
@@ -49,6 +53,7 @@ function knownPresetValues(type: ActivityType, key: string) {
       })
       .filter(Boolean);
   }
+  if (type === "scheduling") return (legacyDefaults.scheduling as Record<string, string[]>)[key] ?? [];
 
   const values = locales
     .map((locale) => {
@@ -135,6 +140,8 @@ export function localizeActivityContent(activity: Activity, locale: Locale): Act
       }))
     };
   }
+
+  if (activity.type === "scheduling") return activity;
 
   const target = getMessages(locale).presets.activities.framing;
   return {

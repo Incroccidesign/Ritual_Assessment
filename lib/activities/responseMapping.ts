@@ -5,6 +5,7 @@ export function emptyAnswerForActivity(activity: Activity): ActivityAnswer {
   if (activity.type === "exploration") return { items: [] };
   if (activity.type === "prioritization") return { rankedItems: [] };
   if (activity.type === "planning_report") return { viewedAt: "" };
+  if (activity.type === "scheduling") return { slotIds: [] };
   return {
     sourceRanking: [],
     answer: "",

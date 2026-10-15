@@ -52,6 +52,10 @@ export function createBlankActivity(type: ActivityType, orderIndex: number, sour
     };
   }
 
+  if (type === "scheduling") {
+    return { ...base, type, title: "Find a date", prompt: "Select every time you are available.", mode: "weekly", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", slotDurationMinutes: 60, slots: [] };
+  }
+
   return {
     ...base,
     type: "planning_report",
@@ -127,6 +131,10 @@ export function createActivityPreset(type: ActivityType, orderIndex: number, sou
         items: []
       }))
     };
+  }
+
+  if (type === "scheduling") {
+    return { ...base, type, title: "Find a date", prompt: "Select every time you are available.", mode: "weekly", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", slotDurationMinutes: 60, slots: [] };
   }
 
   return {

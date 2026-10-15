@@ -1,19 +1,20 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { ArrowDown, ArrowUp, Check, ChevronDown, Compass, FileText, type LucideIcon, ListOrdered, MessageSquare, Plus, Trash2, UserRound, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, Compass, FileText, type LucideIcon, ListOrdered, MessageSquare, Plus, Trash2, UserRound, X } from "lucide-react";
 import { Activity, ActivityType } from "@/types/activity";
 import { Button } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils/cn";
 
-const activityOrder: ActivityType[] = ["profiling", "exploration", "prioritization", "framing", "planning_report"];
+const activityOrder: ActivityType[] = ["profiling", "exploration", "prioritization", "framing", "scheduling", "planning_report"];
 const activityIcons = {
   profiling: UserRound,
   exploration: Compass,
   prioritization: ListOrdered,
   framing: MessageSquare,
-  planning_report: FileText
+  planning_report: FileText,
+  scheduling: CalendarDays
 } satisfies Record<ActivityType, LucideIcon>;
 
 export function ActivityList({
@@ -49,7 +50,8 @@ export function ActivityList({
       exploration: 0,
       prioritization: 0,
       framing: 0,
-      planning_report: 0
+      planning_report: 0,
+      scheduling: 0
     }
   );
 

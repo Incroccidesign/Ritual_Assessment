@@ -115,14 +115,12 @@ export function AssessmentCollaborators({
   assessmentId,
   onManagerRoleChange,
   triggerVariant = "secondary",
-  triggerClassName,
-  loadOnly = false
+  triggerClassName
 }: {
   assessmentId: string;
   onManagerRoleChange?: (role: ManagerRole | null) => void;
   triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
   triggerClassName?: string;
-  loadOnly?: boolean;
 }) {
   const { messages } = useLocale();
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
@@ -130,7 +128,7 @@ export function AssessmentCollaborators({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<CollaborationRole>("editor");
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<Collaborator | null>(null);
@@ -158,9 +156,10 @@ export function AssessmentCollaborators({
   }, [assessmentId, onManagerRoleChange]);
 
   useEffect(() => {
+    if (!open) return;
     const timer = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timer);
-  }, [load]);
+  }, [load, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -180,6 +179,7 @@ export function AssessmentCollaborators({
   function openDialog() {
     setError(null);
     setConfirmation(null);
+    setLoading(true);
     setOpen(true);
   }
 
@@ -244,7 +244,6 @@ export function AssessmentCollaborators({
     }
   }
 
-  if (loading || !managerRole || loadOnly) return null;
   const emailHasValue = Boolean(email.trim());
   const emailIsValid = validEmail(email);
   return (
@@ -260,7 +259,7 @@ export function AssessmentCollaborators({
               <p className="mt-2 max-w-lg text-sm leading-6 text-bone/62">{confirmation ? messages.collaboration.successBody : messages.collaboration.body}</p>
             </div>
 
-            {confirmation ? (
+            {loading ? <p className="mt-7 text-sm text-bone/62">{messages.app.loading}</p> : !managerRole ? <p className="mt-7 text-sm text-orange">{messages.collaboration.error}</p> : confirmation ? (
               <div className="py-12 text-center">
                 <CheckCircle2 size={40} aria-hidden="true" className="mx-auto text-mint" />
                 <p className="mt-5 text-lg font-semibold text-bone">{confirmation.name}</p>

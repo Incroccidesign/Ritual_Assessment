@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Assessment } from "@/types/assessment";
-import { Activity, PlanningReportActivity, PrioritizationActivity, ProfilingActivity, ProfilingField } from "@/types/activity";
+import { Activity, PlanningReportActivity, PrioritizationActivity, ProfilingActivity, ProfilingField, SchedulingActivity } from "@/types/activity";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import { PlanningReportPreview } from "@/components/planning-report/PlanningReportPreview";
@@ -13,6 +13,7 @@ import { useLocale } from "@/lib/i18n/useLocale";
 import { downloadPlanningReportDocx } from "@/lib/planning-report/exportPlanningReportDocx";
 import { generatePlanningReportModel } from "@/lib/planning-report/generatePlanningReport";
 import { formatDateTime } from "@/lib/utils/dates";
+import { SchedulingResults } from "@/components/activities/scheduling/SchedulingResults";
 
 type ParticipantRow = {
   participantCode: string;
@@ -456,6 +457,12 @@ function FramingResults({ assessment, responses, participants }: { assessment: A
   );
 }
 
+function SchedulingActivityResults({ assessment, responses }: { assessment: Assessment; responses: AssessmentResponse[] }) {
+  const activities = activitiesByType(assessment, "scheduling") as SchedulingActivity[];
+  if (!activities.length) return null;
+  return <div className="space-y-5">{activities.map((activity) => <SchedulingResults key={activity.id} assessmentId={assessment.id} activity={activity} responses={responses} canConfirm={assessment.status === "closed"} />)}</div>;
+}
+
 function PlanningReportResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
   const { messages } = useLocale();
   const reportActivity = activitiesByType(assessment, "planning_report")[0] as PlanningReportActivity | undefined;
@@ -637,6 +644,9 @@ export function GroupedActivityResults({
             </ResultBlock>
             <ResultBlock title={messages.dashboard.framing} body={messages.dashboard.framingBody}>
               <FramingResults assessment={assessment} responses={responses} participants={participants} />
+            </ResultBlock>
+            <ResultBlock title="Scheduling" body="Availability collected for each proposed date.">
+              <SchedulingActivityResults assessment={assessment} responses={responses} />
             </ResultBlock>
           </div>
         </Section>

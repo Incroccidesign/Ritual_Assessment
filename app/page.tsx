@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, UserRound, UsersRound, X } from "lucide-react";
-import { LoginContent } from "@/app/login/page";
+import { LoginContent } from "@/components/auth/LoginContent";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { LegalFooter } from "@/components/legal/LegalFooter";
 import { Button } from "@/components/ritual-ui";
@@ -98,6 +98,47 @@ function HomeContent() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+        <h2 className="max-w-3xl font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.home.howTitle}</h2>
+        <div className="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
+          <EditorialStep number="01" title={messages.home.howCreateTitle} body={messages.home.howCreateBody} visual="builder" />
+          <EditorialStep number="02" title={messages.home.howEngageTitle} body={messages.home.howEngageBody} visual="participant" />
+          <EditorialStep number="03" title={messages.home.howUnderstandTitle} body={messages.home.howUnderstandBody} visual="results" />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+        <div className="grid gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-16">
+          <div>
+            <h2 className="font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.home.activitiesTitle}</h2>
+          </div>
+          <div className="border-t border-bone/14">
+            <ActivityCapability title={messages.home.activityExplore} body={messages.home.activityExploreBody} />
+            <ActivityCapability title={messages.home.activityReflect} body={messages.home.activityReflectBody} />
+            <ActivityCapability title={messages.home.activityPrioritize} body={messages.home.activityPrioritizeBody} />
+            <ActivityCapability title={messages.home.activityAgree} body={messages.home.activityAgreeBody} />
+            <ActivityCapability title={messages.home.activityPlan} body={messages.home.activityPlanBody} />
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+        <div className="grid items-end gap-10 md:grid-cols-[minmax(0,1fr)_minmax(17rem,0.72fr)] md:gap-16">
+          <div>
+            <h2 className="max-w-2xl font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.home.resultsTitle}</h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-bone/64">{messages.home.resultsBody}</p>
+          </div>
+          <ResultsPreview />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 py-20 md:px-10 md:py-28">
+        <h2 className="max-w-3xl font-heading text-5xl font-semibold leading-[1.02] text-bone md:text-7xl">{messages.home.finalTitle}</h2>
+        <Button type="button" onClick={() => openAuth("sign-up", "/dashboard?create=1")} className="mt-8 min-h-14 bg-bone px-7 py-3 text-base text-night hover:bg-bone/90">
+          {messages.home.heroCta} <ArrowRight size={18} />
+        </Button>
+      </section>
+
       <div className="mx-auto max-w-5xl px-5 pb-8 md:px-10">
         <LegalFooter />
       </div>
@@ -107,6 +148,24 @@ function HomeContent() {
     </HomeAuthDialog> : null}
     </>
   );
+}
+
+function EditorialStep({ number, title, body, visual }: { number: string; title: string; body: string; visual: "builder" | "participant" | "results" }) {
+  return <article className="border-t border-bone/14 pt-5"><p className="text-sm font-semibold text-bone/45">{number}</p><h3 className="mt-8 font-heading text-2xl font-semibold text-bone">{title}</h3><p className="mt-3 text-base leading-7 text-bone/64">{body}</p><ProductMoment type={visual} /></article>;
+}
+
+function ProductMoment({ type }: { type: "builder" | "participant" | "results" }) {
+  if (type === "builder") return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-bone" /><span className="h-px flex-1 bg-bone/25" /><span className="h-1.5 w-1.5 rounded-full bg-bone/45" /><span className="h-px flex-1 bg-bone/25" /><span className="h-1.5 w-1.5 rounded-full bg-bone/25" /></div><div className="mt-5 space-y-2"><span className="block h-px w-full bg-bone/25" /><span className="block h-px w-4/5 bg-bone/25" /><span className="block h-px w-3/5 bg-bone/25" /></div></div>;
+  if (type === "participant") return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><span className="block h-2 w-1/3 bg-bone/25" /><span className="mt-4 block h-3 w-full bg-bone/80" /><span className="mt-2 block h-3 w-4/5 bg-bone/80" /><span className="mt-6 block h-10 w-full border border-bone/35" /></div>;
+  return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><div className="flex items-end gap-2"><span className="h-7 w-1/5 bg-bone/28" /><span className="h-12 w-1/5 bg-bone/48" /><span className="h-20 w-1/5 bg-bone" /><span className="h-10 w-1/5 bg-bone/38" /></div></div>;
+}
+
+function ActivityCapability({ title, body }: { title: string; body: string }) {
+  return <article className="home-editorial-row grid gap-3 border-b border-bone/14 py-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6"><h3 className="font-heading text-xl font-semibold text-bone">{title}</h3><p className="text-sm leading-6 text-bone/62">{body}</p></article>;
+}
+
+function ResultsPreview() {
+  return <div aria-hidden="true" className="border-y border-bone/14 py-5"><div className="flex items-end gap-2"><span className="h-7 w-1/5 bg-bone/28" /><span className="h-12 w-1/5 bg-bone/48" /><span className="h-20 w-1/5 bg-bone" /><span className="h-10 w-1/5 bg-bone/38" /></div><div className="mt-8 space-y-4">{[78, 16, 6].map((value) => <span key={value} className="block h-px bg-bone/15"><span className="block h-px bg-bone" style={{ width: `${value}%` }} /></span>)}</div></div>;
 }
 
 function HomeAuthDialog({ children, onClose, pending }: { children: React.ReactNode; onClose: () => void; pending: boolean }) {

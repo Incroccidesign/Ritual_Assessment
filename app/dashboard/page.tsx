@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
-import { SetupContent } from "@/app/live/setup/page";
+import { SetupContent } from "@/app/live/setup/SetupContent";
 import { AssessmentBuilder } from "@/components/builder/AssessmentBuilder";
 import { Designer } from "@/lib/auth/designerAuth";
 import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
@@ -105,13 +105,16 @@ function DashboardContent({ designer }: { designer: Designer }) {
   useEffect(() => {
     async function bootstrapPlatformAdmin() {
       if (!supabase) return;
+      const bootstrapKey = `ritual-admin-bootstrap:${designer.id}`;
+      if (window.sessionStorage.getItem(bootstrapKey)) return;
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) return;
-      await fetch("/api/admin/bootstrap", {
+      const response = await fetch("/api/admin/bootstrap", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
-      }).catch(() => undefined);
+      }).catch(() => null);
+      if (response?.ok) window.sessionStorage.setItem(bootstrapKey, "1");
     }
     void bootstrapPlatformAdmin();
   }, [designer.id]);
@@ -330,6 +333,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                 key={bundle.assessment.id}
                 assessment={bundle.assessment}
                 responses={bundle.responses}
+                currentUserId={designer.id}
                 onDelete={handleDeleteAssessment}
                 onUpdate={handleUpdateAssessment}
               />

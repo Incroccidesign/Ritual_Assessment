@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { generateLiveToken, liveClient, storeLiveJoinToken, storeLiveParticipantAccess } from "@/lib/live/access";
@@ -78,25 +78,27 @@ export async function listLiveSessions() {
   return data ?? [];
 }
 
-export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | LiveJoinAccess | null): Promise<LiveSessionSnapshot | null> {
+export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | LiveJoinAccess | null, previousSnapshot?: LiveSessionSnapshot | null): Promise<LiveSessionSnapshot | null> {
   const client = liveClient(access);
   const joiningWithQrOnly = Boolean(access && !("participantId" in access));
+  const participantAccess = access && "participantId" in access ? access : null;
+  const reuseRoles = Boolean(access && previousSnapshot);
   const emptyRows = () => Promise.resolve({ data: [] as unknown[], error: null });
   const [session, activities, roles, participants, responses, priorityItems, priorityVotes, pacts, pactVotes] = await Promise.all([
     client.from("live_sessions").select(liveSessionColumns).eq("id", sessionId).maybeSingle(),
     client.from("live_activities").select("*").eq("live_session_id", sessionId).order("order_index"),
-    client.from("live_session_roles").select("*").eq("live_session_id", sessionId).order("role_name"),
-    joiningWithQrOnly ? emptyRows() : client.from("live_participants").select("*").eq("live_session_id", sessionId).order("joined_at"),
-    joiningWithQrOnly ? emptyRows() : client.from("live_responses").select("*").eq("live_session_id", sessionId).order("created_at"),
+    reuseRoles ? emptyRows() : client.from("live_session_roles").select("*").eq("live_session_id", sessionId).order("role_name"),
+    joiningWithQrOnly || participantAccess ? emptyRows() : client.from("live_participants").select("*").eq("live_session_id", sessionId).order("joined_at"),
+    joiningWithQrOnly || participantAccess ? emptyRows() : client.from("live_responses").select("*").eq("live_session_id", sessionId).order("created_at"),
     client.from("live_priority_items").select("*").eq("live_session_id", sessionId).order("created_at"),
-    joiningWithQrOnly ? emptyRows() : client.from("live_priority_votes").select("*").eq("live_session_id", sessionId).order("created_at"),
+    joiningWithQrOnly ? emptyRows() : participantAccess ? client.from("live_priority_votes").select("*").eq("live_session_id", sessionId).eq("participant_id", participantAccess.participantId).order("created_at") : client.from("live_priority_votes").select("*").eq("live_session_id", sessionId).order("created_at"),
     joiningWithQrOnly ? emptyRows() : client.from("live_pacts").select("*").eq("live_session_id", sessionId).order("created_at"),
-    joiningWithQrOnly ? emptyRows() : client.from("live_pact_votes").select("*").eq("live_session_id", sessionId).order("created_at")
+    joiningWithQrOnly ? emptyRows() : participantAccess ? client.from("live_pact_votes").select("*").eq("live_session_id", sessionId).eq("participant_id", participantAccess.participantId).order("created_at") : client.from("live_pact_votes").select("*").eq("live_session_id", sessionId).order("created_at")
   ]);
   if (session.error || !session.data) return null;
   const errors = [activities, roles, participants, responses, priorityItems, priorityVotes, pacts, pactVotes].find((result) => result.error)?.error;
   if (errors) fail("live_sessions:read", errors);
-  return { session: session.data, activities: activities.data ?? [], roles: roles.data ?? [], participants: participants.data ?? [], responses: responses.data ?? [], priorityItems: priorityItems.data ?? [], priorityVotes: priorityVotes.data ?? [], pacts: pacts.data ?? [], pactVotes: pactVotes.data ?? [] } as LiveSessionSnapshot;
+  return { session: session.data, activities: activities.data ?? [], roles: roles.data ?? previousSnapshot?.roles ?? [], participants: participants.data ?? [], responses: responses.data ?? [], priorityItems: priorityItems.data ?? [], priorityVotes: priorityVotes.data ?? [], pacts: pacts.data ?? [], pactVotes: pactVotes.data ?? [] } as LiveSessionSnapshot;
 }
 
 export function getCurrentLiveActivity(snapshot: LiveSessionSnapshot) { return snapshot.activities.find((item) => item.state === "live" || item.state === "paused") ?? null; }
@@ -251,38 +253,59 @@ export async function recordLiveExport(sessionId: string, kind: "docx" | "excel"
 
 export function subscribeToLiveSession(client: Client, sessionId: string, refresh: () => void): RealtimeChannel { let channel = client.channel(`live:${sessionId}`); for (const table of ["live_sessions", "live_activities", "live_session_roles", "live_participants", "live_responses", "live_priority_items", "live_priority_votes", "live_pacts", "live_pact_votes"]) channel = channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `${table === "live_sessions" ? "id" : "live_session_id"}=eq.${sessionId}` }, refresh); return channel.subscribe(); }
 export function useLiveSessionSnapshot(sessionId: string | null, access?: LiveParticipantAccess | LiveJoinAccess | null) {
-  const client = useMemo(() => access ? liveClient(access) : supabase, [access]);
+  const stableAccess = useMemo(() => access ?? null, [access]);
+  const client = useMemo(() => stableAccess ? liveClient(stableAccess) : supabase, [stableAccess]);
   const [snapshot, setSnapshot] = useState<LiveSessionSnapshot | null>(null);
   const [loading, setLoading] = useState(Boolean(sessionId));
+  const snapshotRef = useRef<LiveSessionSnapshot | null>(null);
+  const inFlightRefresh = useRef<Promise<LiveSessionSnapshot | null> | null>(null);
   const refresh = useCallback(async () => {
     if (!sessionId) return null;
-    const next = await fetchLiveSnapshot(sessionId, access);
-    setSnapshot(next);
-    setLoading(false);
-    return next;
-  }, [sessionId, access]);
+    if (inFlightRefresh.current) return inFlightRefresh.current;
+    const request = fetchLiveSnapshot(sessionId, stableAccess, snapshotRef.current)
+      .then((next) => {
+        snapshotRef.current = next;
+        setSnapshot(next);
+        setLoading(false);
+        return next;
+      })
+      .finally(() => { inFlightRefresh.current = null; });
+    inFlightRefresh.current = request;
+    return request;
+  }, [sessionId, stableAccess]);
 
   useEffect(() => {
-    if (!sessionId || !client) return;
+    if (!sessionId || !client || stableAccess) return;
+    let debounceTimer: number | undefined;
     const reload = () => { void refresh().catch(() => undefined); };
+    const scheduleReload = () => {
+      if (debounceTimer) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(reload, 250);
+    };
     queueMicrotask(reload);
-    const channel = subscribeToLiveSession(client, sessionId, reload);
-    return () => { client.removeChannel(channel); };
-  }, [client, sessionId, refresh]);
+    const channel = subscribeToLiveSession(client, sessionId, scheduleReload);
+    return () => {
+      if (debounceTimer) window.clearTimeout(debounceTimer);
+      client.removeChannel(channel);
+    };
+  }, [client, sessionId, refresh, stableAccess]);
 
   // Participant credentials are transported in REST request headers. Realtime
-  // does not consistently carry those headers on mobile, so this is the
-  // reliable fallback that moves participants out of the lobby after a start.
+  // does not consistently carry those headers on mobile, so public clients use
+  // a guarded REST fallback instead of maintaining a second unreliable socket.
   useEffect(() => {
-    if (!sessionId || !access) return;
-    const poll = () => { void refresh().catch(() => undefined); };
-    const interval = window.setInterval(poll, 2000);
+    if (!sessionId || !stableAccess || snapshot?.session.status === "closed") return;
+    const poll = () => {
+      if (document.visibilityState === "visible") void refresh().catch(() => undefined);
+    };
+    poll();
+    const interval = window.setInterval(poll, 15_000);
     document.addEventListener("visibilitychange", poll);
     return () => {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", poll);
     };
-  }, [access, refresh, sessionId]);
+  }, [refresh, sessionId, snapshot?.session.status, stableAccess]);
 
   return { snapshot, loading, refresh };
 }

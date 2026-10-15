@@ -6,6 +6,7 @@ import { FramingEditor, FramingResponseLengthField } from "@/components/activiti
 import { PlanningReportEditor } from "@/components/activities/planning-report/PlanningReportEditor";
 import { PrioritizationEditor } from "@/components/activities/prioritization/PrioritizationEditor";
 import { ProfilingEditor } from "@/components/activities/profiling/ProfilingEditor";
+import { SchedulingEditor } from "@/components/activities/scheduling/SchedulingEditor";
 import { Card, Field, inputClass } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 
@@ -47,6 +48,7 @@ export function ActivityEditor({
       {activity.type === "prioritization" ? <PrioritizationEditor activity={activity} activities={activities} onChange={onChange} /> : null}
       {activity.type === "framing" ? <FramingEditor activity={activity} activities={activities} onChange={onChange} /> : null}
       {activity.type === "planning_report" ? <PlanningReportEditor activity={activity} activities={activities} onChange={onChange} /> : null}
+      {activity.type === "scheduling" ? <SchedulingEditor activity={activity} onChange={onChange} /> : null}
     </div>
   );
 

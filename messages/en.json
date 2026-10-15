@@ -286,15 +286,41 @@
     "body": "Build guided assessments, share them with participants, and turn responses into structured insights you can review and export.",
     "heroClaim": "Every perspective matters.",
     "heroCta": "Start a Ritual",
-    "overview": "Bring people together, share perspectives, and turn ideas into collective outcomes.",
+    "overview": "Bring people together to share ideas, make decisions, and plan next steps.",
     "modesEyebrow": "Two ways to work",
     "modesTitle": "Choose the rhythm that fits your ritual.",
     "collectiveEyebrow": "Collective",
-    "collectiveTitle": "Together, in real time.",
-    "collectiveBody": "Facilitate a live session where everyone contributes in the same moment.",
+    "collectiveTitle": "Run live sessions where participants contribute, vote, and reach agreements together.",
+    "collectiveBody": "",
     "individualEyebrow": "Individual",
-    "individualTitle": "Completed independently.",
-    "individualBody": "Share a guided path that people can complete in their own time.",
+    "individualTitle": "Create self-paced activities to collect responses, rank priorities, and build reports.",
+    "individualBody": "",
+    "howEyebrow": "How it works",
+    "howTitle": "Create. Share. Explore.",
+    "howCreateTitle": "Create",
+    "howCreateBody": "Choose and combine activities.",
+    "howEngageTitle": "Share",
+    "howEngageBody": "Invite participants through a link or QR code.",
+    "howUnderstandTitle": "Explore",
+    "howUnderstandBody": "View results and download reports.",
+    "activitiesEyebrow": "Activities",
+    "activitiesTitle": "Choose what you want to achieve.",
+    "activitiesBody": "",
+    "activityExplore": "Explore",
+    "activityExploreBody": "Collect ideas, challenges, and opportunities.",
+    "activityReflect": "Reflect",
+    "activityReflectBody": "Ask questions and gather detailed responses.",
+    "activityPrioritize": "Prioritize",
+    "activityPrioritizeBody": "Rank options and vote on priorities.",
+    "activityAgree": "Agree",
+    "activityAgreeBody": "Propose solutions and reach agreements.",
+    "activityPlan": "Plan",
+    "activityPlanBody": "Find suitable dates and organize next steps.",
+    "resultsEyebrow": "Results",
+    "resultsTitle": "Turn responses into insights.",
+    "resultsBody": "View contributions, compare priorities, and export reports.",
+    "resultsDetail": "",
+    "finalTitle": "Ready to create your Ritual?",
     "cta": "Create assessment",
     "secondary": "Log in",
     "tertiary": "Sign up"
@@ -410,6 +436,9 @@
       },
       "planning_report": {
         "description": "Generate a structured report from the participant's answers."
+      },
+      "scheduling": {
+        "description": "Collect availability and find a shared date."
       }
     }
   },
@@ -497,6 +526,10 @@
     "planning_report": {
       "label": "Planning report",
       "purpose": "Generate a structured report from the participant's answers."
+    },
+    "scheduling": {
+      "label": "Scheduling",
+      "purpose": "Collect availability to find a shared date."
     }
   },
   "planningReport": {

@@ -4,7 +4,7 @@ import type { ActivityType } from "@/types/activity";
 import { createSupabaseAdminClient, requireRequestUser } from "@/lib/server/supabaseAdmin";
 
 const languages = new Set<Assessment["language"]>(["en", "fr", "it"]);
-const activityTypes = new Set<ActivityType>(["profiling", "exploration", "prioritization", "framing", "planning_report"]);
+const activityTypes = new Set<ActivityType>(["profiling", "exploration", "prioritization", "framing", "planning_report", "scheduling"]);
 const maxActivities = 50;
 const maxActivityConfigBytes = 64_000;
 

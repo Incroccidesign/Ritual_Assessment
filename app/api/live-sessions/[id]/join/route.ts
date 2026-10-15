@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
+import { LIVE_JOIN_RATE_LIMIT_WINDOW_SECONDS, isConfiguredLiveRole, liveJoinClientIp, liveJoinRateLimitKey } from "@/lib/live/join-security";
 import { createSupabaseAdminClient, isUuid } from "@/lib/server/supabaseAdmin";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -9,6 +10,12 @@ const tokenPattern = /^[A-Za-z0-9_-]{16,200}$/;
 const text = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const nullableText = (value: unknown, max: number) => text(value, max) || null;
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+
+function rateLimitSecret() {
+  const secret = process.env.LIVE_JOIN_RATE_LIMIT_SECRET || process.env.SUPABASE_SECRET_KEY;
+  if (!secret) throw new Error("Live join rate limiting is not configured.");
+  return secret;
+}
 
 export async function POST(request: Request, { params }: RouteContext) {
   let participantId: string | null = null;
@@ -45,6 +52,36 @@ export async function POST(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Live Session is unavailable." }, { status: 404 });
     }
 
+    const { data: roles, error: rolesError } = await admin
+      .from("live_session_roles")
+      .select("role_name")
+      .eq("live_session_id", id);
+    if (rolesError) throw rolesError;
+    if (!isConfiguredLiveRole(roleName, roles?.map((item) => item.role_name) ?? [])) {
+      return NextResponse.json({ error: "Invalid participant details." }, { status: 400 });
+    }
+
+    const participantTokenHash = hash(participantToken);
+    const { data: existingParticipant, error: existingParticipantError } = await admin
+      .from("live_participant_tokens")
+      .select("participant_id")
+      .eq("live_session_id", id)
+      .eq("participant_token_hash", participantTokenHash)
+      .maybeSingle();
+    if (existingParticipantError) throw existingParticipantError;
+    if (existingParticipant) return NextResponse.json({ participantId: existingParticipant.participant_id });
+
+    const { data: rateLimitAllowed, error: rateLimitError } = await admin.rpc("consume_live_join_rate_limit", {
+      target_key_hash: liveJoinRateLimitKey(id, liveJoinClientIp(request), rateLimitSecret())
+    });
+    if (rateLimitError) throw rateLimitError;
+    if (!rateLimitAllowed) {
+      return NextResponse.json(
+        { error: "Too many join attempts. Please wait and try again." },
+        { status: 429, headers: { "Retry-After": String(LIVE_JOIN_RATE_LIMIT_WINDOW_SECONDS) } }
+      );
+    }
+
     const mode = session.participant_details_mode as ParticipantMode;
     const nickname = nullableText(identity.nickname, 240);
     const firstName = nullableText(identity.first_name, 240);
@@ -76,7 +113,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const { error: participantTokenError } = await admin.from("live_participant_tokens").insert({
       participant_id: participant.id,
       live_session_id: id,
-      participant_token_hash: hash(participantToken)
+      participant_token_hash: participantTokenHash
     });
     if (participantTokenError) throw participantTokenError;
 

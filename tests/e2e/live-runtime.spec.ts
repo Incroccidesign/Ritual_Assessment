@@ -5,6 +5,7 @@ import { activityDisplayName, currentLiveActivity, liveActivityItems, liveActivi
 import { liveDashboardDestination } from "../../components/dashboard/LiveSessionCard";
 import { getJoinUrl, isLocalDevelopmentUrl } from "../../lib/live/public-url";
 import { buildLiveReport } from "../../lib/live/report-data";
+import { isConfiguredLiveRole, liveJoinClientIp, liveJoinRateLimitKey } from "../../lib/live/join-security";
 import type { LiveActivity, LiveSessionSnapshot } from "../../types/live";
 
 const item = (state: LiveActivity["state"], index: number): LiveActivity => ({ id: `a-${index}`, live_session_id: "s", activity_type: "focus", order_index: index, instance_index: index + 1, instance_label: null, prompt: "p", timer_enabled: true, timer_duration: 5, show_live_results: true, surface_input_types: null, state, priority_source: null, votes_per_participant: 1, pact_statement_mode: null, facilitator_note: null, pact_text: null, started_at: null, ended_at: null, timer_anchor_at: "2026-01-01T00:00:00.000Z", paused_remaining_seconds: null, created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z" });
@@ -65,6 +66,15 @@ test("Live participant links keep the session token and recognize local network 
   expect(isLocalDevelopmentUrl("http://localhost:3000")).toBe(true);
   expect(isLocalDevelopmentUrl("http://192.168.1.42:3000")).toBe(true);
   expect(isLocalDevelopmentUrl("https://www.ritualopen.com")).toBe(false);
+});
+
+test("Live join only accepts configured roles and derives a non-reversible rate-limit key", () => {
+  expect(isConfiguredLiveRole("Observer", ["Facilitator", "Observer"])).toBe(true);
+  expect(isConfiguredLiveRole("Admin", ["Facilitator", "Observer"])).toBe(false);
+  expect(isConfiguredLiveRole("Participant", [])).toBe(true);
+  const request = new Request("https://ritual.example/api/live-sessions/id/join", { headers: { "x-forwarded-for": "203.0.113.4, 10.0.0.1" } });
+  expect(liveJoinClientIp(request)).toBe("203.0.113.4");
+  expect(liveJoinRateLimitKey("session", "203.0.113.4", "server-secret")).toMatch(/^[0-9a-f]{64}$/);
 });
 
 test("Live report keeps Emersione categories, priority votes and pact rounds", () => {

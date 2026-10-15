@@ -6,6 +6,7 @@ import type { LiveJoinAccess, LiveParticipantAccess } from "@/types/live";
 
 const prefix = "ritual-live-participant:";
 const joinPrefix = "ritual-live-join:";
+const participantClients = new Map<string, SupabaseClient>();
 
 export function generateLiveToken() {
   const bytes = new Uint8Array(32);
@@ -22,12 +23,21 @@ export function getLiveParticipantAccess(sessionId: string): LiveParticipantAcce
 export function storeLiveJoinToken(sessionId: string, token: string) { localStorage.setItem(`${joinPrefix}${sessionId}`, token); }
 export function getLiveJoinToken(sessionId: string) { return typeof window === "undefined" ? null : localStorage.getItem(`${joinPrefix}${sessionId}`); }
 
+export function liveAccessKey(access?: LiveParticipantAccess | LiveJoinAccess | null) {
+  if (!access) return "authenticated";
+  if ("participantId" in access) return `participant:${access.participantId}:${access.participantToken}:${access.runNumber ?? ""}:${access.joinToken ?? ""}`;
+  return `join:${access.joinToken}`;
+}
+
 export function liveClient(access?: LiveParticipantAccess | LiveJoinAccess | null): SupabaseClient {
   if (!access) { if (!supabase) throw new Error("Supabase is not configured."); return supabase; }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("Supabase is not configured.");
-  return createClient(url, key, { global: { fetch: (input, init) => {
+  const accessKey = liveAccessKey(access);
+  const existing = participantClients.get(accessKey);
+  if (existing) return existing;
+  const client = createClient(url, key, { global: { fetch: (input, init) => {
     const headers = new Headers(init?.headers);
     if ("participantId" in access) {
       headers.set("x-live-participant-id", access.participantId);
@@ -37,4 +47,6 @@ export function liveClient(access?: LiveParticipantAccess | LiveJoinAccess | nul
     if (access.joinToken) headers.set("x-live-join-token", access.joinToken);
     return fetch(input, { ...init, headers });
   } } });
+  participantClients.set(accessKey, client);
+  return client;
 }

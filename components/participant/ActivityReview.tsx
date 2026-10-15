@@ -6,6 +6,7 @@ import { FramingSummary } from "@/components/activities/framing/FramingSummary";
 import { PlanningReportSummary } from "@/components/activities/planning-report/PlanningReportSummary";
 import { PrioritizationSummary } from "@/components/activities/prioritization/PrioritizationSummary";
 import { ProfilingSummary } from "@/components/activities/profiling/ProfilingSummary";
+import { SchedulingSummary } from "@/components/activities/scheduling/SchedulingSummary";
 import { Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 
@@ -22,6 +23,7 @@ export function ActivityReview({ activity, answer }: { activity: Activity; answe
         {activity.type === "prioritization" && "rankedItems" in answer ? <PrioritizationSummary answer={answer} /> : null}
         {activity.type === "framing" && "answer" in answer ? <FramingSummary activity={activity} answer={answer} /> : null}
         {activity.type === "planning_report" ? <PlanningReportSummary /> : null}
+        {activity.type === "scheduling" && "slotIds" in answer ? <SchedulingSummary activity={activity} answer={answer} /> : null}
       </div>
     </Card>
   );

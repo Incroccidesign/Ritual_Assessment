@@ -286,15 +286,41 @@
     "body": "Un percorso ispirato a Ritual per designer e ricercatori che raccolgono evidenze qualitative e semi-strutturate senza trasformare l'esperienza in un questionario classico.",
     "heroClaim": "Ogni prospettiva conta.",
     "heroCta": "Inizia un rituale",
-    "overview": "Riunisci le persone, condividi prospettive e trasforma le idee in esiti collettivi.",
+    "overview": "Riunisci le persone per condividere idee, prendere decisioni e pianificare i prossimi passi.",
     "modesEyebrow": "Due modalità",
     "modesTitle": "Scegli il ritmo giusto per il tuo rituale.",
     "collectiveEyebrow": "Collettivo",
-    "collectiveTitle": "Insieme, in tempo reale.",
-    "collectiveBody": "Facilita una sessione dal vivo in cui tutte le persone contribuiscono nello stesso momento.",
+    "collectiveTitle": "Conduci sessioni live in cui le persone contribuiscono, votano e raggiungono accordi insieme.",
+    "collectiveBody": "",
     "individualEyebrow": "Individuale",
-    "individualTitle": "Da completare in autonomia.",
-    "individualBody": "Condividi un percorso guidato che ogni persona può completare con i propri tempi.",
+    "individualTitle": "Crea attività autonome per raccogliere risposte, ordinare priorità e generare report.",
+    "individualBody": "",
+    "howEyebrow": "Come funziona",
+    "howTitle": "Crea. Condividi. Esplora.",
+    "howCreateTitle": "Crea",
+    "howCreateBody": "Scegli e combina le attività.",
+    "howEngageTitle": "Condividi",
+    "howEngageBody": "Invita le persone tramite link o codice QR.",
+    "howUnderstandTitle": "Esplora",
+    "howUnderstandBody": "Consulta i risultati e scarica i report.",
+    "activitiesEyebrow": "Attività",
+    "activitiesTitle": "Scegli ciò che vuoi ottenere.",
+    "activitiesBody": "",
+    "activityExplore": "Esplora",
+    "activityExploreBody": "Raccogli idee, sfide e opportunità.",
+    "activityReflect": "Rifletti",
+    "activityReflectBody": "Poni domande e raccogli risposte dettagliate.",
+    "activityPrioritize": "Dai priorità",
+    "activityPrioritizeBody": "Ordina le opzioni e vota le priorità.",
+    "activityAgree": "Accorda",
+    "activityAgreeBody": "Proponi soluzioni e raggiungi accordi.",
+    "activityPlan": "Pianifica",
+    "activityPlanBody": "Trova date adatte e organizza i prossimi passi.",
+    "resultsEyebrow": "Risultati",
+    "resultsTitle": "Trasforma le risposte in insight.",
+    "resultsBody": "Consulta i contributi, confronta le priorità ed esporta i report.",
+    "resultsDetail": "",
+    "finalTitle": "Pronto a creare il tuo Ritual?",
     "cta": "Crea assessment",
     "secondary": "Accedi",
     "tertiary": "Registrati"
@@ -410,6 +436,9 @@
       },
       "planning_report": {
         "description": "Genera un report strutturato a partire dalle risposte del partecipante."
+      },
+      "scheduling": {
+        "description": "Raccogli disponibilità e trova una data condivisa."
       }
     }
   },
@@ -497,6 +526,10 @@
     "planning_report": {
       "label": "Report di pianificazione",
       "purpose": "Genera un report strutturato a partire dalle risposte del partecipante."
+    },
+    "scheduling": {
+      "label": "Pianificazione",
+      "purpose": "Raccogli le disponibilità per trovare una data condivisa."
     }
   },
   "planningReport": {

@@ -383,7 +383,16 @@ export function AssessmentBuilder({
                 {messages.builder.deleteDraft}
               </Button>
             ) : null}
-            <LinkGenerator assessment={assessment} onPublish={setAssessment} disabled={isTemplate} compact />
+            <LinkGenerator
+              assessment={assessment}
+              onPublish={(published) => {
+                setAssessment(published);
+                if (embedded) onDismiss?.();
+                else router.replace("/dashboard");
+              }}
+              disabled={isTemplate}
+              compact
+            />
           </div>
           {assessment.status === "paused" ? (
             <p className="rounded-lg border border-mint/20 bg-mint/10 px-5 py-4 text-sm leading-6 text-bone/76">

@@ -15,6 +15,9 @@ import { PrioritizationSummary } from "@/components/activities/prioritization/Pr
 import { ProfilingEditor } from "@/components/activities/profiling/ProfilingEditor";
 import { ProfilingParticipant } from "@/components/activities/profiling/ProfilingParticipant";
 import { ProfilingSummary } from "@/components/activities/profiling/ProfilingSummary";
+import { SchedulingEditor } from "@/components/activities/scheduling/SchedulingEditor";
+import { SchedulingParticipant } from "@/components/activities/scheduling/SchedulingParticipant";
+import { SchedulingSummary } from "@/components/activities/scheduling/SchedulingSummary";
 import { activityDependencyRequirements } from "@/lib/activities/activityTypes";
 import { validateActivityConfig, validateActivityResponse } from "@/lib/activities/validation";
 
@@ -79,5 +82,15 @@ export const activityRegistry: Record<ActivityType, RegistryEntry> = {
     validateConfig: validateActivityConfig,
     validateResponse: validateActivityResponse,
     dependency: activityDependencyRequirements.planning_report
+  },
+  scheduling: {
+    type: "scheduling",
+    labelKey: "scheduling",
+    editor: SchedulingEditor,
+    participant: SchedulingParticipant,
+    summary: SchedulingSummary,
+    validateConfig: validateActivityConfig,
+    validateResponse: validateActivityResponse,
+    dependency: activityDependencyRequirements.scheduling
   }
 };

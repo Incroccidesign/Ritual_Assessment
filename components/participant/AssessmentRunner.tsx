@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, ActivityAnswer, ExplorationAnswer, FramingAnswer, PrioritizationAnswer, ProfilingAnswer } from "@/types/activity";
+import { Activity, ActivityAnswer, ExplorationAnswer, FramingAnswer, PrioritizationAnswer, ProfilingAnswer, SchedulingAnswer } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
 import { AssessmentResponse } from "@/types/response";
 import { ExplorationParticipant } from "@/components/activities/exploration/ExplorationParticipant";
@@ -9,11 +9,13 @@ import { FramingParticipant } from "@/components/activities/framing/FramingParti
 import { PlanningReportDownload, PlanningReportParticipant } from "@/components/activities/planning-report/PlanningReportParticipant";
 import { PrioritizationParticipant } from "@/components/activities/prioritization/PrioritizationParticipant";
 import { ProfilingParticipant } from "@/components/activities/profiling/ProfilingParticipant";
+import { SchedulingParticipant } from "@/components/activities/scheduling/SchedulingParticipant";
 import { ParticipantShell } from "@/components/layout/ParticipantShell";
 import { ActivityIntro } from "@/components/participant/ActivityIntro";
 import { ActivityProgress } from "@/components/participant/ActivityProgress";
 import { ActivityReview } from "@/components/participant/ActivityReview";
 import { CompletionScreen } from "@/components/participant/CompletionScreen";
+import { PublicSchedulingResults } from "@/components/participant/PublicSchedulingResults";
 import { Button, Card } from "@/components/ritual-ui";
 import { getExplorationItems, getRankableItems, getRankingContext } from "@/lib/activities/dependencies";
 import { emptyAnswerForActivity } from "@/lib/activities/responseMapping";
@@ -22,6 +24,7 @@ import { localizeActivityContent } from "@/lib/i18n/localizeActivityContent";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
   fetchPublishedAssessmentByToken,
+  fetchPublicSchedulingResults,
   saveSupabaseActivityResponse,
   startSupabaseParticipantResponse,
   submitSupabaseResponse
@@ -56,6 +59,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   const pendingPhaseRef = useRef<RunnerPhase | null>(null);
   const phaseRef = useRef<RunnerPhase>("welcome");
   const [rawAssessment, setRawAssessment] = useState<Assessment | null>(null);
+  const [publicSchedulingResults, setPublicSchedulingResults] = useState<Awaited<ReturnType<typeof fetchPublicSchedulingResults>>>(null);
   const [response, setResponse] = useState<AssessmentResponse | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [phase, setPhase] = useState<RunnerPhase>("welcome");
@@ -64,6 +68,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const collectionStatusInFlight = useRef(false);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -85,6 +90,10 @@ export function AssessmentRunner({ token }: { token: string }) {
       }
       try {
         const found = await fetchPublishedAssessmentByToken(token);
+        if (!found) {
+          const schedulingResults = await fetchPublicSchedulingResults(token);
+          if (schedulingResults?.activities.length) setPublicSchedulingResults(schedulingResults);
+        }
         if (!active) return;
         if (found && !assessmentLocaleApplied.current && !new URLSearchParams(window.location.search).get("locale")) {
           assessmentLocaleApplied.current = true;
@@ -129,6 +138,8 @@ export function AssessmentRunner({ token }: { token: string }) {
   const hasPlanningReport = activities.some((candidate) => candidate.type === "planning_report");
 
   const showCollectionStatusIfChanged = useCallback(async () => {
+    if (collectionStatusInFlight.current || document.visibilityState !== "visible") return false;
+    collectionStatusInFlight.current = true;
     try {
       const latestAssessment = await fetchPublishedAssessmentByToken(token);
       if (!latestAssessment || latestAssessment.status === "published") return false;
@@ -139,17 +150,21 @@ export function AssessmentRunner({ token }: { token: string }) {
       return true;
     } catch {
       return false;
+    } finally {
+      collectionStatusInFlight.current = false;
     }
   }, [token]);
 
   useEffect(() => {
     if (rawAssessment?.status !== "published") return;
     const checkCollectionStatus = () => void showCollectionStatusIfChanged();
-    const interval = window.setInterval(checkCollectionStatus, 15_000);
+    const interval = window.setInterval(checkCollectionStatus, 60_000);
     window.addEventListener("focus", checkCollectionStatus);
+    document.addEventListener("visibilitychange", checkCollectionStatus);
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("focus", checkCollectionStatus);
+      document.removeEventListener("visibilitychange", checkCollectionStatus);
     };
   }, [rawAssessment?.status, showCollectionStatusIfChanged]);
 
@@ -182,7 +197,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (!assessment) {
     return (
       <ParticipantShell>
-        <Card><p className={error ? "text-orange" : "text-bone/56"}>{error ?? messages.participant.notFound}</p></Card>
+        {publicSchedulingResults ? <PublicSchedulingResults results={publicSchedulingResults} /> : <Card><p className={error ? "text-orange" : "text-bone/56"}>{error ?? messages.participant.notFound}</p></Card>}
       </ParticipantShell>
     );
   }
@@ -206,7 +221,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "complete" || !activity || !currentAnswer || !response) {
     return (
       <ParticipantShell>
-        <CompletionScreen hasReport={hasPlanningReport} />
+        {publicSchedulingResults ? <PublicSchedulingResults results={publicSchedulingResults} /> : <CompletionScreen hasReport={hasPlanningReport} />}
       </ParticipantShell>
     );
   }
@@ -323,6 +338,8 @@ export function AssessmentRunner({ token }: { token: string }) {
       try {
         const submitted = await submitSupabaseResponse(token, participantTokenFor(token));
         if (submitted) setResponse(submitted);
+        const schedulingResults = await fetchPublicSchedulingResults(token);
+        if (schedulingResults?.activities.length) setPublicSchedulingResults(schedulingResults);
         setPhase("complete");
       } catch (submitError) {
         if (!await showCollectionStatusIfChanged()) {
@@ -398,6 +415,9 @@ export function AssessmentRunner({ token }: { token: string }) {
             ) : null}
             {activity.type === "planning_report" ? (
               <PlanningReportParticipant />
+            ) : null}
+            {activity.type === "scheduling" && "slotIds" in currentAnswer ? (
+              <SchedulingParticipant activity={activity} answer={currentAnswer as SchedulingAnswer} onChange={setCurrentAnswer} />
             ) : null}
           </div>
           <Button type="button" className="mt-7 w-full min-h-14 text-base" disabled={!canComplete || saving} onClick={() => void completeCurrentActivity()}>
