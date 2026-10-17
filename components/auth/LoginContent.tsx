@@ -186,7 +186,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
 
   async function resendConfirmation() {
     if (!pendingVerificationEmail || pending || resendSeconds > 0) return;
-    if (requiresCaptcha && !captchaToken) {
+    if (turnstileSiteKey && !captchaToken) {
       setFormError(messages.auth.captchaRequired);
       return;
     }
@@ -249,7 +249,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
               <Button type="button" className="w-full min-h-12" disabled={pending || resendSeconds > 0} onClick={() => {
                 setNotice(null);
                 setFormError(null);
-                if (requiresCaptcha) {
+                if (turnstileSiteKey) {
                   setResendChallengeOpen(true);
                   return;
                 }
