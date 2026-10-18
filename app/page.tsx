@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, UserRound, UsersRound, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { LoginContent } from "@/components/auth/LoginContent";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { LegalFooter } from "@/components/legal/LegalFooter";
@@ -75,49 +76,40 @@ function HomeContent() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
+      <section className="mx-auto max-w-5xl px-5 pt-16 pb-8 md:px-10 md:pt-20 md:pb-8">
         <p className="max-w-3xl font-heading text-3xl font-semibold leading-tight text-bone md:text-4xl">
           {messages.home.overview}
         </p>
       </section>
 
+      <section className="mx-auto max-w-5xl px-5 pt-2 pb-12 md:px-10 md:pt-4 md:pb-16">
+        <div className="border-t border-[#303641]">
+          <ActivityCapability illustration="Explore" title={messages.home.activityExplore} body={messages.home.activityExploreBody} />
+          <ActivityCapability illustration="Reflect" title={messages.home.activityReflect} body={messages.home.activityReflectBody} />
+          <ActivityCapability illustration="Prioritize" title={messages.home.activityPrioritize} body={messages.home.activityPrioritizeBody} />
+          <ActivityCapability illustration="Agree" title={messages.home.activityAgree} body={messages.home.activityAgreeBody} />
+          <ActivityCapability illustration="Plan" title={messages.home.activityPlan} body={messages.home.activityPlanBody} />
+        </div>
+      </section>
+
       <section>
         <div className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
-          <div className="grid gap-10 md:grid-cols-2 md:gap-16">
+          <h2 className="font-heading text-4xl font-semibold leading-tight text-bone md:text-[2.5rem]">{messages.home.modesTitle}</h2>
+          <div className="mt-8 grid gap-10 md:mt-12 md:grid-cols-2 md:gap-16">
             <article>
-              <UsersRound aria-hidden="true" size={56} strokeWidth={1.35} className="text-bone/80" />
-              <h2 className="mt-6 font-heading text-2xl font-semibold text-bone">{messages.home.collectiveEyebrow}</h2>
+              <div className="relative h-40 overflow-hidden">
+                <Image src="/illustrations/Collective.svg" alt="" width={288} height={288} aria-hidden="true" className="absolute -left-[26px] top-1/2 h-72 w-72 -translate-y-1/2" />
+              </div>
+              <h3 className="mt-3 font-heading text-2xl font-semibold text-bone">{messages.home.collectiveEyebrow}</h3>
               <p className="mt-3 max-w-md text-base leading-7 text-bone/68">{messages.home.collectiveTitle}</p>
             </article>
             <article>
-              <UserRound aria-hidden="true" size={56} strokeWidth={1.35} className="text-bone/80" />
-              <h2 className="mt-6 font-heading text-2xl font-semibold text-bone">{messages.home.individualEyebrow}</h2>
+              <div className="relative h-40 overflow-hidden">
+                <Image src="/illustrations/Individual.svg" alt="" width={288} height={288} aria-hidden="true" className="absolute -left-[73px] top-1/2 h-72 w-72 -translate-y-1/2" />
+              </div>
+              <h3 className="mt-3 font-heading text-2xl font-semibold text-bone">{messages.home.individualEyebrow}</h3>
               <p className="mt-3 max-w-md text-base leading-7 text-bone/68">{messages.home.individualTitle}</p>
             </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
-        <h2 className="max-w-3xl font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.home.howTitle}</h2>
-        <div className="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
-          <EditorialStep number="01" title={messages.home.howCreateTitle} body={messages.home.howCreateBody} visual="builder" />
-          <EditorialStep number="02" title={messages.home.howEngageTitle} body={messages.home.howEngageBody} visual="participant" />
-          <EditorialStep number="03" title={messages.home.howUnderstandTitle} body={messages.home.howUnderstandBody} visual="results" />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-16">
-          <div>
-            <h2 className="font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.home.activitiesTitle}</h2>
-          </div>
-          <div className="border-t border-bone/14">
-            <ActivityCapability title={messages.home.activityExplore} body={messages.home.activityExploreBody} />
-            <ActivityCapability title={messages.home.activityReflect} body={messages.home.activityReflectBody} />
-            <ActivityCapability title={messages.home.activityPrioritize} body={messages.home.activityPrioritizeBody} />
-            <ActivityCapability title={messages.home.activityAgree} body={messages.home.activityAgreeBody} />
-            <ActivityCapability title={messages.home.activityPlan} body={messages.home.activityPlanBody} />
           </div>
         </div>
       </section>
@@ -150,22 +142,12 @@ function HomeContent() {
   );
 }
 
-function EditorialStep({ number, title, body, visual }: { number: string; title: string; body: string; visual: "builder" | "participant" | "results" }) {
-  return <article className="border-t border-bone/14 pt-5"><p className="text-sm font-semibold text-bone/45">{number}</p><h3 className="mt-8 font-heading text-2xl font-semibold text-bone">{title}</h3><p className="mt-3 text-base leading-7 text-bone/64">{body}</p><ProductMoment type={visual} /></article>;
-}
-
-function ProductMoment({ type }: { type: "builder" | "participant" | "results" }) {
-  if (type === "builder") return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-bone" /><span className="h-px flex-1 bg-bone/25" /><span className="h-1.5 w-1.5 rounded-full bg-bone/45" /><span className="h-px flex-1 bg-bone/25" /><span className="h-1.5 w-1.5 rounded-full bg-bone/25" /></div><div className="mt-5 space-y-2"><span className="block h-px w-full bg-bone/25" /><span className="block h-px w-4/5 bg-bone/25" /><span className="block h-px w-3/5 bg-bone/25" /></div></div>;
-  if (type === "participant") return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><span className="block h-2 w-1/3 bg-bone/25" /><span className="mt-4 block h-3 w-full bg-bone/80" /><span className="mt-2 block h-3 w-4/5 bg-bone/80" /><span className="mt-6 block h-10 w-full border border-bone/35" /></div>;
-  return <div aria-hidden="true" className="mt-8 border-y border-bone/12 py-5"><div className="flex items-end gap-2"><span className="h-7 w-1/5 bg-bone/28" /><span className="h-12 w-1/5 bg-bone/48" /><span className="h-20 w-1/5 bg-bone" /><span className="h-10 w-1/5 bg-bone/38" /></div></div>;
-}
-
-function ActivityCapability({ title, body }: { title: string; body: string }) {
-  return <article className="home-editorial-row grid gap-3 border-b border-bone/14 py-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6"><h3 className="font-heading text-xl font-semibold text-bone">{title}</h3><p className="text-sm leading-6 text-bone/62">{body}</p></article>;
+function ActivityCapability({ illustration, title, body }: { illustration: "Explore" | "Reflect" | "Prioritize" | "Agree" | "Plan"; title: string; body: string }) {
+  return <article className="home-editorial-row grid grid-cols-[6rem_minmax(0,1fr)] items-center gap-x-5 gap-y-2 border-b border-[#303641] py-4 sm:grid-cols-[7rem_7rem_minmax(0,1fr)] sm:gap-x-5 sm:py-5"><Image src={`/illustrations/${illustration}.svg`} alt="" width={112} height={112} aria-hidden="true" className="row-span-2 h-24 w-24 sm:row-span-1 sm:h-28 sm:w-28" /><h3 className="self-end font-heading text-xl font-semibold text-bone sm:self-center">{title}</h3><p className="col-start-2 self-start text-sm leading-6 text-bone/62 sm:col-start-auto sm:self-center">{body}</p></article>;
 }
 
 function ResultsPreview() {
-  return <div aria-hidden="true" className="border-y border-bone/14 py-5"><div className="flex items-end gap-2"><span className="h-7 w-1/5 bg-bone/28" /><span className="h-12 w-1/5 bg-bone/48" /><span className="h-20 w-1/5 bg-bone" /><span className="h-10 w-1/5 bg-bone/38" /></div><div className="mt-8 space-y-4">{[78, 16, 6].map((value) => <span key={value} className="block h-px bg-bone/15"><span className="block h-px bg-bone" style={{ width: `${value}%` }} /></span>)}</div></div>;
+  return <div className="grid grid-cols-3 items-center gap-2 sm:gap-4">{["Word", "Excel", "Json"].map((format) => <Image key={format} src={`/illustrations/${format}.svg`} alt={format === "Json" ? "JSON" : format} width={160} height={160} className="h-auto w-full" />)}</div>;
 }
 
 function HomeAuthDialog({ children, onClose, pending }: { children: React.ReactNode; onClose: () => void; pending: boolean }) {

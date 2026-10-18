@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Graphics" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 6px;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+    </style>
+  </defs>
+  <ellipse class="cls-1" cx="493.46" cy="843.21" rx="114.02" ry="55.99"/>
+  <ellipse class="cls-2" cx="498.96" cy="343.93" rx="402.38" ry="212.9"/>
+  <ellipse class="cls-2" cx="498.96" cy="667.86" rx="210.38" ry="67.86"/>
+</svg>

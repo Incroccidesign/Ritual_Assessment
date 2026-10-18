@@ -212,21 +212,22 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
       <Card className={className}>
         <div>
           <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
-            {mode === "sign-up" ? messages.auth.signUpTitle : mode === "verification-pending" ? messages.auth.verificationTitle : messages.auth.title}
+            {mode === "sign-up" ? messages.auth.signUpTitle : mode === "verification-pending" ? messages.auth.verificationTitle : mode === "reset-request" ? messages.auth.resetPassword : messages.auth.title}
           </h1>
           {mode !== "sign-up" ? <p className="mt-2 text-sm leading-6 text-bone/58">
-            {mode === "verification-pending" ? messages.auth.verificationBody : messages.auth.body}
+            {mode === "verification-pending" ? messages.auth.verificationBody : mode === "reset-request" ? messages.auth.resetRequestBody : messages.auth.body}
           </p> : null}
         </div>
         {!isSupabaseConfigured ? (
           <p className="mt-7 rounded-md border border-orange/30 bg-orange/10 p-4 text-sm leading-6 text-bone/72">{messages.auth.supabaseRequired}</p>
         ) : mode === "verification-pending" ? (
-          <div className="mt-7 space-y-5">
-            <div className="rounded-md border border-mint/20 bg-mint/5 p-4">
-              <p className="text-sm font-semibold text-bone">{messages.auth.verificationSentTo}</p>
-              <p className="mt-1 break-all text-sm text-mint">{pendingVerificationEmail}</p>
+          <div className="mt-7">
+            <div className="border-l-2 border-bone/25 pl-4">
+              <p className="text-xs font-medium text-bone/55">{messages.auth.email}</p>
+              <p className="mt-1 break-all text-base font-semibold text-bone">{pendingVerificationEmail}</p>
             </div>
-            <p className="text-sm leading-6 text-bone/68">{messages.auth.verificationSpamNote}</p>
+            <p className="mt-5 text-sm leading-6 text-bone/55">{messages.auth.verificationSpamNote}</p>
+            <div className="mt-4 space-y-3">
             {formError ? <p className="text-sm text-orange">{formError}</p> : null}
             {notice ? <p className="text-sm text-mint">{notice}</p> : null}
             {resendChallengeOpen && requiresCaptcha && turnstileSiteKey ? (
@@ -264,10 +265,14 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
                 {pending ? messages.app.loading : messages.auth.resendEmail}
               </Button>
             )}
+            </div>
+            <div className="mt-7 border-t border-bone/10 pt-5">
+            <p className="text-sm text-bone/55">{messages.auth.verificationExistingAccount}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1">
             <button
               type="button"
               disabled={pending}
-              className="w-full text-sm font-medium text-bone/62 transition hover:text-bone"
+              className="min-h-11 text-sm font-semibold text-bone underline underline-offset-4 transition hover:text-mint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint disabled:opacity-50"
               onClick={() => {
                 setCaptchaToken(null);
                 setResendChallengeOpen(false);
@@ -276,8 +281,26 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
                 setMode("sign-in");
               }}
             >
-              {messages.auth.backToSignIn}
+              {messages.auth.signIn}
             </button>
+            <button
+              type="button"
+              disabled={pending}
+              className="min-h-11 text-sm font-medium text-bone/72 underline underline-offset-4 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint disabled:opacity-50"
+              onClick={() => {
+                setCaptchaToken(null);
+                setResendChallengeOpen(false);
+                setFieldErrors({});
+                setFormError(null);
+                setNotice(null);
+                setPassword("");
+                setMode("reset-request");
+              }}
+            >
+              {messages.auth.resetPassword}
+            </button>
+            </div>
+            </div>
           </div>
         ) : (
           <form

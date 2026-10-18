@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, ChevronUp, Download, Flame, Focus, Handshake, Layers, ListChecks, TimerReset, Trash2, X } from "lucide-react";
 import { Button } from "@/components/live/button";
@@ -22,17 +23,22 @@ type SetupActivity = CreateRitualActivityInput & {
   priority_source_activity_local_id?: string | null;
 };
 
+const activityIllustrations: Partial<Record<ActivityType, string>> = {
+  traccia: "Explore",
+  focus: "Reflect",
+  priorita: "Prioritize",
+  patto: "Agree"
+};
 const activityIcons: Record<ActivityType, typeof Flame> = {
-  innesco: Flame,
-  traccia: Layers,
-  focus: Focus,
-  priorita: ListChecks,
-  patto: Handshake
+  innesco: Flame, traccia: Layers, focus: Focus, priorita: ListChecks, patto: Handshake
 };
 
 function ActivityIcon({ type, className, size = 22 }: { type: ActivityType; className?: string; size?: number }) {
+  const illustration = activityIllustrations[type];
   const Icon = activityIcons[type];
-  return <Icon aria-hidden="true" className={cn("shrink-0", className)} size={size} strokeWidth={1.7} />;
+  return illustration && size >= 32
+    ? <Image src={`/illustrations/${illustration}.svg`} alt="" aria-hidden="true" width={size} height={size} className={cn("shrink-0", className)} />
+    : <Icon aria-hidden="true" className={cn("shrink-0", className)} size={size} strokeWidth={1.7} />;
 }
 function SetupSectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="font-heading text-xl font-semibold text-bone">{children}</h3>;
@@ -643,7 +649,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                     aria-label={`${messages.setup.addActivityCta} ${messages.activities[item.id].name}`}
                     className="flex min-h-64 flex-col rounded-lg border border-bone/10 bg-night/55 p-5 text-left text-bone/62 transition hover:border-mint/70 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint"
                   >
-                    <ActivityIcon type={item.id} className="mb-6 text-mint" size={48} />
+                    <ActivityIcon type={item.id} className="mb-6 text-mint" size={64} />
                     <span className="block font-heading text-lg font-semibold">{messages.activities[item.id].name}</span>
                     <span className="mt-3 block text-[15px] leading-6 text-bone/64">{messages.activities[item.id].setupDescription}</span>
                     <span className="mt-auto inline-flex pt-5 text-sm font-medium text-mint">{messages.setup.addActivityCta}</span>

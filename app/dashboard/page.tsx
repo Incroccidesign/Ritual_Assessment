@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
@@ -12,7 +13,7 @@ import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreatio
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
 import { LiveSessionCard } from "@/components/dashboard/LiveSessionCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { Button, Card, EmptyState } from "@/components/ritual-ui";
+import { Button, Card } from "@/components/ritual-ui";
 import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessmentTemplate";
 import {
   AssessmentBundle,
@@ -53,6 +54,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [creationOpen, setCreationOpen] = useState(false);
+  const [creationAnchor, setCreationAnchor] = useState<"header" | "empty">("header");
   const [creationType, setCreationType] = useState<"choose" | "assessment">("choose");
   const [liveSetupOpen, setLiveSetupOpen] = useState(false);
   const [liveCloseRequested, setLiveCloseRequested] = useState(false);
@@ -255,34 +257,24 @@ function DashboardContent({ designer }: { designer: Designer }) {
     }
   }
 
-  return (
-    <>
-      <div className="relative">
-        <h1 className="font-heading text-5xl font-semibold leading-none text-bone">{messages.dashboard.title}</h1>
-        <div className="relative mt-8 flex flex-wrap gap-3">
-          <input
-            ref={ritualFileInputRef}
-            type="file"
-            accept="application/json,.json,.ritual"
-            className="sr-only"
-            onChange={(event) => {
-              void handleRitualFile(event.target.files?.[0] ?? null);
-              event.target.value = "";
-            }}
-          />
-          <span ref={creationPopoverRef} className="relative inline-flex">
+  function renderCreationTrigger(anchor: "header" | "empty") {
+    const open = creationOpen && creationAnchor === anchor;
+    return (
+          <span ref={creationAnchor === anchor ? creationPopoverRef : undefined} className="relative inline-flex">
             <Button
               type="button"
               disabled={!isSupabaseConfigured}
+              aria-expanded={open}
               onClick={() => {
-                setCreationOpen((open) => !open);
+                setCreationAnchor(anchor);
+                setCreationOpen(!open);
                 setCreationType("choose");
               }}
             >
-              New ritual
+              {messages.dashboard.newRitual}
             </Button>
-            {creationOpen ? (
-              <div className="absolute left-0 top-[calc(100%+0.625rem)] z-50">
+            {open ? (
+              <div className={`absolute top-[calc(100%+0.625rem)] z-50 ${anchor === "empty" ? "left-1/2 -translate-x-1/2" : "left-0"}`}>
                 {creationType === "choose" ? (
                   <Card className="ritual-popover-surface w-[min(calc(100vw-2rem),24rem)] border p-3">
                     <div className="space-y-1">
@@ -291,12 +283,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
                         setLiveCloseRequested(false);
                         setLiveSetupOpen(true);
                       }}>
-                        <h2 className="font-heading text-xl font-semibold text-bone">Collective</h2>
-                        <p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p>
+                        <div className="flex items-center gap-3"><Image src="/illustrations/Collective.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">Collective</h2><p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p></div></div>
                       </button>
                       <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => setCreationType("assessment")}>
-                        <h2 className="font-heading text-xl font-semibold text-bone">Individual</h2>
-                        <p className="mt-1 text-sm leading-5 text-bone/60">Completed independently.</p>
+                        <div className="flex items-center gap-3"><Image src="/illustrations/Individual.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">Individual</h2><p className="mt-1 text-sm leading-5 text-bone/60">Completed independently.</p></div></div>
                       </button>
                       <div className="mx-3 border-t border-bone/10" />
                       <button type="button" className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-bone/62 transition hover:bg-bone/6 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => ritualFileInputRef.current?.click()}>Import ritual</button>
@@ -314,6 +304,25 @@ function DashboardContent({ designer }: { designer: Designer }) {
               </div>
             ) : null}
           </span>
+    );
+  }
+
+  return (
+    <>
+      <div className="relative">
+        <h1 className="font-heading text-5xl font-semibold leading-none text-bone">{messages.dashboard.title}</h1>
+        <div className="relative mt-8 flex flex-wrap gap-3">
+          <input
+            ref={ritualFileInputRef}
+            type="file"
+            accept="application/json,.json,.ritual"
+            className="sr-only"
+            onChange={(event) => {
+              void handleRitualFile(event.target.files?.[0] ?? null);
+              event.target.value = "";
+            }}
+          />
+          {renderCreationTrigger("header")}
         </div>
       </div>
       <div className="mt-8">
@@ -340,14 +349,11 @@ function DashboardContent({ designer }: { designer: Designer }) {
             ))}
           </div>
         ) : (
-          <EmptyState
-            title={messages.dashboard.emptyTitle}
-            body={messages.dashboard.emptyBody}
-            action={<Button type="button" onClick={() => {
-              setCreationType("choose");
-              setCreationOpen(true);
-            }}>{messages.assessmentCreate.newAssessment}</Button>}
-          />
+          <div className="py-8 text-center">
+            <h2 className="font-heading text-3xl font-semibold text-bone">{messages.dashboard.emptyTitle}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-bone/58">{messages.dashboard.emptyBody}</p>
+            <div className="mt-6 flex justify-center">{renderCreationTrigger("empty")}</div>
+          </div>
         )}
       </div>
       {liveSetupOpen ? <CreationDialog label={messages.home.collectiveEyebrow} closing={liveCloseRequested} onClose={() => setLiveCloseRequested(true)}>

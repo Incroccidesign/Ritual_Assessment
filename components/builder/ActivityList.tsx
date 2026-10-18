@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import Image from "next/image";
 import { ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, Compass, FileText, type LucideIcon, ListOrdered, MessageSquare, Plus, Trash2, UserRound, X } from "lucide-react";
 import { Activity, ActivityType } from "@/types/activity";
 import { Button } from "@/components/ritual-ui";
@@ -16,6 +17,12 @@ const activityIcons = {
   planning_report: FileText,
   scheduling: CalendarDays
 } satisfies Record<ActivityType, LucideIcon>;
+const activityIllustrations: Partial<Record<ActivityType, string>> = {
+  exploration: "Explore",
+  prioritization: "Prioritize",
+  framing: "Reflect",
+  scheduling: "Plan"
+};
 
 export function ActivityList({
   activities,
@@ -86,8 +93,8 @@ export function ActivityList({
                       setIsAddOpen(false);
                     }}
                   >
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-bone/12 bg-bone/6 text-bone/72">
-                      <Icon size={18} />
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-bone/12 bg-bone/6 text-bone/72">
+                      {activityIllustrations[type] ? <Image src={`/illustrations/${activityIllustrations[type]}.svg`} alt="" aria-hidden="true" width={44} height={44} /> : <Icon size={18} aria-hidden="true" />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2 font-semibold text-bone">

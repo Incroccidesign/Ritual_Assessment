@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Graphics" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 6px;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+    </style>
+  </defs>
+  <circle class="cls-1" cx="166.8" cy="168.19" r="66.8"/>
+  <circle class="cls-1" cx="333.4" cy="168.19" r="66.8"/>
+  <circle class="cls-1" cx="500" cy="168.19" r="66.8"/>
+  <circle class="cls-1" cx="666.6" cy="168.19" r="66.8"/>
+  <circle class="cls-1" cx="833.2" cy="168.19" r="66.8"/>
+  <circle class="cls-1" cx="166.8" cy="334.39" r="66.8"/>
+  <circle class="cls-1" cx="333.4" cy="334.39" r="66.8"/>
+  <circle class="cls-1" cx="500" cy="334.39" r="66.8"/>
+  <circle class="cls-1" cx="666.6" cy="334.39" r="66.8"/>
+  <circle class="cls-1" cx="833.2" cy="334.39" r="66.8"/>
+  <circle class="cls-1" cx="166.8" cy="500.6" r="66.8"/>
+  <circle class="cls-1" cx="333.4" cy="500.6" r="66.8"/>
+  <circle class="cls-2" cx="500" cy="500.6" r="66.8"/>
+  <circle class="cls-2" cx="666.6" cy="500.6" r="66.8"/>
+  <circle class="cls-2" cx="833.2" cy="500.6" r="66.8"/>
+  <circle class="cls-2" cx="166.8" cy="666.8" r="66.8"/>
+  <circle class="cls-2" cx="333.4" cy="666.8" r="66.8"/>
+  <circle class="cls-2" cx="500" cy="666.8" r="66.8"/>
+  <circle class="cls-2" cx="666.6" cy="666.8" r="66.8"/>
+  <circle class="cls-2" cx="833.2" cy="666.8" r="66.8"/>
+  <circle class="cls-2" cx="166.8" cy="833" r="66.8"/>
+  <circle class="cls-2" cx="333.4" cy="833" r="66.8"/>
+  <circle class="cls-2" cx="500" cy="833" r="66.8"/>
+  <circle class="cls-2" cx="666.6" cy="833" r="66.8"/>
+  <circle class="cls-2" cx="833.2" cy="833" r="66.8"/>
+</svg>

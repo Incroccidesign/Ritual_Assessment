@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Graphics" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 6px;
+      }
+    </style>
+  </defs>
+  <circle class="cls-1" cx="500" cy="500" r="114.02"/>
+  <g>
+    <g id="_Ripetizione_radiale_" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M500,744.96c0,19.38,0,155.04,0,155.04"/>
+    </g>
+    <g id="_Ripetizione_radiale_-2" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M454.99,740.79c-3.56,19.05-28.49,152.4-28.49,152.4"/>
+    </g>
+    <g id="_Ripetizione_radiale_-3" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M411.51,728.42c-7,18.07-56.01,144.57-56.01,144.57"/>
+    </g>
+    <g id="_Ripetizione_radiale_-4" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M371.05,708.27c-10.2,16.48-81.62,131.82-81.62,131.82"/>
+    </g>
+    <g id="_Ripetizione_radiale_-5" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M334.97,681.03l-104.45,114.58"/>
+    </g>
+    <g id="_Ripetizione_radiale_-6" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M304.52,647.62l-123.73,93.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-7" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M280.72,609.19c-17.35,8.64-138.79,69.11-138.79,69.11"/>
+    </g>
+    <g id="_Ripetizione_radiale_-8" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M264.39,567.04c-18.64,5.3-149.12,42.43-149.12,42.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-9" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M256.09,522.6c-19.3,1.79-154.38,14.31-154.38,14.31"/>
+    </g>
+    <g id="_Ripetizione_radiale_-10" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M256.09,477.4c-19.3-1.79-154.38-14.31-154.38-14.31"/>
+    </g>
+    <g id="_Ripetizione_radiale_-11" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M264.39,432.96c-18.64-5.3-149.12-42.43-149.12-42.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-12" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M280.72,390.81c-17.35-8.64-138.79-69.11-138.79-69.11"/>
+    </g>
+    <g id="_Ripetizione_radiale_-13" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M304.52,352.38l-123.73-93.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-14" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M334.97,318.97c-13.06-14.32-104.45-114.58-104.45-114.58"/>
+    </g>
+    <g id="_Ripetizione_radiale_-15" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M371.05,291.73c-10.2-16.48-81.62-131.82-81.62-131.82"/>
+    </g>
+    <g id="_Ripetizione_radiale_-16" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M411.51,271.58l-56.01-144.57"/>
+    </g>
+    <g id="_Ripetizione_radiale_-17" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M454.99,259.21c-3.56-19.05-28.49-152.4-28.49-152.4"/>
+    </g>
+    <g id="_Ripetizione_radiale_-18" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M500,255.04V100"/>
+    </g>
+    <g id="_Ripetizione_radiale_-19" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M545.01,259.21c3.56-19.05,28.49-152.4,28.49-152.4"/>
+    </g>
+    <g id="_Ripetizione_radiale_-20" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M588.49,271.58l56.01-144.57"/>
+    </g>
+    <g id="_Ripetizione_radiale_-21" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M628.95,291.73c10.2-16.48,81.62-131.82,81.62-131.82"/>
+    </g>
+    <g id="_Ripetizione_radiale_-22" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M665.03,318.97c13.06-14.32,104.45-114.58,104.45-114.58"/>
+    </g>
+    <g id="_Ripetizione_radiale_-23" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M695.48,352.38l123.73-93.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-24" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M719.28,390.81c17.35-8.64,138.79-69.11,138.79-69.11"/>
+    </g>
+    <g id="_Ripetizione_radiale_-25" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M735.61,432.96c18.64-5.3,149.12-42.43,149.12-42.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-26" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M743.91,477.4c19.3-1.79,154.38-14.31,154.38-14.31"/>
+    </g>
+    <g id="_Ripetizione_radiale_-27" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M743.91,522.6c19.3,1.79,154.38,14.31,154.38,14.31"/>
+    </g>
+    <g id="_Ripetizione_radiale_-28" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M735.61,567.04c18.64,5.3,149.12,42.43,149.12,42.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-29" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M719.28,609.19c17.35,8.64,138.79,69.11,138.79,69.11"/>
+    </g>
+    <g id="_Ripetizione_radiale_-30" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M695.48,647.62l123.73,93.43"/>
+    </g>
+    <g id="_Ripetizione_radiale_-31" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M665.03,681.03l104.45,114.58"/>
+    </g>
+    <g id="_Ripetizione_radiale_-32" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M628.95,708.27c10.2,16.48,81.62,131.82,81.62,131.82"/>
+    </g>
+    <g id="_Ripetizione_radiale_-33" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M588.49,728.42c7,18.07,56.01,144.57,56.01,144.57"/>
+    </g>
+    <g id="_Ripetizione_radiale_-34" data-name="&amp;lt;Ripetizione radiale&amp;gt;">
+      <path class="cls-2" d="M545.01,740.79c3.56,19.05,28.49,152.4,28.49,152.4"/>
+    </g>
+  </g>
+</svg>
