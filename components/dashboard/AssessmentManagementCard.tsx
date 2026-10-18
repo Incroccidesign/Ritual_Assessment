@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { FileText, MoreHorizontal, Pause, Pencil, Square, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { SchedulingActivity } from "@/types/activity";
@@ -137,13 +138,13 @@ export function AssessmentManagementCard({
   }
 
   return (
-    <Card className="flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
+    <Card className="relative flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
       <div className="flex h-8 items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium text-bone">Assessment</span>
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}><span className={`size-2 rounded-full ${statusIndicatorClassName()}`} />{statusLabel()}</span>
         </div>
-        <div className="shrink-0">
+        <div className="relative z-10 shrink-0">
           <div ref={menuRef} className="relative">
           <Button
             type="button"
@@ -201,20 +202,20 @@ export function AssessmentManagementCard({
 
       <div className="flex flex-1 flex-col justify-between pt-4">
         <div>
-          <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-[30px] text-bone">{assessment.title}</h2>
+          <h2 className="font-heading text-2xl font-semibold leading-[30px] text-bone"><Link href={href(`/assessments/${assessment.id}/${assessment.status === "draft" ? "builder" : "results"}`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
           <p className="mt-2 text-xs leading-4 text-bone/60">{dateLabel()}</p>
         </div>
-        <div className="flex justify-end pt-4">
+        <div className="pointer-events-none relative z-10 flex justify-end pt-4">
         {assessment.status === "draft" ? (
-          <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="dashboard-card-cta !min-h-11 !px-3">
+          <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3">
             {messages.dashboard.continueBuilding}
           </ButtonLink>
         ) : assessment.status === "published" ? (
-          <Button type="button" variant="ghost" className="dashboard-card-cta !min-h-11 !px-3" onClick={() => void copyPublicLink()}>
+          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3" onClick={() => void copyPublicLink()}>
             {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
           </Button>
         ) : (
-          <Button type="button" variant="ghost" className="dashboard-card-cta !min-h-11 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
+          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
             {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
           </Button>
         )}

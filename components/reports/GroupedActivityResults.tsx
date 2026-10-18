@@ -1,19 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Assessment } from "@/types/assessment";
 import { Activity, PlanningReportActivity, PrioritizationActivity, ProfilingActivity, ProfilingField, SchedulingActivity } from "@/types/activity";
 import { Participant } from "@/types/participant";
 import { AssessmentResponse } from "@/types/response";
 import { PlanningReportPreview } from "@/components/planning-report/PlanningReportPreview";
-import { AssessmentSummary } from "@/components/reports/AssessmentSummary";
-import { Button, SubtlePanel } from "@/components/ritual-ui";
+import { Button } from "@/components/ritual-ui";
 import { displayProfilingAnswer } from "@/lib/activities/otherOption";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { downloadPlanningReportDocx } from "@/lib/planning-report/exportPlanningReportDocx";
-import { generatePlanningReportModel } from "@/lib/planning-report/generatePlanningReport";
+import { generatePlanningReportModel, PlanningReportModel } from "@/lib/planning-report/generatePlanningReport";
 import { formatDateTime } from "@/lib/utils/dates";
 import { SchedulingResults } from "@/components/activities/scheduling/SchedulingResults";
+import { ChevronDown, X } from "lucide-react";
 
 type ParticipantRow = {
   participantCode: string;
@@ -26,6 +26,18 @@ type ParticipantRow = {
 };
 
 type ProfileKey = "organization" | "sector" | "country" | "role";
+
+function PagedItems<T>({ items, renderItem }: { items: T[]; renderItem: (item: T, index: number) => React.ReactNode }) {
+  const { messages } = useLocale();
+  const [page, setPage] = useState(0);
+  const pageSize = 8;
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  const currentPage = Math.min(page, totalPages - 1);
+  return <div>
+    {items.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((item, index) => renderItem(item, currentPage * pageSize + index))}
+    {totalPages > 1 ? <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-bone/60"><button type="button" className="min-h-10 underline disabled:opacity-35" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{messages.reports.previousPage}</button><span aria-live="polite">{messages.reports.pageOf.replace("{page}", String(currentPage + 1)).replace("{total}", String(totalPages))}</span><button type="button" className="min-h-10 underline disabled:opacity-35" disabled={currentPage >= totalPages - 1} onClick={() => setPage(currentPage + 1)}>{messages.reports.nextPage}</button></div> : null}
+  </div>;
+}
 
 function activitiesByType(assessment: Assessment, type: Activity["type"]) {
   return assessment.activities.filter((activity) => activity.type === type).sort((a, b) => a.orderIndex - b.orderIndex);
@@ -57,6 +69,17 @@ function prioritizationStats(activity: Activity, responses: AssessmentResponse[]
     .sort((a, b) => a.average - b.average);
 }
 
+function PrioritizationTable({ rows }: { rows: ReturnType<typeof prioritizationStats> }) {
+  const { messages } = useLocale();
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(rows.length / 8));
+  const currentPage = Math.min(page, totalPages - 1);
+  return <><table className="mt-4 w-full min-w-[34rem] text-left text-sm">
+    <thead className="text-xs uppercase tracking-[0.16em] text-bone/38"><tr><th className="py-3 pe-4">{messages.dashboard.challenge}</th><th className="py-3 pe-4">{messages.reports.averageRank}</th><th className="py-3 pe-4">{messages.reports.rankedFirst}</th><th className="py-3 pe-4">{messages.reports.topThree}</th></tr></thead>
+    <tbody className="divide-y divide-bone/10 text-bone/72">{rows.slice(currentPage * 8, (currentPage + 1) * 8).map((row) => <tr key={row.label}><td className="py-3 pe-4">{row.label}</td><td className="py-3 pe-4">{row.average.toFixed(2)}</td><td className="py-3 pe-4">{row.first}</td><td className="py-3 pe-4">{row.topThree}</td></tr>)}</tbody>
+  </table>{totalPages > 1 ? <div className="mt-4 flex items-center gap-4 text-sm text-bone/60"><button type="button" className="min-h-10 underline disabled:opacity-35" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{messages.reports.previousPage}</button><span aria-live="polite">{messages.reports.pageOf.replace("{page}", String(currentPage + 1)).replace("{total}", String(totalPages))}</span><button type="button" className="min-h-10 underline disabled:opacity-35" disabled={currentPage >= totalPages - 1} onClick={() => setPage(currentPage + 1)}>{messages.reports.nextPage}</button></div> : null}</>;
+}
+
 function Section({
   title,
   body,
@@ -75,49 +98,27 @@ function Section({
   );
 }
 
-function ResultBlock({
-  title,
-  body,
-  children
-}: {
-  title: string;
-  body: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h4 className="font-heading text-xl font-semibold text-bone">{title}</h4>
-        <p className="mt-1 text-sm text-bone/58">{body}</p>
-      </div>
-      {children}
-    </div>
-  );
-}
-
 function TabButton({
   active,
   label,
-  meta,
   onClick
 }: {
   active: boolean;
   label: string;
-  meta?: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      className={`rounded-md border px-4 py-3 text-left transition ${
+      aria-pressed={active}
+      className={`min-h-11 border-b-2 px-1 py-3 text-left text-sm font-semibold transition ${
         active
-          ? "border-mint/45 bg-mint/12 text-bone"
-          : "border-bone/10 bg-night/35 text-bone/62 hover:border-bone/25 hover:bg-bone/8"
+          ? "border-bone text-bone"
+          : "border-transparent text-bone/55 hover:text-bone"
       }`}
       onClick={onClick}
     >
-      <span className="block text-sm font-semibold">{label}</span>
-      {meta ? <span className="mt-1 block text-xs text-bone/42">{meta}</span> : null}
+      {label}
     </button>
   );
 }
@@ -244,6 +245,7 @@ function ParticipantsTable({
   const responseMap = new Map(responses.map((response) => [response.participantId, response]));
 
   const rows: ParticipantRow[] = [...participants]
+    .filter((participant) => responseMap.has(participant.id))
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     .map((participant) => {
       const response = responseMap.get(participant.id);
@@ -259,46 +261,26 @@ function ParticipantsTable({
       };
     });
 
-  if (!rows.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
+  if (!rows.length) return <p className="text-bone/45">{messages.reports.noCompletedResponses}</p>;
 
-  return (
-    <SubtlePanel className="overflow-x-auto">
-      <table className="w-full min-w-[52rem] text-left text-sm">
-        <thead className="text-xs uppercase tracking-[0.16em] text-bone/38">
-          <tr>
-            <th className="py-3 pe-4">{messages.reports.participants}</th>
-            <th className="py-3 pe-4">{messages.dashboard.organization}</th>
-            <th className="py-3 pe-4">{messages.dashboard.sector}</th>
-            <th className="py-3 pe-4">{messages.activityTypes.country}</th>
-            <th className="py-3 pe-4">{messages.dashboard.role}</th>
-            <th className="py-3 pe-4">{messages.dashboard.status}</th>
-            <th className="py-3 pe-4">{messages.dashboard.submittedLabel}</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-bone/10 text-bone/72">
-          {rows.map((row) => (
-            <tr key={row.participantCode}>
-              <td className="py-3 pe-4 font-medium text-bone">{row.participantCode}</td>
-              <td className="py-3 pe-4">{row.organization}</td>
-              <td className="py-3 pe-4">{row.sector}</td>
-              <td className="py-3 pe-4">{row.country}</td>
-              <td className="py-3 pe-4">{row.role}</td>
-              <td className="py-3 pe-4">{row.status}</td>
-              <td className="py-3 pe-4">{row.submitted}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </SubtlePanel>
-  );
+  return <div className="border-y border-bone/10"><PagedItems items={rows} renderItem={(row) => (
+    <div key={row.participantCode} className="grid gap-3 border-b border-bone/10 py-5 last:border-0 sm:grid-cols-[10rem_1fr]">
+      <p className="font-semibold text-bone">{row.participantCode}</p>
+      <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        {[[messages.dashboard.organization, row.organization], [messages.dashboard.sector, row.sector], [messages.activityTypes.country, row.country], [messages.dashboard.role, row.role], [messages.dashboard.submittedLabel, row.submitted]].filter(([, value]) => value !== messages.common.empty).map(([label, value]) => (
+          <div key={label}><dt className="text-bone/45">{label}</dt><dd className="mt-1 text-bone/80">{value}</dd></div>
+        ))}
+      </dl>
+    </div>
+  )} /></div>;
 }
 
-function ExplorationResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
+function ExplorationResults({ assessment, responses, participants, activityId }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[]; activityId: string }) {
   const { messages } = useLocale();
-  const activities = activitiesByType(assessment, "exploration");
+  const activities = activitiesByType(assessment, "exploration").filter((activity) => activity.id === activityId);
   const codeMap = participantCodeMap(participants, responses);
 
-  if (!activities.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
+  if (!activities.length) return null;
 
   return (
     <div className="space-y-5">
@@ -312,62 +294,60 @@ function ExplorationResults({ assessment, responses, participants }: { assessmen
         const customItems = items.filter((item) => item.source !== "predefined");
 
         return (
-          <SubtlePanel key={activity.id}>
-            <p className="font-semibold text-bone">{activity.title}</p>
-            <p className="mt-1 text-sm text-bone/58">{messages.dashboard.selectedChallenges}</p>
-            <div className="mt-4 grid gap-4 lg:grid-cols-3">
-              <div>
+          <div key={activity.id}>
+            <div className="grid gap-6 md:grid-cols-2">
+              {predefinedCounts.size ? <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.dashboard.predefinedChallenges}</p>
-                <div className="mt-3 space-y-2">
-                  {Array.from(predefinedCounts.entries()).map(([label, count]) => (
-                    <div key={label} className="flex justify-between gap-4 rounded-md border border-bone/10 bg-night/45 px-4 py-3">
+                <div className="mt-3">
+                  <PagedItems items={Array.from(predefinedCounts.entries()).sort((a, b) => b[1] - a[1])} renderItem={([label, count]) => (
+                    <div key={label} className="flex justify-between gap-4 border-b border-bone/10 py-3">
                       <span>{label}</span>
-                      <span className="text-mint">{count}</span>
+                      <span className="text-bone/60">{count}</span>
                     </div>
-                  ))}
+                  )} />
                 </div>
-              </div>
-              <div>
+              </div> : null}
+              {customItems.length ? <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.reports.customItems}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {customItems.length ? customItems.map((item) => (
-                    <span key={item.id} className="rounded-full border border-bone/10 bg-night/55 px-3 py-2 text-sm text-bone/72">
+                <div className="mt-3">
+                  <PagedItems items={customItems} renderItem={(item, index) => (
+                    <p key={`${item.id}-${index}`} className="border-b border-bone/10 py-3 text-sm text-bone/72">
                       {item.source === "other" ? `${messages.otherOption.resultsLabel}: ${item.label}` : item.label}
-                    </span>
-                  )) : <span className="text-sm text-bone/45">{messages.dashboard.noCustomResponses}</span>}
+                    </p>
+                  )} />
                 </div>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.dashboard.participantSelections}</p>
-                <div className="mt-3 space-y-2">
-                  {answers.map(({ response, answer }) => (
+              </div> : null}
+            </div>
+              <details className="mt-5 border-t border-bone/10 pt-4">
+                <summary className="cursor-pointer text-sm font-semibold text-bone/75">{messages.dashboard.participantSelections}</summary>
+                <div className="mt-3">
+                  <PagedItems items={answers} renderItem={({ response, answer }) => (
                     "items" in answer ? (
-                      <div key={response.id} className="rounded-md border border-bone/10 bg-night/45 px-4 py-3">
+                      <div key={response.id} className="border-b border-bone/10 py-3">
                         <p className="text-xs text-bone/38">{participantLabel(codeMap, response.participantId)}</p>
                         <p className="mt-1 text-bone/72">
                           {answer.items.map((item) => item.source === "other" ? `${messages.otherOption.resultsLabel}: ${item.label}` : item.label).join(", ") || messages.common.empty}
                         </p>
                       </div>
                     ) : null
-                  ))}
+                  )} />
                 </div>
-              </div>
-            </div>
-          </SubtlePanel>
+              </details>
+          </div>
         );
       })}
     </div>
   );
 }
 
-function PrioritizationResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
+function PrioritizationResults({ assessment, responses, participants, activityId }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[]; activityId: string }) {
   const { messages } = useLocale();
   const activities = assessment.activities
-    .filter((activity): activity is PrioritizationActivity => activity.type === "prioritization")
+    .filter((activity): activity is PrioritizationActivity => activity.type === "prioritization" && activity.id === activityId)
     .sort((left, right) => left.orderIndex - right.orderIndex);
   const codeMap = participantCodeMap(participants, responses);
 
-  if (!activities.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
+  if (!activities.length) return null;
 
   return (
     <div className="space-y-5">
@@ -377,69 +357,47 @@ function PrioritizationResults({ assessment, responses, participants }: { assess
         const stats = prioritizationStats(activity, responses);
         const answers = answersForActivity(activity.id, responses);
         return (
-          <SubtlePanel key={activity.id} className="overflow-x-auto">
-            <p className="font-semibold text-bone">{activity.title}</p>
-            {isFramingSource ? <p className="mt-4 max-w-3xl text-sm leading-6 text-bone/58">{messages.activities.prioritization.framingResultsNotice}</p> : <table className="mt-4 w-full min-w-[34rem] text-left text-sm">
-              <thead className="text-xs uppercase tracking-[0.16em] text-bone/38">
-                <tr>
-                  <th className="py-3 pe-4">{messages.dashboard.challenge}</th>
-                  <th className="py-3 pe-4">{messages.reports.averageRank}</th>
-                  <th className="py-3 pe-4">{messages.reports.rankedFirst}</th>
-                  <th className="py-3 pe-4">{messages.reports.topThree}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-bone/10 text-bone/72">
-                {stats.map((row) => (
-                  <tr key={row.label}>
-                    <td className="py-3 pe-4">{row.label}</td>
-                    <td className="py-3 pe-4">{row.average.toFixed(2)}</td>
-                    <td className="py-3 pe-4">{row.first}</td>
-                    <td className="py-3 pe-4">{row.topThree}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>}
-            <div className="mt-5">
-              <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.dashboard.participantRankings}</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                {answers.map(({ response, answer }) => (
+          <div key={activity.id} className="overflow-x-auto">
+            {isFramingSource ? <p className="mt-4 max-w-3xl text-sm leading-6 text-bone/58">{messages.activities.prioritization.framingResultsNotice}</p> : <PrioritizationTable rows={stats} />}
+            <details className="mt-5 border-t border-bone/10 pt-4">
+              <summary className="cursor-pointer text-sm font-semibold text-bone/75">{messages.dashboard.participantRankings}</summary>
+              <div className="mt-3">
+                <PagedItems items={answers} renderItem={({ response, answer }) => (
                   "rankedItems" in answer ? (
-                    <div key={response.id} className="rounded-md border border-bone/10 bg-night/45 p-4">
+                    <div key={response.id} className="border-b border-bone/10 py-3">
                       <p className="text-xs text-bone/38">{participantLabel(codeMap, response.participantId)}</p>
                       <ol className="mt-2 space-y-1 text-bone/72">
                         {answer.rankedItems.map((item) => <li key={item.sourceItemId}>{item.rank}. {item.label}</li>)}
                       </ol>
                     </div>
                   ) : null
-                ))}
+                )} />
               </div>
-            </div>
-          </SubtlePanel>
+            </details>
+          </div>
         );
       })}
     </div>
   );
 }
 
-function FramingResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
+function FramingResults({ assessment, responses, participants, activityId }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[]; activityId: string }) {
   const { messages } = useLocale();
-  const activities = activitiesByType(assessment, "framing");
+  const activities = activitiesByType(assessment, "framing").filter((activity) => activity.id === activityId);
   const codeMap = participantCodeMap(participants, responses);
 
-  if (!activities.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
+  if (!activities.length) return null;
 
   return (
     <div className="space-y-5">
       {activities.map((activity) => {
         const answers = answersForActivity(activity.id, responses);
         return (
-          <SubtlePanel key={activity.id}>
-            <p className="font-semibold text-bone">{activity.title}</p>
-            <p className="mt-1 text-sm text-bone/58">{messages.dashboard.emergingNeeds}</p>
-            <div className="mt-4 space-y-3">
-              {answers.map(({ response, answer }) => (
+          <div key={activity.id}>
+            <div>
+              <PagedItems items={answers} renderItem={({ response, answer }) => (
                 "answer" in answer ? (
-                  <div key={response.id} className="rounded-md border border-bone/10 bg-night/45 p-4">
+                  <div key={response.id} className="border-b border-bone/10 py-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{participantLabel(codeMap, response.participantId)}</p>
                     <p className="mt-3 text-xs uppercase tracking-[0.16em] text-mint">{messages.dashboard.priorityOrder}</p>
                     <ol className="mt-2 space-y-1 text-sm text-bone/62">
@@ -448,19 +406,40 @@ function FramingResults({ assessment, responses, participants }: { assessment: A
                     <p className="mt-4 whitespace-pre-wrap text-bone/78">{answer.answer}</p>
                   </div>
                 ) : null
-              ))}
+              )} />
             </div>
-          </SubtlePanel>
+          </div>
         );
       })}
     </div>
   );
 }
 
-function SchedulingActivityResults({ assessment, responses }: { assessment: Assessment; responses: AssessmentResponse[] }) {
-  const activities = activitiesByType(assessment, "scheduling") as SchedulingActivity[];
+function ProfilingResults({ activity, responses, participants }: { activity: ProfilingActivity; responses: AssessmentResponse[]; participants: Participant[] }) {
+  const { messages } = useLocale();
+  const codeMap = participantCodeMap(participants, responses);
+  const answers = answersForActivity(activity.id, responses);
+  return <div><div className="border-y border-bone/10"><PagedItems items={answers} renderItem={({ response, answer }) => "fields" in answer ? <div key={response.id} className="border-b border-bone/10 py-4 last:border-0"><p className="text-sm font-semibold text-bone">{participantLabel(codeMap, response.participantId)}</p><dl className="mt-3 grid gap-3 sm:grid-cols-2">{activity.fields.map((field) => { const value = displayProfilingAnswer(field, answer, ""); return value ? <div key={field.id}><dt className="text-sm text-bone/45">{field.label}</dt><dd className="mt-1 whitespace-pre-wrap text-bone/80">{value}</dd></div> : null; })}</dl></div> : null} /></div>{!answers.length ? <p className="mt-4 text-sm text-bone/45">{messages.dashboard.noResponsesYet}</p> : null}</div>;
+}
+
+function SchedulingActivityResults({ assessment, responses, activityId }: { assessment: Assessment; responses: AssessmentResponse[]; activityId: string }) {
+  const activities = activitiesByType(assessment, "scheduling").filter((activity) => activity.id === activityId) as SchedulingActivity[];
   if (!activities.length) return null;
   return <div className="space-y-5">{activities.map((activity) => <SchedulingResults key={activity.id} assessmentId={assessment.id} activity={activity} responses={responses} canConfirm={assessment.status === "closed"} />)}</div>;
+}
+
+function IndividualReportDialog({ model, onClose }: { model: PlanningReportModel; onClose: () => void }) {
+  const { messages } = useLocale();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+  }, []);
+
+  return <dialog ref={dialogRef} aria-label={messages.planningReport.view} onClose={onClose} onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }} className="ritual-overlay-surface m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto rounded-lg border border-bone/15 p-5 text-bone backdrop:bg-black/80 sm:p-8">
+    <div className="flex justify-end"><button type="button" aria-label={messages.assessmentCreate.close} className="flex size-10 items-center justify-center rounded-md text-bone/70 hover:text-bone focus-visible:outline focus-visible:outline-2 focus-visible:outline-bone" onClick={() => dialogRef.current?.close()}><X size={20} aria-hidden="true" /></button></div>
+    <PlanningReportPreview model={model} />
+  </dialog>;
 }
 
 function PlanningReportResults({ assessment, responses, participants }: { assessment: Assessment; responses: AssessmentResponse[]; participants: Participant[] }) {
@@ -470,47 +449,30 @@ function PlanningReportResults({ assessment, responses, participants }: { assess
   const codeMap = participantCodeMap(participants, responses);
   const profiles = collectParticipantProfiles(assessment, responses);
   const participantsById = new Map(participants.map((participant) => [participant.id, participant]));
-  const [selectedResponseId, setSelectedResponseId] = useState<string | null>(submittedResponses[0]?.id ?? null);
-  const selectedResponse = submittedResponses.find((response) => response.id === selectedResponseId) ?? submittedResponses[0] ?? null;
-  const model = useMemo(
-    () => reportActivity && selectedResponse
-      ? generatePlanningReportModel(assessment, selectedResponse, reportActivity, messages)
-      : null,
-    [assessment, messages, reportActivity, selectedResponse]
-  );
+  const [selectedResponseId, setSelectedResponseId] = useState<string | null>(null);
+  const selectedResponse = submittedResponses.find((response) => response.id === selectedResponseId) ?? null;
+  const model = reportActivity && selectedResponse
+    ? generatePlanningReportModel(assessment, selectedResponse, reportActivity, messages)
+    : null;
 
   if (!reportActivity) return null;
-  if (!submittedResponses.length) return <SubtlePanel><p className="text-bone/45">{messages.common.empty}</p></SubtlePanel>;
+  if (!submittedResponses.length) return <p className="text-bone/45">{messages.reports.noCompletedResponses}</p>;
 
   return (
     <div className="space-y-5">
-      <SubtlePanel className="overflow-x-auto">
-        <table className="w-full min-w-[48rem] text-left text-sm">
-          <thead className="text-xs uppercase tracking-[0.16em] text-bone/38">
-            <tr>
-              <th className="py-3 pe-4">{messages.reports.participants}</th>
-              <th className="py-3 pe-4">{messages.dashboard.organization}</th>
-              <th className="py-3 pe-4">{messages.dashboard.submittedLabel}</th>
-              <th className="py-3 pe-4">{messages.planningReport.activity.label}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-bone/10 text-bone/72">
-            {submittedResponses.map((response) => {
+      <div className="border-y border-bone/10">
+            <PagedItems items={submittedResponses} renderItem={(response) => {
               const profile = profiles.get(response.participantId);
               const participant = participantsById.get(response.participantId);
               const organization = profile?.organization || participant?.companyName || messages.common.empty;
-              const rowModel = generatePlanningReportModel(assessment, response, reportActivity, messages);
 
               return (
-                <tr key={response.id}>
-                  <td className="py-3 pe-4 font-medium text-bone">{participantLabel(codeMap, response.participantId)}</td>
-                  <td className="py-3 pe-4">{organization}</td>
-                  <td className="py-3 pe-4">{formatDateTime(response.submittedAt) || messages.common.empty}</td>
-                  <td className="py-3 pe-4">
+                <div key={response.id} className="flex flex-wrap items-center justify-between gap-4 border-b border-bone/10 py-4 text-sm last:border-0">
+                  <div><p className="font-medium text-bone">{participantLabel(codeMap, response.participantId)}{organization !== messages.common.empty ? ` · ${organization}` : ""}</p><p className="mt-1 text-bone/55">{formatDateTime(response.submittedAt) || messages.common.empty}</p></div>
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
-                        variant={selectedResponse?.id === response.id ? "primary" : "secondary"}
+                        variant="secondary"
                         className="min-h-9 px-3"
                         onClick={() => setSelectedResponseId(response.id)}
                       >
@@ -520,24 +482,17 @@ function PlanningReportResults({ assessment, responses, participants }: { assess
                         type="button"
                         variant="secondary"
                         className="min-h-9 px-3"
-                        onClick={() => void downloadPlanningReportDocx(rowModel)}
+                        onClick={() => void downloadPlanningReportDocx(generatePlanningReportModel(assessment, response, reportActivity, messages))}
                       >
                         {messages.planningReport.download}
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                </div>
               );
-            })}
-          </tbody>
-        </table>
-      </SubtlePanel>
+            }} />
+      </div>
 
-      {model ? (
-        <div className="space-y-4">
-          <PlanningReportPreview model={model} />
-        </div>
-      ) : null}
+      {model ? <IndividualReportDialog model={model} onClose={() => setSelectedResponseId(null)} /> : null}
     </div>
   );
 }
@@ -555,100 +510,38 @@ export function GroupedActivityResults({
 }) {
   const { messages } = useLocale();
   const hasPlanningReport = activitiesByType(assessment, "planning_report").length > 0;
-  const submittedCount = responses.filter((response) => response.status === "submitted").length;
-  const [activeTab, setActiveTab] = useState<"overview" | "participants" | "report" | "activities">(
-    hasPlanningReport ? "report" : "overview"
-  );
+  const submittedResponses = responses.filter((response) => response.status === "submitted");
+  const [activeTab, setActiveTab] = useState<"participants" | "report" | "activities">("activities");
+  const [openActivityId, setOpenActivityId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-7">
-      <AssessmentSummary assessment={assessment} participants={participants} responses={responses} />
-
-      <div className="grid gap-3 md:grid-cols-4">
-        <TabButton
-          active={activeTab === "overview"}
-          label={messages.dashboard.overview}
-          meta={assessment.status}
-          onClick={() => setActiveTab("overview")}
-        />
-        <TabButton
-          active={activeTab === "participants"}
-          label={messages.reports.participants}
-          meta={`${participants.length} ${messages.dashboard.people.toLowerCase()}`}
-          onClick={() => setActiveTab("participants")}
-        />
-        {hasPlanningReport ? (
-          <TabButton
-            active={activeTab === "report"}
-            label={messages.planningReport.activity.label}
-            meta={`${submittedCount} ${messages.dashboard.responses}`}
-            onClick={() => setActiveTab("report")}
-          />
-        ) : null}
-        <TabButton
-          active={activeTab === "activities"}
-          label={messages.reports.activityResults}
-          meta={`${assessment.activities.length} ${messages.exports.activities.toLowerCase()}`}
-          onClick={() => setActiveTab("activities")}
-        />
+    <div className="space-y-8">
+      <div className="flex flex-wrap gap-x-7 border-b border-bone/10">
+        <TabButton active={activeTab === "activities"} label={messages.reports.activityResults} onClick={() => setActiveTab("activities")} />
+        {hasPlanningReport ? <TabButton active={activeTab === "report"} label={messages.reports.individualReports} onClick={() => setActiveTab("report")} /> : null}
+        <TabButton active={activeTab === "participants"} label={messages.reports.participants} onClick={() => setActiveTab("participants")} />
       </div>
-
-      {activeTab === "overview" ? (
-        <Section title={messages.dashboard.overview}>
-          <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
-            <SubtlePanel>
-              <p className="text-xs uppercase tracking-[0.16em] text-bone/38">{messages.builder.titleLabel}</p>
-              <h3 className="mt-2 font-heading text-2xl font-semibold text-bone">{assessment.title}</h3>
-              {assessment.description ? <p className="mt-3 text-sm leading-6 text-bone/62">{assessment.description}</p> : null}
-            </SubtlePanel>
-            <SubtlePanel>
-              <dl className="space-y-3 text-sm">
-                <div className="flex justify-between gap-4">
-                  <dt className="text-bone/45">{messages.dashboard.status}</dt>
-                  <dd className="font-semibold text-bone">{assessment.status}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-bone/45">{messages.builder.languageLabel}</dt>
-                  <dd className="font-semibold text-bone">{assessment.language.toUpperCase()}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-bone/45">{messages.builder.estimatedDurationLabel}</dt>
-                  <dd className="font-semibold text-bone">{assessment.estimatedDuration ?? messages.common.empty}</dd>
-                </div>
-              </dl>
-            </SubtlePanel>
-          </div>
-        </Section>
-      ) : null}
 
       {activeTab === "participants" ? (
         <Section title={messages.reports.participants}>
-          <ParticipantsTable assessment={assessment} participants={participants} responses={responses} />
+          <ParticipantsTable assessment={assessment} participants={participants} responses={submittedResponses} />
         </Section>
       ) : null}
 
       {activeTab === "report" && hasPlanningReport ? (
-        <Section title={messages.planningReport.activity.label}>
-          <PlanningReportResults assessment={assessment} responses={responses} participants={participants} />
+        <Section title={messages.reports.individualReports}>
+          <PlanningReportResults assessment={assessment} responses={submittedResponses} participants={participants} />
         </Section>
       ) : null}
 
       {activeTab === "activities" ? (
         <Section title={messages.reports.activityResults}>
-          <div className="space-y-7">
-            <ResultBlock title={messages.dashboard.exploration} body={messages.dashboard.explorationBody}>
-              <ExplorationResults assessment={assessment} responses={responses} participants={participants} />
-            </ResultBlock>
-            <ResultBlock title={messages.dashboard.prioritization} body={messages.dashboard.prioritizationBody}>
-              <PrioritizationResults assessment={assessment} responses={responses} participants={participants} />
-            </ResultBlock>
-            <ResultBlock title={messages.dashboard.framing} body={messages.dashboard.framingBody}>
-              <FramingResults assessment={assessment} responses={responses} participants={participants} />
-            </ResultBlock>
-            <ResultBlock title="Scheduling" body="Availability collected for each proposed date.">
-              <SchedulingActivityResults assessment={assessment} responses={responses} />
-            </ResultBlock>
-          </div>
+          {!submittedResponses.length ? <p className="text-bone/55">{messages.reports.noCompletedResponses}</p> : <div className="border-y border-bone/10"><PagedItems items={[...assessment.activities].filter((activity) => activity.type !== "planning_report").sort((a, b) => a.orderIndex - b.orderIndex)} renderItem={(activity) => {
+            const props = { assessment, responses: submittedResponses, participants, activityId: activity.id };
+            const count = answersForActivity(activity.id, submittedResponses).length;
+            const isOpen = openActivityId === activity.id;
+            return <section key={activity.id} className="border-b border-bone/10 last:border-0"><button type="button" aria-expanded={isOpen} onClick={() => setOpenActivityId(isOpen ? null : activity.id)} className="flex min-h-20 w-full items-center justify-between gap-4 py-4 text-left"><span className="min-w-0"><span className="block break-words font-heading text-lg font-semibold text-bone">{activity.title}</span><span className="mt-1 block text-sm text-bone/50">{messages.activities[activity.type].label} · {messages.reports.activityResponseCount.replace("{count}", String(count))}</span></span><ChevronDown size={20} className={`shrink-0 text-bone/55 transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" /></button>{isOpen ? <div className="pb-6">{activity.type === "scheduling" ? <SchedulingActivityResults {...props} /> : count === 0 ? <p className="text-sm text-bone/50">{messages.dashboard.noResponsesYet}</p> : activity.type === "profiling" ? <ProfilingResults activity={activity} responses={submittedResponses} participants={participants} /> : activity.type === "exploration" ? <ExplorationResults {...props} /> : activity.type === "prioritization" ? <PrioritizationResults {...props} /> : activity.type === "framing" ? <FramingResults {...props} /> : null}</div> : null}</section>;
+          }} /></div>}
         </Section>
       ) : null}
 
