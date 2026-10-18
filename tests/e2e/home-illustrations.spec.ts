@@ -30,7 +30,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
       await expect(illustration).toBeVisible();
       await expect.poll(() => illustration.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
     }
-    const firstActivity = page.getByRole("heading", { name: "Explore", exact: true }).locator("..");
+    const firstActivity = page.getByRole("heading", { name: "Explore", exact: true }).locator("xpath=ancestor::article");
     await expect(firstActivity).toHaveCSS("border-bottom-color", "rgb(48, 54, 65)");
     const introBox = await intro.boundingBox();
     const illustrationBox = await firstActivity.locator("img").boundingBox();

@@ -319,6 +319,8 @@
     "activityAgreeBody": "Propose solutions and reach agreements.",
     "activityPlan": "Plan",
     "activityPlanBody": "Find suitable dates and organize next steps.",
+    "playPreview": "Play preview",
+    "pausePreview": "Pause preview",
     "resultsEyebrow": "Results",
     "resultsTitle": "Turn responses into insights.",
     "resultsBody": "View contributions, compare priorities, and export reports.",
