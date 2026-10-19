@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="75 75 850 850">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-3 {
+        stroke: #fff;
+        stroke-width: 15px;
+      }
+
+      .cls-2 {
+        stroke: #0a0a0a;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="Graphics">
+    <circle class="cls-1" cx="500.16" cy="500" r="400"/>
+    <circle class="cls-1" cx="506.03" cy="614.29" r="285.71"/>
+    <circle class="cls-3" cx="500" cy="785.98" r="114.02"/>
+  </g>
+</svg>

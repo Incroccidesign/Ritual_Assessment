@@ -20,8 +20,7 @@ export const en = {
       name: "Trigger",
       purpose: "Opening activation",
       defaultPrompt: "In one word: what energy are you bringing today?",
-      setupDescription:
-        "Opens the ritual with a short response to break the ice, activate the group and encourage unconventional connections between ideas.",
+      setupDescription: "Start with a short response.",
       whenToUse: "Useful to break the ice.",
       guidance:
         "Use Trigger to open the ritual with a short, immediate response. Write a simple question that activates the group, collects initial perceptions and encourages a more intuitive, emotional or lateral way of thinking.",
@@ -32,7 +31,7 @@ export const en = {
       name: "Surface",
       purpose: "Surface criticalities and opportunities",
       defaultPrompt: "Which criticality or opportunity needs attention now?",
-      setupDescription: "Collects group contributions and organizes them into categories adaptable to the context.",
+      setupDescription: "Collect and group contributions.",
       whenToUse: "Useful to surface shared themes.",
       guidance:
         "Use Surface to collect relevant elements and organize them into categories. Define clear and distinct categories: they help participants place their contributions and make the results easier to read.",
@@ -43,7 +42,7 @@ export const en = {
       name: "Focus",
       purpose: "Gather short answers",
       defaultPrompt: "Which question should we keep at the center?",
-      setupDescription: "Explores one central question through open, more developed responses.",
+      setupDescription: "Explore a question together.",
       whenToUse: "Useful to explore a theme in depth.",
       guidance:
         "Use Focus to explore one central question. Write an open but precise question: it should guide more developed responses without becoming too broad or unfocused.",
@@ -54,7 +53,7 @@ export const en = {
       name: "Priority",
       purpose: "Vote and surface what matters",
       defaultPrompt: "Choose the items that matter most.",
-      setupDescription: "Surfaces the most relevant options through guided voting.",
+      setupDescription: "Vote on what matters most.",
       whenToUse: "Useful to decide what comes first.",
       guidance:
         "Use Priority to help the group converge on the most relevant options. Keep the options clear and limited, and set the number of votes according to group size: fewer votes make the choice more selective.",
@@ -65,8 +64,7 @@ export const en = {
       name: "Pact",
       purpose: "Close with a shared statement",
       defaultPrompt: "Express your level of agreement with the final pact.",
-      setupDescription:
-        "Turns the ritual outcomes into a final proposal and checks agreement, including across multiple rounds.",
+      setupDescription: "Propose a shared outcome and check agreement.",
       whenToUse: "Useful to close with an explicit agreement.",
       guidance:
         "Use Pact to close the ritual with a shared proposal. You can prepare it beforehand or build it during the session from what emerged; if agreement is weak, revise it and start a new round.",
@@ -105,6 +103,9 @@ export const en = {
     body: "Choose the activities, then invite people when you are ready.",
     defaultTitle: "Decision ritual",
     lockedHelper: "Build the ritual sequence.",
+    addActivity: "Add activity",
+    activityAddedSingular: "{count} activity added",
+    activitiesAddedPlural: "{count} activities added",
     addActivityCta: "+ Add",
     selectedActivity: "Selected activities",
     configurationTitle: "Configure the ritual",

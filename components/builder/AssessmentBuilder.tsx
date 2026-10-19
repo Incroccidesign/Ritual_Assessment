@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Activity, ActivityType } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
@@ -9,7 +9,8 @@ import { ActivityEditor } from "@/components/builder/ActivityEditor";
 import { ActivityList } from "@/components/builder/ActivityList";
 import { LinkGenerator } from "@/components/builder/LinkGenerator";
 import { BuilderShell } from "@/components/layout/BuilderShell";
-import { Button, ButtonLink, Card, Field, inputClass, StepHeader } from "@/components/ritual-ui";
+import { Button, ButtonLink, Card, Field, inputClass } from "@/components/ritual-ui";
+import { SaveIndicator } from "@/components/ritual-ui/SaveIndicator";
 import { createBlankActivity } from "@/data/activity-presets";
 import { detectAssessmentLocale } from "@/lib/i18n/detectAssessmentLocale";
 import { useLocale } from "@/lib/i18n/useLocale";
@@ -70,6 +71,9 @@ export function AssessmentBuilder({
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const pendingSaves = useRef(0);
+  const queuedAssessmentSaves = useRef(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [activityPendingDeletion, setActivityPendingDeletion] = useState<Activity | null>(null);
   const [activityResponseCounts, setActivityResponseCounts] = useState<Record<string, number>>({});
@@ -126,6 +130,7 @@ export function AssessmentBuilder({
     [assessment?.estimatedDuration]
   );
   async function persist<T>(operation: () => Promise<T>, onSuccess?: (result: T) => void) {
+    pendingSaves.current += 1;
     setSaving(true);
     setError(null);
     try {
@@ -134,11 +139,25 @@ export function AssessmentBuilder({
       window.dispatchEvent(new Event("ritual-assessment-storage"));
       return result;
     } catch (saveError) {
+      setSaveFailed(true);
       setError(getErrorMessage(saveError, messages.auth.signInError));
       return null;
     } finally {
-      setSaving(false);
+      pendingSaves.current -= 1;
+      if (pendingSaves.current === 0 && queuedAssessmentSaves.current === 0) setSaving(false);
     }
+  }
+
+  function queueAssessmentSave(nextAssessment: Assessment) {
+    queuedAssessmentSaves.current += 1;
+    setSaving(true);
+    assessmentUpdateQueue.current = assessmentUpdateQueue.current
+      .catch(() => undefined)
+      .then(async () => { await persist(() => updateSupabaseAssessment(nextAssessment)); })
+      .finally(() => {
+        queuedAssessmentSaves.current -= 1;
+        if (queuedAssessmentSaves.current === 0 && pendingSaves.current === 0) setSaving(false);
+      });
   }
 
   function updateAssessment(patch: Partial<Assessment>) {
@@ -147,11 +166,7 @@ export function AssessmentBuilder({
     const nextAssessment = { ...currentAssessment, ...patch };
     assessmentRef.current = nextAssessment;
     setAssessment(nextAssessment);
-    assessmentUpdateQueue.current = assessmentUpdateQueue.current
-      .catch(() => undefined)
-      .then(async () => {
-        await persist(() => updateSupabaseAssessment(nextAssessment));
-      });
+    queueAssessmentSave(nextAssessment);
   }
 
   function updateTemplateMode(enabled: boolean) {
@@ -230,11 +245,7 @@ export function AssessmentBuilder({
     assessmentRef.current = nextAssessment;
     setAssessment(nextAssessment);
     if (detectedLocale && detectedLocale !== assessment.language) {
-      assessmentUpdateQueue.current = assessmentUpdateQueue.current
-        .catch(() => undefined)
-        .then(async () => {
-          await persist(() => updateSupabaseAssessment(nextAssessment));
-        });
+      queueAssessmentSave(nextAssessment);
     }
     void persist(
       () => updateSupabaseActivity(nextActivity),
@@ -306,7 +317,7 @@ export function AssessmentBuilder({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-heading text-3xl font-semibold leading-tight text-bone md:text-4xl">{messages.builder.individualTitle}</h1>
-              {!saving ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-mint text-night" title={messages.builder.savedAutomatically}><Check size={13} strokeWidth={3} aria-hidden="true" /></span> : null}
+              <SaveIndicator status={saveFailed ? "error" : saving ? "saving" : "saved"} savedLabel={messages.builder.savedAutomatically} savingLabel={messages.builder.saving} errorLabel={messages.builder.saveError} />
             </div>
             {assessment.description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-bone/60">{assessment.description}</p> : null}
           </div>
@@ -317,7 +328,13 @@ export function AssessmentBuilder({
             <ArrowLeft size={17} />
             {messages.nav.dashboard}
           </ButtonLink>
-          <StepHeader title={messages.builder.title} body={assessment.description} />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-heading text-4xl font-semibold leading-tight text-bone md:text-5xl">{messages.builder.individualTitle}</h1>
+              <SaveIndicator status={saveFailed ? "error" : saving ? "saving" : "saved"} savedLabel={messages.builder.savedAutomatically} savingLabel={messages.builder.saving} errorLabel={messages.builder.saveError} />
+            </div>
+            {assessment.description ? <p className="mt-4 max-w-2xl text-base leading-7 text-bone/62">{assessment.description}</p> : null}
+          </div>
             </div>
           </div>
         )}
@@ -407,7 +424,7 @@ export function AssessmentBuilder({
             <Field label={messages.builder.descriptionLabel}>
               <textarea className={`${inputClass} min-h-28 resize-y`} value={assessment.description ?? ""} onChange={(event) => updateAssessment({ description: event.target.value })} />
             </Field>
-            <div className="rounded-md border border-bone/10 bg-night/35 p-4">
+            <div>
               <h3 className="text-sm font-semibold text-bone">{messages.builder.privacyDetailsTitle}</h3>
               <p className="mt-1 text-xs leading-5 text-bone/56">{messages.builder.privacyDetailsHelper}</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -486,7 +503,6 @@ export function AssessmentBuilder({
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="space-y-2">
                 <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.assessmentFlow}</h2>
-                <p className="max-w-2xl text-sm leading-6 text-bone/60">{messages.builder.assessmentFlowHelper}</p>
               </div>
             </div>
             <ActivityList

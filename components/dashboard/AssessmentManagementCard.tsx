@@ -159,7 +159,7 @@ export function AssessmentManagementCard({
           {menuOpen ? (
             <div className="ritual-popover-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border p-1">
               {assessment.status !== "draft" ? (
-                <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
+                <ButtonLink href={href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
                   <Pencil size={16} /> <span>{messages.dashboard.edit}</span>
                 </ButtonLink>
               ) : null}
@@ -202,12 +202,12 @@ export function AssessmentManagementCard({
 
       <div className="flex flex-1 flex-col justify-between pt-4">
         <div>
-          <h2 className="font-heading text-2xl font-semibold leading-[30px] text-bone"><Link href={href(`/assessments/${assessment.id}/${assessment.status === "draft" ? "builder" : "results"}`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
+          <h2 className="font-heading text-2xl font-semibold leading-[30px] text-bone"><Link href={href(assessment.status === "draft" ? `/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}` : `/assessments/${assessment.id}/results`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
           <p className="mt-2 text-xs leading-4 text-bone/60">{dateLabel()}</p>
         </div>
         <div className="pointer-events-none relative z-10 flex justify-end pt-4">
         {assessment.status === "draft" ? (
-          <ButtonLink href={href(`/assessments/${assessment.id}/builder`)} variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3">
+          <ButtonLink href={href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`)} variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3">
             {messages.dashboard.continueBuilding}
           </ButtonLink>
         ) : assessment.status === "published" ? (

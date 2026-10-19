@@ -370,7 +370,7 @@
     "title": "Assessment builder",
     "individualTitle": "Individual ritual",
     "assessmentDetails": "General information",
-    "assessmentFlow": "Questionnaire structure",
+    "assessmentFlow": "Activities",
     "assessmentFlowHelper": "Organize the steps participants will complete.",
     "activityAddedSingular": "{count} activity added",
     "activitiesAddedPlural": "{count} activities added",
@@ -402,6 +402,8 @@
     "linkReady": "Public link ready",
     "copied": "Copied",
     "savedAutomatically": "Saved automatically",
+    "saveError": "Some changes could not be saved",
+    "unsavedChanges": "Complete required fields to save changes",
     "saving": "Saving...",
     "pauseToEditTitle": "Pause collection to edit?",
     "pauseToEditBody": "Participants will see that the collection is temporarily paused while you make changes. Existing responses will be kept.",
@@ -428,22 +430,22 @@
     },
     "activityCards": {
       "profiling": {
-        "description": "Collect basic context about the participant or organization."
+        "description": "Collect participant or organization details."
       },
       "exploration": {
-        "description": "Collect needs, challenges, opportunities, and open inputs."
+        "description": "Gather ideas, needs and challenges."
       },
       "prioritization": {
-        "description": "Ask participants to rank what matters most."
+        "description": "Rank what matters most."
       },
       "framing": {
-        "description": "Capture the needs and reflections that emerge."
+        "description": "Ask questions and gather reflections."
       },
       "planning_report": {
-        "description": "Generate a structured report from the participant's answers."
+        "description": "Create a report from each participant's answers."
       },
       "scheduling": {
-        "description": "Collect availability and find a shared date."
+        "description": "Find a suitable date."
       }
     }
   },

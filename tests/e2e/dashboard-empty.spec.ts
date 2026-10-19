@@ -52,8 +52,9 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
     await buttons.first().click();
     await page.getByRole("button", { name: /Collective/ }).click();
     const dialog = page.getByRole("dialog");
+    await dialog.getByRole("button", { name: "Add activity", exact: true }).click();
     for (const name of ["Explore", "Reflect", "Prioritize", "Agree"]) {
-      const illustration = dialog.locator(`img[src="/illustrations/${name}.svg"]`);
+      const illustration = dialog.locator(`img[src="/illustrations/${name}-small.svg"]`);
       await illustration.scrollIntoViewIfNeeded();
       await expect(illustration).toBeVisible();
       await expect.poll(() => illustration.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);

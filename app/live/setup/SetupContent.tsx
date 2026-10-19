@@ -9,7 +9,10 @@ import { Field, inputClass, panelClass, selectClass } from "@/components/live/fi
 import { buildRitualFileFromDraft, consumePendingRitualFile, downloadRitualFile, ritualFileToDraft } from "@/lib/live/ritual-file";
 import { AuthenticatedLiveShell } from "@/components/live/shell";
 import { ButtonLink as RitualButtonLink } from "@/components/ritual-ui";
-import { activityPrompt } from "@/lib/live/i18n";
+import { ActivityPicker } from "@/components/ritual-ui/ActivityPicker";
+import { en } from "@/lib/live/locales/en";
+import { it } from "@/lib/live/locales/it";
+import { frSetup } from "@/lib/live/locales/fr-setup";
 import { createLiveSession, enterLiveLobby, replaceLiveActivities, replaceLiveRoles, updateLiveSession, useLiveSessionSnapshot } from "@/lib/live/repository";
 import { ActivityType, activities, clampPriorityVotesPerParticipant, CreateRitualActivityInput, defaultActivityDuration, ParticipantDetailsMode, SurfaceColorKey, SurfaceInputType } from "@/types/live";
 import { toLiveActivityInputs } from "@/lib/live/setup-adapter";
@@ -24,6 +27,7 @@ type SetupActivity = CreateRitualActivityInput & {
 };
 
 const activityIllustrations: Partial<Record<ActivityType, string>> = {
+  innesco: "Trigger",
   traccia: "Explore",
   focus: "Reflect",
   priorita: "Prioritize",
@@ -32,29 +36,34 @@ const activityIllustrations: Partial<Record<ActivityType, string>> = {
 const activityIcons: Record<ActivityType, typeof Flame> = {
   innesco: Flame, traccia: Layers, focus: Focus, priorita: ListChecks, patto: Handshake
 };
+const frenchSurfaceNames: Record<string, string> = { issues: "Difficultés", barriers: "Obstacles", opportunities: "Opportunités", signals: "Signaux" };
+const frenchSurfaceColors: Record<SurfaceColorKey, string> = { orange: "Orange", mint: "Menthe", violet: "Violet", blue: "Bleu", yellow: "Jaune", rose: "Rose", gray: "Gris" };
 
 function ActivityIcon({ type, className, size = 22 }: { type: ActivityType; className?: string; size?: number }) {
   const illustration = activityIllustrations[type];
   const Icon = activityIcons[type];
-  return illustration && size >= 32
-    ? <Image src={`/illustrations/${illustration}.svg`} alt="" aria-hidden="true" width={size} height={size} className={cn("shrink-0", className)} />
+  return illustration
+    ? <Image src={`/illustrations/${illustration}-small.svg`} alt="" aria-hidden="true" width={size} height={size} className={cn("shrink-0", className)} />
     : <Icon aria-hidden="true" className={cn("shrink-0", className)} size={size} strokeWidth={1.7} />;
 }
 function SetupSectionTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className="font-heading text-xl font-semibold text-bone">{children}</h3>;
+  return <h3 className="font-heading text-2xl font-semibold text-bone">{children}</h3>;
 }
 
 type SetupContentProps = {
   embedded?: boolean;
   onDismiss?: () => void;
   closeRequested?: boolean;
+  onCloseCancelled?: () => void;
+  sessionId?: string | null;
 };
 
-export function SetupContent({ embedded = false, onDismiss, closeRequested = false }: SetupContentProps) {
+export function SetupContent({ embedded = false, onDismiss, closeRequested = false, onCloseCancelled, sessionId: embeddedSessionId = null }: SetupContentProps) {
   const router = useRouter();
   const params = useSearchParams();
-  const { language, messages, href } = useLanguage();
-  const sessionId = params.get("id");
+  const { language, locale, messages: liveMessages, href } = useLanguage();
+  const messages = locale === "fr" ? frSetup : liveMessages;
+  const sessionId = embedded ? embeddedSessionId : params.get("id");
   const { snapshot, loading: sessionLoading } = useLiveSessionSnapshot(sessionId);
   const hydratedSessionId = useRef<string | null>(null);
   const [title, setTitle] = useState<string>(messages.setup.defaultTitle);
@@ -71,7 +80,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const closeStarted = useRef(false);
-  const returnToDashboardRef = useRef<() => Promise<void>>(async () => undefined);
+  const returnToDashboardRef = useRef<() => Promise<boolean>>(async () => false);
 
   const selectedContext = useMemo(() => messages.setup.contexts.find((context) => context.id === contextId), [contextId, messages.setup.contexts]);
   const availableRoles = useMemo(
@@ -106,6 +115,15 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
   const canPersistDraft =
     title.trim().length > 0 &&
     configuredActivities.every((activity) => Boolean(activity.prompt));
+  useEffect(() => {
+    if (sessionId || ![en.setup.defaultTitle, it.setup.defaultTitle, frSetup.setup.defaultTitle].includes(title) || title === messages.setup.defaultTitle) return;
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      setTitle(messages.setup.defaultTitle);
+    });
+    return () => { active = false; };
+  }, [messages.setup.defaultTitle, sessionId, title]);
 
   useEffect(() => {
     if (sessionId) return;
@@ -124,7 +142,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
           local_id: uid(`loaded_activity_${index + 1}`),
           activity_type: activity.activity_type,
           instance_label: activity.instance_label,
-          prompt: activity.prompt || activityPrompt(activity.activity_type, language),
+          prompt: activity.prompt || messages.activities[activity.activity_type].defaultPrompt,
           timer_enabled: activity.timer_enabled,
           timer_duration: activity.timer_duration,
           show_live_results: activity.show_live_results,
@@ -154,14 +172,14 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
     } catch {
       queueMicrotask(() => setSubmitError(`${messages.home.invalidRitualFile}. ${messages.home.unableToLoadRitualFile}.`));
     }
-  }, [language, messages.home.invalidRitualFile, messages.home.unableToLoadRitualFile, messages.setup.defaultTitle, sessionId]);
+  }, [language, messages, sessionId]);
 
   useEffect(() => {
     if (!sessionId || !snapshot || hydratedSessionId.current === sessionId) return;
 
     const sortedActivities = [...snapshot.activities].sort((left, right) => left.order_index - right.order_index);
     const localIdsByOrder = new Map(sortedActivities.map((activity) => [activity.order_index, uid(`stored_activity_${activity.order_index + 1}`)]));
-    const matchingContext = messages.setup.contexts.find((context) => context.label === snapshot.session.context_label);
+    const matchingContext = [...messages.setup.contexts, ...en.setup.contexts, ...it.setup.contexts, ...frSetup.setup.contexts].find((context) => context.label === snapshot.session.context_label);
 
     setTitle(snapshot.session.title);
     setFacilitatorName(snapshot.session.facilitator_name ?? "");
@@ -205,11 +223,11 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
       {
         local_id: uid("local_activity"),
         activity_type: type,
-        prompt: activityPrompt(type, language),
+        prompt: messages.activities[type].defaultPrompt,
         timer_enabled: true,
         timer_duration: defaultActivityDuration(type),
         show_live_results: true,
-        surface_input_types: type === "traccia" ? defaultSurfaceInputTypes() : null,
+        surface_input_types: type === "traccia" ? defaultSurfaceInputTypes().map((item) => locale === "fr" ? { ...item, label: { ...item.label, en: frenchSurfaceNames[item.id] ?? item.label.en } } : item) : null,
         priority_source_type: "manual",
         priority_source_activity_order: null,
         priority_source_activity_local_id: null,
@@ -373,10 +391,8 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
     try {
       if (sessionId) {
         await updateLiveSession(sessionId, {
-          title: title.trim(),
-          facilitator_name: facilitatorName.trim() || null,
-          context_label: selectedContext?.label ?? null,
-          participant_details_mode: participantDetailsMode
+          title: title.trim(), facilitator_name: facilitatorName.trim() || null,
+          context_label: selectedContext?.label ?? null, participant_details_mode: participantDetailsMode
         });
         await replaceLiveRoles(sessionId, roles);
         await replaceLiveActivities(sessionId, configuredActivities);
@@ -384,21 +400,15 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
         return sessionId;
       }
       const created = await createLiveSession({
-        title: title.trim(),
-        facilitator_name: facilitatorName.trim() || null,
-        context_label: selectedContext?.label ?? null,
-        participant_details_mode: participantDetailsMode,
-        roles,
-        activities: configuredActivities
+        title: title.trim(), facilitator_name: facilitatorName.trim() || null,
+        context_label: selectedContext?.label ?? null, participant_details_mode: participantDetailsMode,
+        roles, activities: configuredActivities
       });
-      if (!created.id) {
-        throw new Error("missing_session_id");
-      }
+      if (!created.id) throw new Error("missing_session_id");
       return created.id;
     } catch (error) {
       console.error("Failed to save multi-activity ritual", error);
-      const detail = error instanceof Error ? error.message : String(error);
-      setSubmitError(detail);
+      setSubmitError(error instanceof Error ? error.message : String(error));
       return null;
     } finally {
       setSaving(false);
@@ -413,22 +423,24 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
   }
 
   async function returnToDashboard() {
+    // Never persist defaults for an existing session that has not finished loading.
     // Opening a new setup must not create an empty draft merely by closing it.
-    if (!sessionId && !selectedActivities.length) {
+    if ((sessionId && hydratedSessionId.current !== sessionId) || (!sessionId && !selectedActivities.length)) {
       if (embedded) {
         onDismiss?.();
-        return;
+        return true;
       }
       router.push(href("/dashboard"));
-      return;
+      return true;
     }
     const persistedSessionId = await persistConfiguration(true);
-    if (!persistedSessionId) return;
+    if (!persistedSessionId) return false;
     if (embedded) {
       onDismiss?.();
-      return;
+      return true;
     }
     router.push(href("/dashboard"));
+    return true;
   }
   useEffect(() => {
     returnToDashboardRef.current = returnToDashboard;
@@ -441,8 +453,8 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
     }
     if (closeStarted.current) return;
     closeStarted.current = true;
-    void returnToDashboardRef.current();
-  }, [closeRequested, embedded]);
+    void returnToDashboardRef.current().then((closed) => { if (!closed) onCloseCancelled?.(); });
+  }, [closeRequested, embedded, onCloseCancelled]);
 
   function saveRitualFile() {
     const file = buildRitualFileFromDraft({
@@ -499,18 +511,18 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
         </div> : null}
         <aside className={cn(
           "mx-auto",
-          embedded ? "mb-7 max-w-4xl text-left" : "max-w-3xl pt-2 text-center"
+          embedded ? "mb-7 max-w-4xl text-left" : "max-w-4xl pt-2 text-left"
         )}>
-          <h1 className={cn(
+          <div className="flex items-center gap-3"><h1 className={cn(
             "font-heading font-semibold text-bone",
-            embedded ? "text-3xl leading-tight md:text-4xl" : "text-5xl leading-none md:text-6xl"
-          )}>{messages.setup.title}</h1>
+            "text-3xl leading-tight md:text-4xl"
+          )}>{messages.setup.title}</h1></div>
         </aside>
 
         <form
           className={cn(
             "mx-auto max-w-4xl",
-            embedded ? "space-y-7" : cn(panelClass, "mt-10 space-y-9")
+            embedded ? "space-y-7" : "mt-10 space-y-9"
           )}
           onSubmit={(event) => {
             event.preventDefault();
@@ -562,7 +574,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                       onClick={() => toggleRole(role)}
                       className={cn(
                         "rounded-md border px-3 py-3 text-left text-sm transition",
-                        roles.includes(role) ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/60 text-bone/55"
+                        roles.includes(role) ? "border-bone/60 bg-bone/10 text-bone" : "border-bone/10 bg-night/60 text-bone/55"
                       )}
                     >
                       {role}
@@ -609,7 +621,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                     onClick={() => setParticipantDetailsMode("nickname_only")}
                     className={cn(
                       "rounded-lg border p-4 text-left transition",
-                      participantDetailsMode === "nickname_only" ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/60 text-bone/60"
+                      participantDetailsMode === "nickname_only" ? "border-bone/60 bg-bone/10 text-bone" : "border-bone/10 bg-night/60 text-bone/60"
                     )}
                   >
                     <span className="block font-heading text-lg font-semibold">{messages.setup.nicknameOnlyTitle}</span>
@@ -621,7 +633,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                     onClick={() => setParticipantDetailsMode("identified")}
                     className={cn(
                       "rounded-lg border p-4 text-left transition",
-                      participantDetailsMode === "identified" ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/60 text-bone/60"
+                      participantDetailsMode === "identified" ? "border-bone/60 bg-bone/10 text-bone" : "border-bone/10 bg-night/60 text-bone/60"
                     )}
                   >
                     <span className="block font-heading text-lg font-semibold">{messages.setup.identifiedParticipationTitle}</span>
@@ -635,40 +647,24 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
 
           <section className="space-y-4 border-t border-bone/10 pt-8">
             <SetupSectionTitle>{messages.setup.sections.activities}</SetupSectionTitle>
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-mint">{messages.setup.labels.activity}</p>
-              <p className="text-[13px] leading-5 text-bone/56">{messages.setup.lockedHelper}</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              {activities.map((item) => {
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => addActivity(item.id)}
-                    aria-label={`${messages.setup.addActivityCta} ${messages.activities[item.id].name}`}
-                    className="flex min-h-64 flex-col rounded-lg border border-bone/10 bg-night/55 p-5 text-left text-bone/62 transition hover:border-mint/70 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint"
-                  >
-                    <ActivityIcon type={item.id} className="mb-6 text-mint" size={64} />
-                    <span className="block font-heading text-lg font-semibold">{messages.activities[item.id].name}</span>
-                    <span className="mt-3 block text-[15px] leading-6 text-bone/64">{messages.activities[item.id].setupDescription}</span>
-                    <span className="mt-auto inline-flex pt-5 text-sm font-medium text-mint">{messages.setup.addActivityCta}</span>
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-bone/52">{(selectedActivities.length === 1 ? messages.setup.activityAddedSingular : messages.setup.activitiesAddedPlural).replace("{count}", String(selectedActivities.length))}</p>
+              <ActivityPicker label={messages.setup.addActivity} onAdd={addActivity} items={activities.map((item) => ({
+                id: item.id,
+                label: messages.activities[item.id].name,
+                description: messages.activities[item.id].setupDescription,
+                count: selectedActivities.filter((activity) => activity.activity_type === item.id).length,
+                illustration: <ActivityIcon type={item.id} size={40} />
+              }))} />
             </div>
             {hasActivities ? (
-              <div className="flex items-center justify-between gap-4 rounded-lg border border-bone/10 bg-night/35 px-4 py-3">
-                <p className="text-sm text-bone/62">{messages.setup.estimatedTotalDuration}</p>
-                <p className="font-heading text-lg text-bone">{estimatedDuration ? `${estimatedDuration} ${messages.common.minutesShort}` : "-"}</p>
-              </div>
+              <p className="text-sm text-bone/60">{messages.setup.estimatedTotalDuration} {estimatedDuration ? `${estimatedDuration} ${messages.common.minutesShort}` : "-"}</p>
             ) : null}
           </section>
 
           {hasActivities ? (
             <>
-              <section className="space-y-5 border-t border-bone/10 pt-8">
-                <SetupSectionTitle>{messages.setup.sections.activityConfiguration}</SetupSectionTitle>
+              <section className="space-y-5">
                 {selectedActivities.map((activity, index) => {
                   const description = messages.activities[activity.activity_type];
                   const supportsLiveVisibility = ["innesco", "traccia", "focus"].includes(activity.activity_type);
@@ -686,7 +682,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-3">
-                            <ActivityIcon type={activity.activity_type} className="text-mint" size={20} />
+                            <ActivityIcon type={activity.activity_type} className="text-bone/65" size={20} />
                             <h3 className="font-heading text-xl font-semibold text-bone">{description.name} /</h3>
                             <input
                               aria-label={`${description.name} instance label`}
@@ -705,7 +701,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           ) : null}
                           <button
                             type="button"
-                            aria-label={`Move ${description.name} up`}
+                            aria-label={locale === "fr" ? `Monter ${description.name}` : `Move ${description.name} up`}
                             onClick={() => moveActivity(activity.local_id, -1)}
                             className="rounded-md border border-bone/10 p-2 text-bone/58"
                           >
@@ -713,7 +709,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           </button>
                           <button
                             type="button"
-                            aria-label={`Move ${description.name} down`}
+                            aria-label={locale === "fr" ? `Descendre ${description.name}` : `Move ${description.name} down`}
                             onClick={() => moveActivity(activity.local_id, 1)}
                             className="rounded-md border border-bone/10 p-2 text-bone/58"
                           >
@@ -721,7 +717,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           </button>
                           <button
                             type="button"
-                            aria-label={`Remove ${description.name}`}
+                            aria-label={locale === "fr" ? `Supprimer ${description.name}` : `Remove ${description.name}`}
                             onClick={() => removeActivity(activity.local_id)}
                             className="rounded-md border border-orange/20 p-2 text-orange"
                           >
@@ -740,13 +736,6 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
 
                       {isExpanded ? (
                         <div className="mt-6 space-y-6 border-t border-bone/10 pt-6">
-                          <section className="border-l border-mint/35 py-1 pl-4 pr-2">
-                            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">
-                              {messages.setup.labels.howToUse}
-                            </h4>
-                            <p className="mt-2 max-w-4xl text-[15px] leading-7 text-bone/64">{description.guidance}</p>
-                          </section>
-
                           <Field label={messages.setup.labels.instruction}>
                             <textarea
                               className={cn(inputClass, "min-h-24 resize-y")}
@@ -756,7 +745,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           </Field>
 
                           {activity.activity_type === "traccia" ? (
-                            <div className="space-y-4 rounded-lg border border-bone/10 bg-night/45 p-4">
+                            <div className="space-y-4 border-t border-bone/10 pt-5">
                               <div>
                                 <p className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">{messages.setup.surfaceInputTypesTitle}</p>
                                 <p className="text-sm text-bone/55">{messages.setup.surfaceInputTypesHint}</p>
@@ -766,7 +755,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                 {surfaceInputTypes.map((surfaceType, categoryIndex) => {
                                   const colorStyle = surfaceColorClasses(surfaceType.color);
                                   return (
-                                    <div key={surfaceType.id} className="rounded-lg border border-bone/10 bg-night/55 p-3">
+                                    <div key={surfaceType.id} className="border-b border-bone/10 pb-4">
                                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                                         <div className="min-w-0 flex-1">
                                           <input
@@ -807,8 +796,8 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                               <button
                                                 key={color.key}
                                                 type="button"
-                                                title={`${messages.setup.surfaceColorLabel}: ${surfaceColorName(color.key, language)}`}
-                                                aria-label={`${messages.setup.surfaceColorLabel}: ${surfaceColorName(color.key, language)}`}
+                                                title={`${messages.setup.surfaceColorLabel}: ${locale === "fr" ? frenchSurfaceColors[color.key] : surfaceColorName(color.key, language)}`}
+                                                aria-label={`${messages.setup.surfaceColorLabel}: ${locale === "fr" ? frenchSurfaceColors[color.key] : surfaceColorName(color.key, language)}`}
                                                 onClick={() => updateSurfaceInputType(activity.local_id, surfaceType.id, { color: color.key as SurfaceColorKey })}
                                                 className={cn(
                                                   "inline-flex h-8 w-8 items-center justify-center rounded-full border transition",
@@ -833,7 +822,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                             </div>
                           ) : null}
 
-                          <div className="space-y-4 rounded-lg border border-bone/10 bg-night/45 p-4">
+                          <div className="space-y-4 border-t border-bone/10 pt-5">
                             <div>
                               <p className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">{messages.setup.timerTitle}</p>
                               <p className="text-sm text-bone/55">{messages.setup.timerHint}</p>
@@ -893,10 +882,10 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                     <label
                                       key={option.title}
                                       className={cn(
-                                        "block cursor-pointer rounded-lg border p-4 transition",
+                                        "block cursor-pointer rounded-lg border p-4 transition focus-within:ring-2 focus-within:ring-bone/70",
                                         checked
-                                          ? "border-mint bg-mint/10 text-bone"
-                                          : "border-bone/10 bg-night/45 text-bone/70 hover:border-mint/45"
+                                          ? "border-bone/60 bg-bone/10 text-bone"
+                                          : "border-bone/10 bg-night/45 text-bone/70 hover:border-bone/25"
                                       )}
                                     >
                                       <input
@@ -914,7 +903,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                         <span
                                           className={cn(
                                             "mt-0.5 h-4 w-4 rounded-full border",
-                                            checked ? "border-mint bg-mint" : "border-bone/30 bg-transparent"
+                                            checked ? "border-bone bg-bone" : "border-bone/30 bg-transparent"
                                           )}
                                         />
                                       </div>
@@ -926,7 +915,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           ) : null}
 
                           {activity.activity_type === "priorita" ? (
-                            <div className="space-y-4 rounded-lg border border-bone/10 bg-night/45 p-4">
+                            <div className="space-y-4 border-t border-bone/10 pt-5">
                               <Field label={messages.setup.labels.priorityWhat}>
                                 <select
                                   className={selectClass}
@@ -975,7 +964,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                   />
                                 </Field>
                               )}
-                              <div className="space-y-3 rounded-lg border border-bone/10 bg-night/45 p-4">
+                              <div className="space-y-3 border-t border-bone/10 pt-5">
                                 <div>
                                   <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">
                                     {messages.setup.labels.numberOfVotes}
@@ -1047,7 +1036,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                       onClick={() => updateActivity(activity.local_id, { pact_statement_mode: mode })}
                                       className={cn(
                                         "rounded-lg border p-4 text-left transition",
-                                        selected ? "border-mint bg-mint/10 text-bone" : "border-bone/10 bg-night/50 text-bone/72 hover:border-bone/25"
+                                        selected ? "border-bone/60 bg-bone/10 text-bone" : "border-bone/10 bg-night/50 text-bone/72 hover:border-bone/25"
                                       )}
                                     >
                                       <p className="font-medium text-bone">

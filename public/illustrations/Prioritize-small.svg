@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="75 75 850 850">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-3 {
+        stroke: #fff;
+        stroke-width: 15px;
+      }
+
+      .cls-2 {
+        stroke: #0a0a0a;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="Graphics">
+    <ellipse class="cls-3" cx="493.46" cy="843.21" rx="114.02" ry="55.99"/>
+    <ellipse class="cls-1" cx="498.96" cy="343.93" rx="402.38" ry="212.9"/>
+    <ellipse class="cls-1" cx="498.96" cy="667.86" rx="210.38" ry="67.86"/>
+  </g>
+</svg>

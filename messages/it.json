@@ -370,7 +370,7 @@
     "title": "Builder assessment",
     "individualTitle": "Rituale individuale",
     "assessmentDetails": "Informazioni generali",
-    "assessmentFlow": "Struttura del questionario",
+    "assessmentFlow": "Attività",
     "assessmentFlowHelper": "Organizza gli step che i partecipanti completeranno.",
     "activityAddedSingular": "{count} attivita aggiunta",
     "activitiesAddedPlural": "{count} attivita aggiunte",
@@ -402,6 +402,8 @@
     "linkReady": "Link pubblico pronto",
     "copied": "Copiato",
     "savedAutomatically": "Salvato automaticamente",
+    "saveError": "Alcune modifiche non sono state salvate",
+    "unsavedChanges": "Completa i campi obbligatori per salvare le modifiche",
     "saving": "Salvataggio...",
     "pauseToEditTitle": "Mettere in pausa per modificare?",
     "pauseToEditBody": "Durante le modifiche, i partecipanti vedranno che la raccolta e momentaneamente sospesa. Le risposte gia ricevute saranno conservate.",
@@ -428,22 +430,22 @@
     },
     "activityCards": {
       "profiling": {
-        "description": "Raccogli il contesto di base sul partecipante o sull'organizzazione."
+        "description": "Raccogli informazioni sul partecipante o sull'organizzazione."
       },
       "exploration": {
-        "description": "Raccogli bisogni, sfide, opportunita e input aperti."
+        "description": "Raccogli idee, bisogni e sfide."
       },
       "prioritization": {
-        "description": "Chiedi ai partecipanti di ordinare cio che conta di piu."
+        "description": "Ordina ciò che conta di più."
       },
       "framing": {
-        "description": "Raccogli i bisogni e le riflessioni che emergono."
+        "description": "Fai domande e raccogli riflessioni."
       },
       "planning_report": {
-        "description": "Genera un report strutturato a partire dalle risposte del partecipante."
+        "description": "Crea un report dalle risposte di ogni partecipante."
       },
       "scheduling": {
-        "description": "Raccogli disponibilità e trova una data condivisa."
+        "description": "Trova una data adatta."
       }
     }
   },

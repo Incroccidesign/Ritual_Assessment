@@ -36,7 +36,7 @@ function NewAssessmentContent() {
       setError(null);
       try {
         const assessment = await createSupabaseAssessment(locale);
-        router.replace(href(`/assessments/${assessment.id}/builder`));
+        router.replace(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`));
       } catch (createError) {
         createStarted.current = false;
         setError(getErrorMessage(createError, messages.auth.signInError));

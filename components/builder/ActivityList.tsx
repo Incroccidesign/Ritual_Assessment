@@ -1,10 +1,11 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, Compass, FileText, type LucideIcon, ListOrdered, MessageSquare, Plus, Trash2, UserRound, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarDays, ChevronDown, Compass, FileText, type LucideIcon, ListOrdered, MessageSquare, Trash2, UserRound } from "lucide-react";
 import { Activity, ActivityType } from "@/types/activity";
 import { Button } from "@/components/ritual-ui";
+import { ActivityPicker } from "@/components/ritual-ui/ActivityPicker";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils/cn";
 
@@ -18,10 +19,12 @@ const activityIcons = {
   scheduling: CalendarDays
 } satisfies Record<ActivityType, LucideIcon>;
 const activityIllustrations: Partial<Record<ActivityType, string>> = {
+  profiling: "Profiling",
   exploration: "Explore",
   prioritization: "Prioritize",
   framing: "Reflect",
-  scheduling: "Plan"
+  scheduling: "Plan",
+  planning_report: "Planning-report"
 };
 
 export function ActivityList({
@@ -44,7 +47,6 @@ export function ActivityList({
   renderActivityEditor?: (activity: Activity) => ReactNode;
 }) {
   const { messages } = useLocale();
-  const [isAddOpen, setIsAddOpen] = useState(false);
   const activityCountLabel = (activities.length === 1 ? messages.builder.activityAddedSingular : messages.builder.activitiesAddedPlural)
     .replace("{count}", String(activities.length));
   const activityCountByType = activities.reduce<Record<ActivityType, number>>(
@@ -66,54 +68,10 @@ export function ActivityList({
     <div className="space-y-5">
       <div className="relative flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-bone/52">{activityCountLabel}</p>
-        <Button type="button" variant="secondary" className="min-h-11 px-4" onClick={() => setIsAddOpen((current) => !current)}>
-          <Plus size={16} />
-          {messages.common.addActivity}
-        </Button>
-        {isAddOpen ? (
-          <div className="absolute right-0 top-14 z-20 w-[min(520px,calc(100vw-3rem))] rounded-lg border border-bone/12 bg-night p-3 shadow-2xl shadow-black/40">
-            <div className="mb-2 flex items-center justify-between gap-3 px-2">
-              <p className="font-heading text-xl font-semibold text-bone">{messages.common.addActivity}</p>
-              <Button type="button" variant="ghost" className="min-h-9 px-3" onClick={() => setIsAddOpen(false)}>
-                <X size={16} />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {activityOrder.map((type) => {
-                const Icon = activityIcons[type];
-                const addedCount = activityCountByType[type];
-
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    className="flex w-full items-start gap-3 rounded-md border border-bone/10 bg-bone/[0.03] p-3 text-left transition hover:border-mint/55 hover:bg-mint/10"
-                    onClick={() => {
-                      onAdd(type);
-                      setIsAddOpen(false);
-                    }}
-                  >
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-bone/12 bg-bone/6 text-bone/72">
-                      {activityIllustrations[type] ? <Image src={`/illustrations/${activityIllustrations[type]}.svg`} alt="" aria-hidden="true" width={44} height={44} /> : <Icon size={18} aria-hidden="true" />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2 font-semibold text-bone">
-                        {messages.activities[type].label}
-                        {addedCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 rounded-full border border-mint/40 bg-mint/10 px-2 py-0.5 text-xs text-mint">
-                            <Check size={11} />
-                            {addedCount}
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="mt-1 block text-sm leading-5 text-bone/58">{messages.builder.activityCards[type].description}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
+        <ActivityPicker label={messages.common.addActivity} onAdd={onAdd} items={activityOrder.map((type) => {
+          const Icon = activityIcons[type];
+          return { id: type, label: messages.activities[type].label, description: messages.builder.activityCards[type].description, count: activityCountByType[type], illustration: activityIllustrations[type] ? <Image src={`/illustrations/${activityIllustrations[type]}-small.svg`} alt="" aria-hidden="true" width={40} height={40} /> : <Icon size={22} aria-hidden="true" /> };
+        })} />
       </div>
       <div className="space-y-3">
         {activities.map((activity, index) => {
@@ -125,7 +83,7 @@ export function ActivityList({
               className={cn(
                 "group rounded-lg border transition",
                 isExpanded ? "p-4" : "p-3",
-                isExpanded ? "border-mint bg-mint/10" : "border-bone/10 bg-night/45 hover:border-violet/45 hover:bg-bone/[0.04]"
+                isExpanded ? "border-bone/25 bg-night/45" : "border-bone/10 bg-night/45 hover:border-bone/25 hover:bg-bone/[0.04]"
               )}
             >
               <div className={cn("grid grid-cols-[2.25rem_1fr] items-center", isExpanded ? "gap-4" : "gap-3")}>
@@ -140,7 +98,7 @@ export function ActivityList({
                 </div>
                 <div className="min-w-0">
                   <span className="group/type relative inline-flex">
-                    <span className="cursor-help text-xs font-semibold uppercase tracking-[0.16em] text-mint">
+                    <span className="cursor-help text-xs font-semibold uppercase tracking-[0.16em] text-bone/58">
                       {messages.activities[activity.type].label}
                     </span>
                     <span
@@ -161,7 +119,7 @@ export function ActivityList({
                     <Button
                       type="button"
                       variant="danger"
-                      className="h-11 min-h-11 w-11 min-w-11 !gap-0 !p-0 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 [&_svg]:shrink-0"
+                      className="h-11 min-h-11 w-11 min-w-11 !gap-0 !p-0 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 [&_svg]:shrink-0"
                       onClick={() => onRemove(activity.id)}
                       title={messages.common.remove}
                     >

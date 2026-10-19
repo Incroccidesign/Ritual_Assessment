@@ -370,7 +370,7 @@
     "title": "Constructeur d'evaluation",
     "individualTitle": "Rituel individuel",
     "assessmentDetails": "Informations generales",
-    "assessmentFlow": "Structure du questionnaire",
+    "assessmentFlow": "Activités",
     "assessmentFlowHelper": "Organisez les etapes que les participants completeront.",
     "activityAddedSingular": "{count} activite ajoutee",
     "activitiesAddedPlural": "{count} activites ajoutees",
@@ -401,7 +401,9 @@
     "templateSaveHint": "Cette structure est enregistree comme modele reutilisable et apparaitra dans la liste des modeles.",
     "linkReady": "Lien public pret",
     "copied": "Copie",
-    "savedAutomatically": "Enregistre automatiquement",
+    "savedAutomatically": "Enregistré automatiquement",
+    "saveError": "Certaines modifications n'ont pas été enregistrées",
+    "unsavedChanges": "Complétez les champs obligatoires pour enregistrer les modifications",
     "saving": "Enregistrement...",
     "pauseToEditTitle": "Mettre la collecte en pause pour modifier ?",
     "pauseToEditBody": "Pendant vos modifications, les participants verront que la collecte est temporairement suspendue. Les reponses deja recues seront conservees.",
@@ -428,22 +430,22 @@
     },
     "activityCards": {
       "profiling": {
-        "description": "Collectez le contexte de base du participant ou de l'organisation."
+        "description": "Recueillez les informations du participant ou de l'organisation."
       },
       "exploration": {
-        "description": "Recueillez les besoins, les defis, les opportunites et les contributions ouvertes."
+        "description": "Recueillez les idées, besoins et défis."
       },
       "prioritization": {
-        "description": "Demandez aux participants de classer ce qui compte le plus."
+        "description": "Classez ce qui compte le plus."
       },
       "framing": {
-        "description": "Capturez les besoins et les reflexions qui emergent."
+        "description": "Posez des questions et recueillez les réflexions."
       },
       "planning_report": {
-        "description": "Generer un rapport structure a partir des reponses du participant."
+        "description": "Créez un rapport à partir des réponses de chaque participant."
       },
       "scheduling": {
-        "description": "Recueillir les disponibilites et trouver une date commune."
+        "description": "Trouvez une date adaptée."
       }
     }
   },

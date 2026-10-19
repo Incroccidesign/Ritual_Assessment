@@ -56,9 +56,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [creationOpen, setCreationOpen] = useState(false);
   const [creationAnchor, setCreationAnchor] = useState<"header" | "empty">("header");
   const [creationType, setCreationType] = useState<"choose" | "assessment">("choose");
-  const [liveSetupOpen, setLiveSetupOpen] = useState(false);
   const [liveCloseRequested, setLiveCloseRequested] = useState(false);
-  const [individualSetup, setIndividualSetup] = useState<{ assessmentId: string; templateMode: boolean } | null>(null);
+  const setupType = searchParams.get("setup");
+  const collectiveSessionId = setupType === "collective" ? searchParams.get("id") : null;
+  const individualAssessmentId = setupType === "individual" ? searchParams.get("assessment") : null;
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const creationPopoverRef = useRef<HTMLSpanElement | null>(null);
@@ -145,7 +146,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   }
 
   async function handleCloseLiveSetup() {
-    setLiveSetupOpen(false);
+    router.replace(href("/dashboard"), { scroll: false });
     setCreationOpen(false);
     setCreationType("choose");
     setLiveCloseRequested(false);
@@ -157,7 +158,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   }
 
   async function handleCloseIndividualSetup() {
-    setIndividualSetup(null);
+    router.replace(href("/dashboard"), { scroll: false });
     setCreationOpen(false);
     setCreationType("choose");
     try {
@@ -175,7 +176,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
       const assessment = await createSupabaseAssessment(locale);
       setCreationOpen(false);
       setCreationType("choose");
-      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
+      router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`), { scroll: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.auth.signInError));
     } finally {
@@ -192,7 +193,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
       markAssessmentAsTemplate(assessment.id, designer.id);
       setCreationOpen(false);
       setCreationType("choose");
-      setIndividualSetup({ assessmentId: assessment.id, templateMode: true });
+      router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}&template=1`), { scroll: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -208,7 +209,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
       const assessment = await createSupabaseAssessmentFromTemplate(template);
       setCreationOpen(false);
       setCreationType("choose");
-      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
+      router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`), { scroll: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -224,7 +225,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
       const assessment = await createSupabaseAssessmentFromExistingTemplate(templateAssessment);
       setCreationOpen(false);
       setCreationType("choose");
-      setIndividualSetup({ assessmentId: assessment.id, templateMode: false });
+      router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`), { scroll: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
@@ -251,7 +252,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
     try {
       const parsed = validateRitualFile(JSON.parse(await file.text()));
       stashPendingRitualFile(parsed);
-      router.push(href("/live/setup"));
+      setCreationOpen(false);
+      setLiveCloseRequested(false);
+      router.push(href("/dashboard?setup=collective"), { scroll: false });
     } catch {
       setError("This is not a valid Ritual file.");
     }
@@ -281,7 +284,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                       <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => {
                         setCreationOpen(false);
                         setLiveCloseRequested(false);
-                        setLiveSetupOpen(true);
+                        router.push(href("/dashboard?setup=collective"), { scroll: false });
                       }}>
                         <div className="flex items-center gap-3"><Image src="/illustrations/Collective.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">Collective</h2><p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p></div></div>
                       </button>
@@ -356,14 +359,15 @@ function DashboardContent({ designer }: { designer: Designer }) {
           </div>
         )}
       </div>
-      {liveSetupOpen ? <CreationDialog label={messages.home.collectiveEyebrow} closing={liveCloseRequested} onClose={() => setLiveCloseRequested(true)}>
-        <SetupContent embedded closeRequested={liveCloseRequested} onDismiss={() => void handleCloseLiveSetup()} />
+      {setupType === "collective" ? <CreationDialog label={messages.home.collectiveEyebrow} closing={liveCloseRequested} onClose={() => setLiveCloseRequested(true)}>
+        <SetupContent key={collectiveSessionId ?? "new"} embedded sessionId={collectiveSessionId} closeRequested={liveCloseRequested} onDismiss={() => void handleCloseLiveSetup()} onCloseCancelled={() => setLiveCloseRequested(false)} />
       </CreationDialog> : null}
-      {individualSetup ? <CreationDialog label={messages.builder.individualTitle} onClose={() => void handleCloseIndividualSetup()}>
+      {individualAssessmentId ? <CreationDialog label={messages.builder.individualTitle} onClose={() => void handleCloseIndividualSetup()}>
         <AssessmentBuilder
-          assessmentId={individualSetup.assessmentId}
+          key={individualAssessmentId}
+          assessmentId={individualAssessmentId}
           ownerId={designer.id}
-          initialTemplateMode={individualSetup.templateMode}
+          initialTemplateMode={searchParams.get("template") === "1"}
           embedded
           onDismiss={() => void handleCloseIndividualSetup()}
         />

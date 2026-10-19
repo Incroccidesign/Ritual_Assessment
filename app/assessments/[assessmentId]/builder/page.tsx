@@ -1,18 +1,14 @@
-"use client";;
-import { use } from "react";
+import { redirect } from "next/navigation";
 
-import { useSearchParams } from "next/navigation";
-import { AssessmentBuilder } from "@/components/builder/AssessmentBuilder";
-import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
-
-export default function BuilderPage(props: { params: Promise<{ assessmentId: string }> }) {
-  const params = use(props.params);
-  const searchParams = useSearchParams();
-  const initialTemplateMode = searchParams.get("template") === "1";
-
-  return (
-    <DesignerAuthGate>
-      {(designer) => <AssessmentBuilder assessmentId={params.assessmentId} ownerId={designer.id} initialTemplateMode={initialTemplateMode} />}
-    </DesignerAuthGate>
-  );
+export default async function BuilderPage({ params, searchParams }: {
+  params: Promise<{ assessmentId: string }>;
+  searchParams: Promise<{ locale?: string; lang?: string; template?: string }>;
+}) {
+  const { assessmentId } = await params;
+  const search = await searchParams;
+  const query = new URLSearchParams({ setup: "individual", assessment: assessmentId });
+  if (search.locale) query.set("locale", search.locale);
+  else if (search.lang) query.set("lang", search.lang);
+  if (search.template === "1") query.set("template", "1");
+  redirect(`/dashboard?${query.toString()}`);
 }

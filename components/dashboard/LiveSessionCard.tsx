@@ -11,7 +11,7 @@ import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveE
 import type { LiveSession } from "@/types/live";
 
 export function liveDashboardDestination(session: LiveSession) {
-  if (session.status === "draft" || session.status === "setup") return `/live/setup?id=${session.id}`;
+  if (session.status === "draft" || session.status === "setup") return `/dashboard?setup=collective&id=${encodeURIComponent(session.id)}`;
   if (session.status === "lobby") return `/live/lobby?id=${session.id}`;
   if (session.status === "closed") return `/live/results?id=${session.id}`;
   return `/live?id=${session.id}`;
@@ -77,7 +77,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
       setBusy("duplicate");
       setNotice(null);
       const duplicate = await duplicateLiveSession(session.id);
-      router.push(href(`/live/setup?id=${encodeURIComponent(duplicate.id)}`));
+      router.push(href(`/dashboard?setup=collective&id=${encodeURIComponent(duplicate.id)}`), { scroll: false });
     } catch (error) {
       setNotice(error instanceof Error ? error.message : messages.liveSessions.duplicateError);
     } finally {
@@ -110,7 +110,7 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
               <MoreHorizontal size={19} />
             </Button>
             {menuOpen ? <div role="menu" className="ritual-popover-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-md border p-1">
-              {canManageActivities ? <ButtonLink href={href(`/live/setup?id=${encodeURIComponent(session.id)}`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"><Settings2 size={16} /><span>{messages.liveSessions.manageActivities}</span></ButtonLink> : null}
+              {canManageActivities ? <ButtonLink href={href(`/dashboard?setup=collective&id=${encodeURIComponent(session.id)}`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"><Settings2 size={16} /><span>{messages.liveSessions.manageActivities}</span></ButtonLink> : null}
               <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" disabled={busy !== null} onClick={() => void duplicate()}><CopyPlus size={16} /><span>{busy === "duplicate" ? messages.liveSessions.duplicating : messages.liveSessions.duplicate}</span></Button>
               {["live", "intermission", "closed"].includes(session.status) ? <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" disabled={busy !== null} onClick={() => void restart()}><RotateCcw size={16} /><span>{busy === "restart" ? messages.liveSessions.restarting : messages.liveSessions.restart}</span></Button> : null}
               {canAccessResults ? <><ButtonLink href={href(`/live/results?id=${encodeURIComponent(session.id)}`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"><FileText size={16} /><span>{messages.liveSessions.results}</span></ButtonLink>

@@ -20,8 +20,7 @@ export const it = {
       name: "Innesco",
       purpose: "Apertura e attivazione",
       defaultPrompt: "Con una parola: quale energia porti oggi?",
-      setupDescription:
-        "Apre il rituale con una risposta breve per rompere il ghiaccio, attivare il gruppo e favorire associazioni di idee non convenzionali.",
+      setupDescription: "Inizia con una risposta breve.",
       whenToUse: "Utile per rompere il ghiaccio.",
       guidance:
         "Usa Innesco per aprire il rituale con una risposta breve e immediata. Formula una domanda semplice che attivi il gruppo, raccolga percezioni iniziali e favorisca un pensiero più intuitivo, emotivo o laterale.",
@@ -32,7 +31,7 @@ export const it = {
       name: "Emersione",
       purpose: "Far emergere criticità e opportunità",
       defaultPrompt: "Quale criticità o opportunità merita attenzione ora?",
-      setupDescription: "Raccoglie contributi del gruppo e li organizza in categorie adattabili al contesto.",
+      setupDescription: "Raccogli e raggruppa i contributi.",
       whenToUse: "Utile per far emergere temi condivisi.",
       guidance:
         "Usa Emersione per raccogliere elementi rilevanti e organizzarli in categorie. Definisci categorie chiare e distinguibili: aiutano i partecipanti a collocare i contributi e facilitano la lettura dei risultati.",
@@ -43,7 +42,7 @@ export const it = {
       name: "Focus",
       purpose: "Raccogliere risposte brevi",
       defaultPrompt: "Quale domanda dobbiamo tenere al centro?",
-      setupDescription: "Approfondisce una domanda centrale attraverso risposte aperte e più argomentate.",
+      setupDescription: "Approfondisci una domanda insieme al gruppo.",
       whenToUse: "Utile per approfondire un tema.",
       guidance:
         "Usa Focus per approfondire una domanda centrale. Formula una domanda aperta ma precisa: deve guidare risposte argomentate senza diventare troppo ampia o dispersiva.",
@@ -54,7 +53,7 @@ export const it = {
       name: "Priorità",
       purpose: "Votare e far emergere ciò che conta",
       defaultPrompt: "Scegli gli elementi che contano di più.",
-      setupDescription: "Fa emergere le opzioni più rilevanti attraverso una votazione guidata.",
+      setupDescription: "Vota ciò che conta di più.",
       whenToUse: "Utile per decidere cosa viene prima.",
       guidance:
         "Usa Priorità per far convergere il gruppo sulle opzioni più rilevanti. Scegli poche opzioni chiare e imposta il numero di voti in base alla dimensione del gruppo: meno voti rendono la scelta più selettiva.",
@@ -65,8 +64,7 @@ export const it = {
       name: "Patto",
       purpose: "Chiudere con una dichiarazione condivisa",
       defaultPrompt: "Esprimi il tuo livello di accordo sul patto finale.",
-      setupDescription:
-        "Trasforma gli esiti del rituale in una proposta finale e ne verifica l’adesione, anche in più round.",
+      setupDescription: "Formula una proposta e verifica l’accordo.",
       whenToUse: "Utile per chiudere con un accordo esplicito.",
       guidance:
         "Usa Patto per chiudere il rituale con una proposta condivisa. Puoi prepararla prima o costruirla durante la sessione a partire da ciò che è emerso; se l’adesione è debole, riformula e avvia un nuovo round.",
@@ -105,6 +103,9 @@ export const it = {
     body: "Scegli le attività, poi invita le persone quando sei pronto.",
     defaultTitle: "Rituale decisionale",
     lockedHelper: "Costruisci la sequenza del rituale.",
+    addActivity: "Aggiungi attività",
+    activityAddedSingular: "{count} attività aggiunta",
+    activitiesAddedPlural: "{count} attività aggiunte",
     selectedActivity: "Attività selezionate",
     configurationTitle: "Configura il rituale",
     sections: {
