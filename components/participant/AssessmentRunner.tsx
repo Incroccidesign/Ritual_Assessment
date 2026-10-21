@@ -229,12 +229,10 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "report-download") {
     return (
       <ParticipantShell>
-        <section className="max-w-xl">
+        <section className="flex min-h-[calc(100svh-13rem)] max-w-xl flex-col">
           <h1 className="font-heading text-3xl font-semibold leading-tight text-bone sm:text-4xl">{messages.participant.completionTitle}</h1>
           <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{messages.participant.completionBody}</p>
-          {activity.type === "planning_report" ? (
-            <PlanningReportDownload assessment={assessment} response={response} activity={activity} />
-          ) : null}
+          {activity.type === "planning_report" ? <div className="mt-auto pt-8"><PlanningReportDownload assessment={assessment} response={response} activity={activity} /></div> : null}
         </section>
       </ParticipantShell>
     );
@@ -243,7 +241,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "welcome") {
     return (
       <ParticipantShell>
-        <section className="max-w-xl">
+        <section className="flex min-h-[calc(100svh-13rem)] max-w-xl flex-col">
           <h1 className="max-w-[18ch] font-heading text-3xl font-semibold leading-[1.08] text-bone sm:text-4xl">{assessment.title}</h1>
           <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{assessment.description || messages.participant.welcome.description}</p>
           {assessment.estimatedDuration ? (
@@ -251,33 +249,35 @@ export function AssessmentRunner({ token }: { token: string }) {
               {assessment.estimatedDuration}
             </p>
           ) : null}
-          <Button type="button" className="mt-7 w-full min-h-14 text-base" onClick={() => setPhase("intro")}>
-            {messages.participant.welcome.cta}
-          </Button>
-          {assessment.dataControllerName && assessment.dataControllerContact ? (
-            <button
-              type="button"
-              className="mt-4 w-full text-center text-xs font-medium text-bone/48 underline underline-offset-4 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
-              onClick={() => setPrivacyOpen(true)}
-            >
-              {messages.participant.privacyLink}
-            </button>
-          ) : null}
-          {privacyOpen ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
-              <Card className="ritual-overlay-surface w-full max-w-md border">
-                <h2 className="font-heading text-2xl font-semibold text-bone">{messages.participant.privacyModalTitle}</h2>
-                <p className="mt-3 text-sm leading-6 text-bone/68">
-                  {messages.participant.privacyModalBody
-                    .replace("{controller}", assessment.dataControllerName ?? "")
-                    .replace("{contact}", assessment.dataControllerContact ?? "")}
-                </p>
-                <Button type="button" variant="secondary" className="mt-6 w-full" onClick={() => setPrivacyOpen(false)}>
-                  {messages.participant.privacyModalClose}
-                </Button>
-              </Card>
-            </div>
-          ) : null}
+          <div className="mt-auto pt-8">
+            <Button type="button" className="w-full min-h-14 text-base" onClick={() => setPhase("intro")}>
+              {messages.participant.welcome.cta}
+            </Button>
+            {assessment.dataControllerName && assessment.dataControllerContact ? (
+              <button
+                type="button"
+                className="mt-4 w-full text-center text-xs font-medium text-bone/48 underline underline-offset-4 transition hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint"
+                onClick={() => setPrivacyOpen(true)}
+              >
+                {messages.participant.privacyLink}
+              </button>
+            ) : null}
+            {privacyOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
+                <Card className="ritual-overlay-surface w-full max-w-md border">
+                  <h2 className="font-heading text-2xl font-semibold text-bone">{messages.participant.privacyModalTitle}</h2>
+                  <p className="mt-3 text-sm leading-6 text-bone/68">
+                    {messages.participant.privacyModalBody
+                      .replace("{controller}", assessment.dataControllerName ?? "")
+                      .replace("{contact}", assessment.dataControllerContact ?? "")}
+                  </p>
+                  <Button type="button" variant="secondary" className="mt-6 w-full" onClick={() => setPrivacyOpen(false)}>
+                    {messages.participant.privacyModalClose}
+                  </Button>
+                </Card>
+              </div>
+            ) : null}
+          </div>
         </section>
       </ParticipantShell>
     );
@@ -374,21 +374,23 @@ export function AssessmentRunner({ token }: { token: string }) {
 
   return (
     <ParticipantShell>
-      {!isFinalPlanningReport ? <ActivityProgress current={currentIndex} total={activities.length} /> : null}
-      {error ? <p className="mb-4 text-sm text-orange">{error}</p> : null}
-      {phase === "intro" ? (
-        <div className="space-y-4">
-          <ActivityIntro activity={activity} onStart={() => setPhase("interaction")} />
-          {canGoBack ? (
-            <Button type="button" variant="ghost" className="w-full min-h-11 text-base" onClick={goBack}>
-              {messages.common.back}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="flex min-h-[calc(100svh-13rem)] flex-col">
+        {!isFinalPlanningReport ? <ActivityProgress current={currentIndex} total={activities.length} /> : null}
+        {error ? <p className="mb-4 text-sm text-orange">{error}</p> : null}
+        {phase === "intro" ? (
+          <ActivityIntro
+            activity={activity}
+            onStart={() => setPhase("interaction")}
+            actions={canGoBack ? (
+              <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" onClick={goBack}>
+                {messages.common.back}
+              </Button>
+            ) : null}
+          />
+        ) : null}
 
-      {phase === "interaction" ? (
-        <section>
+        {phase === "interaction" ? (
+          <section className="flex flex-1 flex-col">
           {!isFinalPlanningReport ? (
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-bone/46">{messages.activities[activity.type].label}</p>
           ) : null}
@@ -420,28 +422,33 @@ export function AssessmentRunner({ token }: { token: string }) {
               <SchedulingParticipant activity={activity} answer={currentAnswer as SchedulingAnswer} onChange={setCurrentAnswer} />
             ) : null}
           </div>
-          <Button type="button" className="mt-7 w-full min-h-14 text-base" disabled={!canComplete || saving} onClick={() => void completeCurrentActivity()}>
-            {saving ? messages.app.loading : isFinalPlanningReport ? messages.planningReport.finalSubmit.submit : messages.common.completeActivity}
-          </Button>
-          {canGoBack ? (
-            <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
-              {isFinalPlanningReport ? messages.planningReport.finalSubmit.back : messages.common.back}
+          <div className="mt-auto pt-8">
+            <Button type="button" className="w-full min-h-14 text-base" disabled={!canComplete || saving} onClick={() => void completeCurrentActivity()}>
+              {saving ? messages.app.loading : isFinalPlanningReport ? messages.planningReport.finalSubmit.submit : messages.common.completeActivity}
             </Button>
-          ) : null}
-        </section>
-      ) : null}
+            {canGoBack ? (
+              <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
+                {isFinalPlanningReport ? messages.planningReport.finalSubmit.back : messages.common.back}
+              </Button>
+            ) : null}
+          </div>
+          </section>
+        ) : null}
 
-      {phase === "summary" ? (
-        <div className="space-y-4">
-          <ActivityReview activity={activity} answer={currentAnswer} />
-          <Button type="button" className="w-full min-h-14 text-base" disabled={saving} onClick={() => void goNext()}>
-            {saving ? messages.app.loading : currentIndex >= activities.length - 1 ? messages.common.submitAssessment : messages.common.next}
-          </Button>
-          <Button type="button" variant="ghost" className="w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
-            {messages.common.back}
-          </Button>
-        </div>
-      ) : null}
+        {phase === "summary" ? (
+          <div className="flex flex-1 flex-col">
+            <ActivityReview activity={activity} answer={currentAnswer} />
+            <div className="mt-auto pt-8">
+              <Button type="button" className="w-full min-h-14 text-base" disabled={saving} onClick={() => void goNext()}>
+                {saving ? messages.app.loading : currentIndex >= activities.length - 1 ? messages.common.submitAssessment : messages.common.next}
+              </Button>
+              <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
+                {messages.common.back}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </ParticipantShell>
   );
 }

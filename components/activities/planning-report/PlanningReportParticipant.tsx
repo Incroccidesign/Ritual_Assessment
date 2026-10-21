@@ -34,7 +34,7 @@ export function PlanningReportDownload({
   }
 
   return (
-    <Button type="button" variant="secondary" className="mt-7 w-full min-h-14 text-base" onClick={() => void downloadReport()}>
+    <Button type="button" variant="secondary" className="w-full min-h-14 text-base" onClick={() => void downloadReport()}>
       <Download size={18} /> {messages.planningReport.download}
     </Button>
   );
