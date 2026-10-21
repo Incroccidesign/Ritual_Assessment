@@ -587,7 +587,7 @@
     "participantDescription": "Questo report organizza le tue risposte in un output strutturato di pianificazione.",
     "finalSubmit": {
       "title": "Ultimo passo",
-      "description": "Hai completato il questionario.\nOra puoi inviare le tue risposte e concludere l'assessment NASIJ.",
+      "description": "Le tue risposte sono pronte. Vuoi inviarle ora?",
       "submit": "Invia le risposte",
       "back": "Torna indietro"
     },
@@ -653,15 +653,15 @@
   "participant": {
     "welcome": {
       "title": "Benvenuto",
-      "description": "Completa l'assessment rispondendo alle attività proposte.",
+      "description": "Rispondi alle attività con i tuoi tempi.",
       "note": "Tempo stimato di compilazione: circa 35–45 minuti.",
       "cta": "Inizia l'assessment"
     },
     "intro": "Introduzione attivita",
     "summary": "Sintesi attivita",
     "completionTitle": "Assessment inviato",
-    "completionBody": "Grazie per aver completato il questionario.\n\nIl report trasforma le risposte raccolte in una restituzione strutturata e in una pianificazione strategica, utile per comprendere i principali temi emersi, definire priorità e supportare le decisioni dei soggetti coinvolti.",
-    "completionBodyNoReport": "Grazie per aver completato il questionario.\n\nLe tue risposte sono state inviate correttamente.",
+    "completionBody": "Le tue risposte sono state inviate. Ora puoi scaricare il report.",
+    "completionBodyNoReport": "Le tue risposte sono state inviate.",
     "notFound": "Questo link pubblico non e disponibile.",
     "notPublished": "Questo assessment non e attualmente aperto.",
     "pausedTitle": "Raccolta momentaneamente sospesa",
@@ -669,7 +669,13 @@
     "closedTitle": "Raccolta conclusa",
     "closedBody": "La raccolta delle risposte per questo assessment e conclusa.",
     "progress": "Attivita {current} di {total}",
-    "startActivity": "Inizia attivita",
+    "startActivity": "Continua",
+    "scheduling": {
+      "availabilityEnded": "La raccolta delle disponibilità è conclusa.",
+      "availabilitySoFar": "Disponibilità raccolte finora.",
+      "confirmedSlot": "Confermato",
+      "awaitingConfirmation": "In attesa della conferma della data."
+    },
     "dataProtection": "Protezione dei dati",
     "dataProtectionBody": "Questo assessment è gestito da {controller}. Per domande sul trattamento dei dati, contatta {contact}. Ritual fornisce il servizio tecnico.",
     "privacyLink": "Informativa sul trattamento dei dati",

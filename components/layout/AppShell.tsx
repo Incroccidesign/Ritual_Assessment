@@ -16,7 +16,8 @@ export function AppShell({
   showLanguageSwitcher = true,
   headerAction,
   logoHref,
-  logoClassName
+  logoClassName,
+  stickyHeader = false
 }: {
   children: React.ReactNode;
   compact?: boolean;
@@ -26,6 +27,7 @@ export function AppShell({
   headerAction?: React.ReactNode;
   logoHref?: string;
   logoClassName?: string;
+  stickyHeader?: boolean;
 }) {
   const { href, direction } = useLocale();
 
@@ -43,6 +45,7 @@ export function AppShell({
         <header
           className={cn(
             "relative z-10 mb-8 flex items-center justify-between gap-5 pb-6",
+            stickyHeader && "sticky top-0 z-30 -mx-4 -mt-5 bg-[#01060e]/95 px-4 pt-5 backdrop-blur-md",
             showHeaderDivider && "border-b border-bone/10"
           )}
         >

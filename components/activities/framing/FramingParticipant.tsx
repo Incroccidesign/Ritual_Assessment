@@ -73,9 +73,9 @@ export function FramingParticipant({
     if (!items.length) return <p className="text-bone/56">{messages.activities.framing.noSelectedItems}</p>;
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {itemAnswers.map((item) => (
-          <div key={item.itemId} className="space-y-3 rounded-md border border-bone/10 bg-night/24 p-4">
+          <div key={item.itemId} className="space-y-3 border-t border-bone/10 pt-4 first:border-t-0 first:pt-0">
             <h2 className="text-base font-semibold leading-6 text-bone">{item.label}</h2>
             <p className="text-sm leading-6 text-bone/62">{activity.prompt}</p>
             <textarea
@@ -97,8 +97,8 @@ export function FramingParticipant({
 
   return (
     <div className="space-y-4">
-      {contextItems.length ? <div className="rounded-md border border-bone/10 bg-night/24 p-4">
-        <p className="text-sm font-semibold text-bone">{messages.activities.framing.contextForParticipant}</p>
+      {contextItems.length ? <div className="border-y border-bone/10 py-4">
+        <p className="text-sm font-medium text-bone/60">{messages.activities.framing.contextForParticipant}</p>
         <ul className="mt-2 space-y-1 text-sm leading-6 text-bone/62">
           {contextItems.map((item, index) => <li key={`${item}-${index}`}>{ranking.length ? `${index + 1}. ` : ""}{item}</li>)}
         </ul>
@@ -117,7 +117,7 @@ export function FramingParticipant({
       {activity.questions.map((question) => {
         const value = questionAnswers[question.id] ?? "";
         return (
-          <div key={question.id} className={isMultiQuestion ? "space-y-3 rounded-md border border-bone/10 bg-night/24 p-4" : "space-y-3"}>
+          <div key={question.id} className={isMultiQuestion ? "space-y-3 border-t border-bone/10 pt-5 first:border-t-0 first:pt-0" : "space-y-3"}>
             {isMultiQuestion ? (
               <div className="space-y-2">
                 <h2 className="text-base font-semibold leading-6 text-bone">{question.title}</h2>

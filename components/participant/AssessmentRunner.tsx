@@ -189,7 +189,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (loading) {
     return (
       <ParticipantShell>
-        <Card><p className="text-bone/56">{messages.app.loading}</p></Card>
+        <p className="text-bone/56">{messages.app.loading}</p>
       </ParticipantShell>
     );
   }
@@ -197,7 +197,7 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (!assessment) {
     return (
       <ParticipantShell>
-        {publicSchedulingResults ? <PublicSchedulingResults results={publicSchedulingResults} /> : <Card><p className={error ? "text-orange" : "text-bone/56"}>{error ?? messages.participant.notFound}</p></Card>}
+        {publicSchedulingResults ? <PublicSchedulingResults results={publicSchedulingResults} /> : <p className={error ? "text-orange" : "text-bone/56"}>{error ?? messages.participant.notFound}</p>}
       </ParticipantShell>
     );
   }
@@ -206,14 +206,14 @@ export function AssessmentRunner({ token }: { token: string }) {
     const isPaused = assessment.status === "paused";
     return (
       <ParticipantShell>
-        <Card>
-          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
+        <section className="max-w-xl">
+          <h1 className="font-heading text-3xl font-semibold leading-tight text-bone sm:text-4xl">
             {isPaused ? messages.participant.pausedTitle : messages.participant.closedTitle}
           </h1>
           <p className="mt-4 text-base leading-7 text-bone/62">
             {isPaused ? messages.participant.pausedBody : messages.participant.closedBody}
           </p>
-        </Card>
+        </section>
       </ParticipantShell>
     );
   }
@@ -229,13 +229,13 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "report-download") {
     return (
       <ParticipantShell>
-        <Card>
-          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">{messages.participant.completionTitle}</h1>
+        <section className="max-w-xl">
+          <h1 className="font-heading text-3xl font-semibold leading-tight text-bone sm:text-4xl">{messages.participant.completionTitle}</h1>
           <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{messages.participant.completionBody}</p>
           {activity.type === "planning_report" ? (
             <PlanningReportDownload assessment={assessment} response={response} activity={activity} />
           ) : null}
-        </Card>
+        </section>
       </ParticipantShell>
     );
   }
@@ -243,11 +243,11 @@ export function AssessmentRunner({ token }: { token: string }) {
   if (phase === "welcome") {
     return (
       <ParticipantShell>
-        <Card>
-          <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">{assessment.title}</h1>
+        <section className="max-w-xl">
+          <h1 className="max-w-[18ch] font-heading text-3xl font-semibold leading-[1.08] text-bone sm:text-4xl">{assessment.title}</h1>
           <p className="mt-4 whitespace-pre-line text-base leading-7 text-bone/62">{assessment.description || messages.participant.welcome.description}</p>
           {assessment.estimatedDuration ? (
-            <p className="mt-5 rounded-md border border-bone/10 bg-night/35 px-4 py-3 text-sm font-semibold text-bone/58">
+            <p className="mt-5 text-sm font-medium text-bone/52">
               {assessment.estimatedDuration}
             </p>
           ) : null}
@@ -278,7 +278,7 @@ export function AssessmentRunner({ token }: { token: string }) {
               </Card>
             </div>
           ) : null}
-        </Card>
+        </section>
       </ParticipantShell>
     );
   }
@@ -380,7 +380,7 @@ export function AssessmentRunner({ token }: { token: string }) {
         <div className="space-y-4">
           <ActivityIntro activity={activity} onStart={() => setPhase("interaction")} />
           {canGoBack ? (
-            <Button type="button" variant="secondary" className="w-full min-h-14 text-base" onClick={goBack}>
+            <Button type="button" variant="ghost" className="w-full min-h-11 text-base" onClick={goBack}>
               {messages.common.back}
             </Button>
           ) : null}
@@ -388,11 +388,11 @@ export function AssessmentRunner({ token }: { token: string }) {
       ) : null}
 
       {phase === "interaction" ? (
-        <Card>
-          {!isFinalPlanningReport && !isFramingActivity ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-mint">{messages.activities[activity.type].label}</p>
+        <section>
+          {!isFinalPlanningReport ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-bone/46">{messages.activities[activity.type].label}</p>
           ) : null}
-          <h1 className={isFinalPlanningReport ? "font-heading text-4xl font-semibold leading-tight text-bone" : isFramingActivity ? "font-heading text-3xl font-semibold leading-tight text-bone" : "mt-4 font-heading text-3xl font-semibold leading-tight text-bone"}>
+          <h1 className={isFinalPlanningReport ? "font-heading text-3xl font-semibold leading-tight text-bone sm:text-4xl" : isFramingActivity ? "font-heading text-3xl font-semibold leading-tight text-bone" : "mt-3 font-heading text-3xl font-semibold leading-tight text-bone"}>
             {isFinalPlanningReport ? messages.planningReport.finalSubmit.title : activity.title}
           </h1>
           {!isProfilingActivity && (isFinalPlanningReport || !isFramingActivity || framingQuestionText) ? (
@@ -424,11 +424,11 @@ export function AssessmentRunner({ token }: { token: string }) {
             {saving ? messages.app.loading : isFinalPlanningReport ? messages.planningReport.finalSubmit.submit : messages.common.completeActivity}
           </Button>
           {canGoBack ? (
-            <Button type="button" variant="secondary" className="mt-3 w-full min-h-14 text-base" disabled={saving} onClick={goBack}>
+            <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
               {isFinalPlanningReport ? messages.planningReport.finalSubmit.back : messages.common.back}
             </Button>
           ) : null}
-        </Card>
+        </section>
       ) : null}
 
       {phase === "summary" ? (
@@ -437,7 +437,7 @@ export function AssessmentRunner({ token }: { token: string }) {
           <Button type="button" className="w-full min-h-14 text-base" disabled={saving} onClick={() => void goNext()}>
             {saving ? messages.app.loading : currentIndex >= activities.length - 1 ? messages.common.submitAssessment : messages.common.next}
           </Button>
-          <Button type="button" variant="secondary" className="w-full min-h-14 text-base" disabled={saving} onClick={goBack}>
+          <Button type="button" variant="ghost" className="w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
             {messages.common.back}
           </Button>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { ExplorationActivity, ExplorationAnswer, ExplorationItem } from "@/types/activity";
 import { Button, inputClass } from "@/components/ritual-ui";
@@ -51,12 +51,12 @@ export function ExplorationCards({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {activity.responseMode !== "free_input" ? (
-        <div className="space-y-6">
+        <div className="space-y-7">
           {predefinedGroups.map(({ group, options }) => (
-            <div key={group?.id ?? "ungrouped"} className="space-y-3">
-              {group ? <p className="text-sm font-semibold uppercase tracking-[0.16em] text-mint">{group.label}</p> : null}
+            <div key={group?.id ?? "ungrouped"}>
+              {group ? <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-bone/46">{group.label}</p> : null}
               <div className="grid gap-3 sm:grid-cols-2">
                 {options.map((item) => {
                   const selected = isSelected(item.label);
@@ -74,14 +74,11 @@ export function ExplorationCards({
                       type="button"
                       onClick={() => toggleItem(answerItem)}
                       className={cn(
-                        "min-h-20 rounded-lg border p-4 text-left transition",
-                        selected ? "border-mint bg-mint/12 text-bone" : "border-bone/10 bg-night/55 text-bone/72 hover:border-violet/45"
+                        "min-h-20 rounded-md border p-4 text-left transition",
+                        selected ? "border-mint bg-mint/[0.08] text-bone" : "border-bone/12 bg-night/35 text-bone/76 hover:border-bone/35 hover:text-bone"
                       )}
                     >
-                      <span className="flex items-start justify-between gap-3">
-                        <span className="text-base font-semibold leading-6">{item.label}</span>
-                        {selected ? <Check size={18} className="text-mint" /> : null}
-                      </span>
+                      <span className="block text-base font-semibold leading-6">{item.label}</span>
                     </button>
                   );
                 })}
@@ -92,8 +89,8 @@ export function ExplorationCards({
       ) : null}
 
       {canAddCustom ? (
-        <div className="rounded-lg border border-bone/10 bg-night/45 p-4">
-          <div className="flex gap-2">
+        <div className="flex gap-2 border-t border-bone/10 pt-4">
+          <div className="flex flex-1 gap-2">
             <input
               className={inputClass}
               value={customValue}
@@ -108,7 +105,9 @@ export function ExplorationCards({
       ) : null}
 
       {answer.items.length ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="border-t border-bone/10 pt-4">
+          <p className="text-sm text-bone/52">{messages.activities.exploration.selectedSummary.replace("{count}", String(answer.items.length))}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
           {answer.items.map((item) => (
             <button
               key={item.id}
@@ -119,11 +118,12 @@ export function ExplorationCards({
                   otherText: answer.otherText
                 })
               }
-              className="inline-flex items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-3 py-2 text-sm text-bone"
+              className="inline-flex items-center gap-2 rounded-full border border-bone/15 px-3 py-2 text-sm text-bone/76 hover:border-bone/30"
             >
               {item.label} <X size={14} />
             </button>
           ))}
+          </div>
         </div>
       ) : null}
     </div>

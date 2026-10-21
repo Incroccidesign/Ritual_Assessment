@@ -587,7 +587,7 @@
     "participantDescription": "Ce rapport organise vos reponses dans un document de planification structure.",
     "finalSubmit": {
       "title": "Dernière étape",
-      "description": "Vous avez terminé le questionnaire.\nVous pouvez maintenant envoyer vos réponses et conclure l'assessment NASIJ.",
+      "description": "Vos réponses sont prêtes. Voulez-vous les envoyer maintenant ?",
       "submit": "Envoyer les réponses",
       "back": "Retour"
     },
@@ -653,15 +653,15 @@
   "participant": {
     "welcome": {
       "title": "Bienvenue",
-      "description": "Complétez l'évaluation en répondant aux activités proposées.",
+      "description": "Répondez aux activités à votre rythme.",
       "note": "Temps estimé de réponse : environ 35–45 minutes.",
       "cta": "Commencer l'évaluation"
     },
     "intro": "Introduction de l'activite",
     "summary": "Resume de l'activite",
     "completionTitle": "Evaluation envoyee",
-    "completionBody": "Merci d'avoir complété le questionnaire.\n\nLe rapport transforme les réponses recueillies en une restitution structurée et en une planification stratégique, utile pour comprendre les principaux thèmes émergents, définir les priorités et soutenir les décisions des parties prenantes impliquées.",
-    "completionBodyNoReport": "Merci d'avoir complété le questionnaire.\n\nVos réponses ont été envoyées avec succès.",
+    "completionBody": "Vos réponses ont été envoyées. Vous pouvez maintenant télécharger le rapport.",
+    "completionBodyNoReport": "Vos réponses ont été envoyées.",
     "notFound": "Ce lien public d'evaluation n'est pas disponible.",
     "notPublished": "Cette evaluation n'est pas ouverte actuellement.",
     "pausedTitle": "Collecte temporairement suspendue",
@@ -669,7 +669,13 @@
     "closedTitle": "Collecte terminee",
     "closedBody": "La collecte des reponses pour cette evaluation est terminee.",
     "progress": "Activite {current} sur {total}",
-    "startActivity": "Commencer l'activite",
+    "startActivity": "Continuer",
+    "scheduling": {
+      "availabilityEnded": "La collecte des disponibilités est terminée.",
+      "availabilitySoFar": "Disponibilités recueillies jusqu'à présent.",
+      "confirmedSlot": "Confirmé",
+      "awaitingConfirmation": "En attente de confirmation de la date."
+    },
     "dataProtection": "Protection des données",
     "dataProtectionBody": "Cette évaluation est gérée par {controller}. Pour toute question sur le traitement des données personnelles, contactez {contact}. Ritual fournit le service technique.",
     "privacyLink": "Informations sur les données personnelles",

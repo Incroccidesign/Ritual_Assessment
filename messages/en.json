@@ -587,7 +587,7 @@
     "participantDescription": "This report organizes your answers into a structured planning output.",
     "finalSubmit": {
       "title": "Final step",
-      "description": "You have completed the questionnaire.\nYou can now submit your answers and finish the NASIJ assessment.",
+      "description": "Your responses are ready. Would you like to submit them now?",
       "submit": "Submit answers",
       "back": "Go back"
     },
@@ -653,15 +653,15 @@
   "participant": {
     "welcome": {
       "title": "Welcome",
-      "description": "Complete the assessment by responding to the activities provided.",
+      "description": "Respond to each activity at your own pace.",
       "note": "Estimated completion time: around 35–45 minutes.",
       "cta": "Start assessment"
     },
     "intro": "Activity intro",
     "summary": "Activity summary",
     "completionTitle": "Assessment submitted",
-    "completionBody": "Thank you for completing the questionnaire.\n\nThe report turns the collected responses into structured feedback and strategic planning, useful for understanding the main themes that emerged, defining priorities, and supporting decisions for the people and organizations involved.",
-    "completionBodyNoReport": "Thank you for completing the questionnaire.\n\nYour responses have been submitted successfully.",
+    "completionBody": "Your responses have been submitted. You can now download your report.",
+    "completionBodyNoReport": "Your responses have been submitted.",
     "notFound": "This public assessment link is not available.",
     "notPublished": "This assessment is not currently open.",
     "pausedTitle": "Collection temporarily paused",
@@ -669,7 +669,13 @@
     "closedTitle": "Collection concluded",
     "closedBody": "Response collection for this assessment has concluded.",
     "progress": "Activity {current} of {total}",
-    "startActivity": "Start activity",
+    "startActivity": "Continue",
+    "scheduling": {
+      "availabilityEnded": "Availability collection has ended.",
+      "availabilitySoFar": "Availability so far.",
+      "confirmedSlot": "Confirmed",
+      "awaitingConfirmation": "Awaiting date confirmation."
+    },
     "dataProtection": "Data protection",
     "dataProtectionBody": "This assessment is managed by {controller}. For questions about personal-data processing, contact {contact}. Ritual provides the technical service.",
     "privacyLink": "Privacy information",

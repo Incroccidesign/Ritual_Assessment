@@ -7,7 +7,7 @@ export function ActivityProgress({ current, total }: { current: number; total: n
   const { messages } = useLocale();
 
   return (
-    <div className="mb-5 space-y-2">
+    <div className="mb-8 space-y-2">
       <ProgressRail total={total} current={current} />
       <p className="text-sm text-bone/48">
         {messages.participant.progress.replace("{current}", String(current + 1)).replace("{total}", String(total))}
