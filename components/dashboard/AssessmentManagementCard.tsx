@@ -12,6 +12,13 @@ import { useLocale } from "@/lib/i18n/useLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 import { schedulingVotes, slotLabel } from "@/lib/activities/scheduling";
+import { ActivityThumbnails } from "@/components/dashboard/ActivityThumbnails";
+import type { ActivityType } from "@/types/activity";
+
+const activityIllustrations: Record<ActivityType, string> = {
+  profiling: "Profiling", exploration: "Explore", prioritization: "Prioritize",
+  framing: "Reflect", scheduling: "Plan", planning_report: "Planning-report"
+};
 
 export function AssessmentManagementCard({
   assessment,
@@ -144,7 +151,7 @@ export function AssessmentManagementCard({
           <span className="truncate text-sm font-medium text-bone">Assessment</span>
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}><span className={`size-2 rounded-full ${statusIndicatorClassName()}`} />{statusLabel()}</span>
         </div>
-        <div className="relative z-10 shrink-0">
+        <div className={`relative shrink-0 ${menuOpen ? "z-30" : "z-10"}`}>
           <div ref={menuRef} className="relative">
           <Button
             type="button"
@@ -204,6 +211,11 @@ export function AssessmentManagementCard({
         <div>
           <h2 className="font-heading text-2xl font-semibold leading-[30px] text-bone"><Link href={href(assessment.status === "draft" ? `/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}` : `/assessments/${assessment.id}/results`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
           <p className="mt-2 text-xs leading-4 text-bone/60">{dateLabel()}</p>
+          <ActivityThumbnails activities={[...assessment.activities].sort((a, b) => a.orderIndex - b.orderIndex).map((activity) => ({
+            id: activity.id,
+            illustration: activityIllustrations[activity.type],
+            label: activity.title.trim() || messages.activities[activity.type].label
+          }))} />
         </div>
         <div className="pointer-events-none relative z-10 flex justify-end pt-4">
         {assessment.status === "draft" ? (

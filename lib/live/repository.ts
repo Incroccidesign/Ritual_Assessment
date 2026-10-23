@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { generateLiveToken, liveClient, storeLiveJoinToken, storeLiveParticipantAccess } from "@/lib/live/access";
-import type { CreateLiveActivityInput, CreateLiveSessionInput, LiveActivity, LiveAdhesionLevel, LiveJoinAccess, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
+import type { CreateLiveActivityInput, CreateLiveSessionInput, DashboardLiveSession, LiveActivity, LiveAdhesionLevel, LiveJoinAccess, LiveParticipant, LiveParticipantAccess, LiveSessionSnapshot } from "@/types/live";
 
 type Client = ReturnType<typeof liveClient>;
 const fail = (stage: string, error: unknown) => { throw new Error(`${stage}: ${error instanceof Error ? error.message : String(error)}`); };
@@ -71,11 +71,11 @@ export async function fetchArchivedLiveRun(sessionId: string, runNumber: number)
   return data.snapshot as LiveSessionSnapshot;
 }
 
-export async function listLiveSessions() {
+export async function listLiveSessions(): Promise<DashboardLiveSession[]> {
   const client = liveClient();
-  const { data, error } = await client.from("live_sessions").select(liveSessionColumns).order("created_at", { ascending: false });
+  const { data, error } = await client.from("live_sessions").select(`${liveSessionColumns},live_activities(id,activity_type,order_index,instance_label)`).order("created_at", { ascending: false });
   if (error) fail("live_sessions:list", error);
-  return data ?? [];
+  return (data ?? []) as unknown as DashboardLiveSession[];
 }
 
 export async function fetchLiveSnapshot(sessionId: string, access?: LiveParticipantAccess | LiveJoinAccess | null, previousSnapshot?: LiveSessionSnapshot | null): Promise<LiveSessionSnapshot | null> {

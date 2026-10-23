@@ -8,7 +8,13 @@ import { useLocale } from "@/lib/i18n/useLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { exportLiveDocx, exportLiveXlsx } from "@/lib/live/exports";
 import { deleteLiveSession, duplicateLiveSession, fetchLiveSnapshot, recordLiveExport, restartLiveSession } from "@/lib/live/repository";
-import type { LiveSession } from "@/types/live";
+import type { DashboardLiveSession, LiveActivityType, LiveSession } from "@/types/live";
+import { ActivityThumbnails } from "@/components/dashboard/ActivityThumbnails";
+import { getMessages as getLiveMessages } from "@/lib/live/i18n";
+
+const activityIllustrations: Record<LiveActivityType, string> = {
+  innesco: "Trigger", traccia: "Explore", focus: "Reflect", priorita: "Prioritize", patto: "Agree"
+};
 
 export function liveDashboardDestination(session: LiveSession) {
   if (session.status === "draft" || session.status === "setup") return `/dashboard?setup=collective&id=${encodeURIComponent(session.id)}`;
@@ -17,9 +23,10 @@ export function liveDashboardDestination(session: LiveSession) {
   return `/live?id=${session.id}`;
 }
 
-export function LiveSessionCard({ session, onDelete }: { session: LiveSession; onDelete?: (sessionId: string) => void }) {
+export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveSession; onDelete?: (sessionId: string) => void }) {
   const router = useRouter();
   const { locale, messages, href } = useLocale();
+  const liveMessages = getLiveMessages(locale === "it" ? "it" : "en");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -126,6 +133,13 @@ export function LiveSessionCard({ session, onDelete }: { session: LiveSession; o
         <div>
           <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-[30px] text-bone">{session.title}</h2>
           <p className="mt-2 text-xs leading-4 text-bone/60">{messages.liveSessions.updated} {date}</p>
+          <ActivityThumbnails activities={[...(session.live_activities ?? [])].sort((a, b) => a.order_index - b.order_index).map((activity) => ({
+            id: activity.id,
+            illustration: activityIllustrations[activity.activity_type],
+            label: activity.instance_label?.trim() && !/^#\d+$/.test(activity.instance_label.trim())
+              ? activity.instance_label.trim()
+              : liveMessages.activities[activity.activity_type].name
+          }))} />
         </div>
         <div className="flex justify-end pt-4"><ButtonLink className="dashboard-card-cta !min-h-11 !px-3" variant="ghost" href={href(liveDashboardDestination(session))}>{primaryLabel}</ButtonLink></div>
       </div>

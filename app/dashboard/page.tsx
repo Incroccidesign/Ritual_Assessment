@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import { SetupContent } from "@/app/live/setup/SetupContent";
 import { AssessmentBuilder } from "@/components/builder/AssessmentBuilder";
 import { Designer } from "@/lib/auth/designerAuth";
@@ -30,7 +30,19 @@ import { getErrorMessage } from "@/lib/utils/errors";
 import { listLiveSessions } from "@/lib/live/repository";
 import { stashPendingRitualFile, validateRitualFile } from "@/lib/live/ritual-file";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
-import type { LiveSession } from "@/types/live";
+import type { DashboardLiveSession } from "@/types/live";
+
+type RitualGroup = "inProgress" | "drafts" | "completed" | "paused";
+type RitualTypeFilter = "all" | "individual" | "collective";
+type DashboardEntry = {
+  id: string;
+  type: "individual" | "collective";
+  title: string;
+  updatedAt: string;
+  group: RitualGroup;
+  bundle?: AssessmentBundle;
+  session?: DashboardLiveSession;
+};
 
 export default function DashboardPage() {
   return (
@@ -51,7 +63,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const searchParams = useSearchParams();
   const { locale, messages, href } = useLocale();
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
-  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
+  const [liveSessions, setLiveSessions] = useState<DashboardLiveSession[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<RitualTypeFilter>("all");
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [creationOpen, setCreationOpen] = useState(false);
   const [creationAnchor, setCreationAnchor] = useState<"header" | "empty">("header");
@@ -73,6 +88,44 @@ function DashboardContent({ designer }: { designer: Designer }) {
     () => bundles.filter((bundle) => !templateIds.has(bundle.assessment.id)),
     [bundles, templateIds]
   );
+  const dashboardEntries = useMemo<DashboardEntry[]>(() => [
+    ...assessmentBundles.map((bundle): DashboardEntry => ({
+      id: bundle.assessment.id,
+      type: "individual",
+      title: bundle.assessment.title,
+      updatedAt: bundle.assessment.updatedAt,
+      group: bundle.assessment.status === "draft" ? "drafts" : bundle.assessment.status === "closed" ? "completed" : bundle.assessment.status === "paused" ? "paused" : "inProgress",
+      bundle
+    })),
+    ...liveSessions.map((session): DashboardEntry => ({
+      id: session.id,
+      type: "collective",
+      title: session.title,
+      updatedAt: session.updated_at,
+      group: session.status === "draft" || session.status === "setup" ? "drafts" : session.status === "closed" ? "completed" : "inProgress",
+      session
+    }))
+  ], [assessmentBundles, liveSessions]);
+  const filteredEntries = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase(locale).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return dashboardEntries
+      .filter((entry) => {
+        const matchesQuery = !normalizedQuery || entry.title.toLocaleLowerCase(locale).normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery);
+        const matchesType = typeFilter === "all" || entry.type === typeFilter;
+        return matchesQuery && matchesType;
+      })
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [dashboardEntries, locale, searchQuery, typeFilter]);
+  const ritualSections: { id: "inProgress" | "drafts" | "completed"; label: string; entries: DashboardEntry[] }[] = [
+    { id: "drafts", label: messages.dashboard.sectionDrafts, entries: filteredEntries.filter((entry) => entry.group === "drafts") },
+    { id: "inProgress", label: messages.dashboard.sectionInProgress, entries: filteredEntries.filter((entry) => entry.group === "inProgress" || entry.group === "paused") },
+    { id: "completed", label: messages.dashboard.sectionCompleted, entries: filteredEntries.filter((entry) => entry.group === "completed") }
+  ];
+
+  function resetDashboardFilters() {
+    setSearchQuery("");
+    setTypeFilter("all");
+  }
 
   useDismissiblePopover(creationOpen, creationPopoverRef, () => {
     setCreationOpen(false);
@@ -91,7 +144,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
         const [nextBundles, nextLiveSessions] = await Promise.all([fetchDesignerAssessmentBundles(designer.id), listLiveSessions()]);
         if (!active) return;
         setBundles(nextBundles);
-        setLiveSessions(nextLiveSessions as LiveSession[]);
+        setLiveSessions(nextLiveSessions);
       } catch (dashboardError) {
         if (!active) return;
         setError(getErrorMessage(dashboardError, messages.auth.signInError));
@@ -151,7 +204,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setCreationType("choose");
     setLiveCloseRequested(false);
     try {
-      setLiveSessions(await listLiveSessions() as LiveSession[]);
+      setLiveSessions(await listLiveSessions());
     } catch (liveError) {
       setError(getErrorMessage(liveError, messages.auth.signInError));
     }
@@ -312,21 +365,18 @@ function DashboardContent({ designer }: { designer: Designer }) {
 
   return (
     <>
+      <input
+        ref={ritualFileInputRef}
+        type="file"
+        accept="application/json,.json,.ritual"
+        className="sr-only"
+        onChange={(event) => {
+          void handleRitualFile(event.target.files?.[0] ?? null);
+          event.target.value = "";
+        }}
+      />
       <div className="relative">
         <h1 className="font-heading text-5xl font-semibold leading-none text-bone">{messages.dashboard.title}</h1>
-        <div className="relative mt-8 flex flex-wrap gap-3">
-          <input
-            ref={ritualFileInputRef}
-            type="file"
-            accept="application/json,.json,.ritual"
-            className="sr-only"
-            onChange={(event) => {
-              void handleRitualFile(event.target.files?.[0] ?? null);
-              event.target.value = "";
-            }}
-          />
-          {renderCreationTrigger("header")}
-        </div>
       </div>
       <div className="mt-8">
         {!isSupabaseConfigured ? (
@@ -337,19 +387,70 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <Card><p className="text-bone/50">{messages.app.loading}</p></Card>
         ) : error ? (
           <Card><p className="text-orange">{error}</p></Card>
-        ) : assessmentBundles.length || liveSessions.length ? (
-          <div className="grid gap-4 xl:grid-cols-3">
-            {liveSessions.map((session) => <LiveSessionCard key={`live:${session.id}`} session={session} onDelete={handleDeleteLiveSession} />)}
-            {assessmentBundles.map((bundle) => (
-              <AssessmentManagementCard
-                key={bundle.assessment.id}
-                assessment={bundle.assessment}
-                responses={bundle.responses}
-                currentUserId={designer.id}
-                onDelete={handleDeleteAssessment}
-                onUpdate={handleUpdateAssessment}
-              />
-            ))}
+        ) : dashboardEntries.length ? (
+          <div className="space-y-7">
+            <div className="flex w-full flex-wrap items-end justify-between gap-x-8 gap-y-3">
+              <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+                {renderCreationTrigger("header")}
+                <div role="group" aria-label={messages.dashboard.filterTypes}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(["all", "individual", "collective"] as RitualTypeFilter[]).map((type) => {
+                      const label = type === "all" ? messages.dashboard.allTypes : type === "individual" ? messages.dashboard.individual : messages.dashboard.collective;
+                      const selected = typeFilter === type;
+                      return <button key={type} type="button" aria-pressed={selected} onClick={() => setTypeFilter(type)} className={`min-h-8 rounded-full border px-2.5 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-bone/60 ${selected ? "border-bone/40 bg-bone/10 text-bone" : "border-bone/10 text-bone/60 hover:border-bone/30 hover:text-bone"}`}>{label}</button>;
+                    })}
+                  </div>
+                </div>
+              </div>
+              <label className="relative block w-full max-w-sm lg:ml-auto">
+                <span className="sr-only">{messages.dashboard.searchLabel}</span>
+                <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-bone/45" />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder={messages.dashboard.searchPlaceholder}
+                  className="min-h-9 w-full rounded-md border border-bone/12 bg-bone/[0.025] py-1.5 pl-10 pr-3 text-sm text-bone placeholder:text-bone/40 focus:border-bone/40 focus:outline-none focus:ring-2 focus:ring-bone/30"
+                />
+              </label>
+            </div>
+
+            {filteredEntries.length ? ritualSections.filter((section) => section.entries.length > 0).map((section) => {
+              const collapsed = Boolean(collapsedSections[section.id]);
+              return (
+                <section key={section.id} aria-labelledby={`dashboard-section-${section.id}`}>
+                  <button
+                    type="button"
+                    id={`dashboard-section-${section.id}`}
+                    aria-expanded={!collapsed}
+                    onClick={() => setCollapsedSections((current) => ({ ...current, [section.id]: !current[section.id] }))}
+                    className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-md pr-2 text-left focus:outline-none focus:ring-2 focus:ring-mint"
+                  >
+                    <ChevronDown aria-hidden="true" size={17} className={`text-bone/55 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
+                    <span className="font-heading text-xl font-semibold text-bone">{section.label}</span>
+                  </button>
+                  {!collapsed ? <div className="grid gap-4 xl:grid-cols-3">
+                    {section.entries.map((entry) => entry.type === "collective" && entry.session ? (
+                      <LiveSessionCard key={`live:${entry.id}`} session={entry.session} onDelete={handleDeleteLiveSession} />
+                    ) : entry.type === "individual" && entry.bundle ? (
+                      <AssessmentManagementCard
+                        key={`assessment:${entry.id}`}
+                        assessment={entry.bundle.assessment}
+                        responses={entry.bundle.responses}
+                        currentUserId={designer.id}
+                        onDelete={handleDeleteAssessment}
+                        onUpdate={handleUpdateAssessment}
+                      />
+                    ) : null)}
+                  </div> : null}
+                </section>
+              );
+            }) : (
+              <Card className="!p-6 text-center">
+                <p className="text-sm text-bone/65">{messages.dashboard.noFilterResults}</p>
+                <Button type="button" variant="ghost" onClick={resetDashboardFilters} className="mt-2">{messages.dashboard.resetFilters}</Button>
+              </Card>
+            )}
           </div>
         ) : (
           <div className="py-8 text-center">
