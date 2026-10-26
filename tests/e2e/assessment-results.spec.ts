@@ -4,6 +4,7 @@ test.skip(process.env.PLAYWRIGHT_AUTH_MOCKED !== "true", "Requires a server conf
 test.use({ launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {} });
 
 const mockHost = process.env.PLAYWRIGHT_MOCK_SUPABASE_HOST ?? "test-only.supabase.co";
+const appHost = new URL(process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000").hostname;
 const owner = "00000000-0000-0000-0000-000000000001";
 const assessmentId = "00000000-0000-0000-0000-000000000010";
 const draftId = "00000000-0000-0000-0000-000000000011";
@@ -30,7 +31,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(navigator, "clipboard", { value: { writeText: async (value: string) => { sessionStorage.setItem("test-copied-link", value); } } }));
   await page.route("**/*", (route) => {
     const url = new URL(route.request().url());
-    return ["localhost", "127.0.0.1"].includes(url.hostname) ? route.continue() : route.abort();
+    return ["localhost", "127.0.0.1", appHost].includes(url.hostname) ? route.continue() : route.abort();
   });
   await page.route("**/auth/v1/**", async (route) => {
     expect(new URL(route.request().url()).hostname).toBe(mockHost);
@@ -62,13 +63,12 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
     await page.goto("/dashboard?locale=en");
     const published = page.getByRole("link", { name: "Community ritual" });
     await expect(published).toHaveAttribute("href", new RegExp(`/assessments/${assessmentId}/results`));
-    await expect(page.getByRole("link", { name: "Draft ritual" })).toHaveAttribute("href", new RegExp(`/assessments/${draftId}/builder`));
+    await expect(page.getByRole("link", { name: "Draft ritual" })).toHaveAttribute("href", new RegExp(`/dashboard\\?setup=individual&assessment=${draftId}`));
     const card = published.locator("xpath=ancestor::div[contains(@class,'min-h-')]");
     await card.getByRole("button", { name: "More actions" }).click();
     await expect(card.getByRole("link", { name: "Results", exact: true })).toBeVisible();
     await expect(page).toHaveURL(/dashboard/);
-    await card.getByRole("button", { name: "More actions" }).click();
-    await card.click({ position: { x: 24, y: 150 } });
+    await card.getByRole("link", { name: "Results", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/assessments/${assessmentId}/results`));
     await expect(page.getByText("Completed responses", { exact: true })).toBeVisible();
     await expect(page.getByText("Participants who completed")).toBeVisible();
