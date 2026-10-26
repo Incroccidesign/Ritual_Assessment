@@ -89,7 +89,7 @@ function prioritizationBlock(answer: PrioritizationAnswer): Pick<PlanningReportA
 }
 
 function framingBlock(activity: FramingActivity, answer: FramingAnswer): Pick<PlanningReportActivityBlock, "fields" | "values"> {
-  if (answer.itemAnswers) {
+  if (answer.itemAnswers?.length) {
     return {
       values: [],
       fields: answer.itemAnswers.map((item) => ({
@@ -99,7 +99,7 @@ function framingBlock(activity: FramingActivity, answer: FramingAnswer): Pick<Pl
     };
   }
 
-  if (answer.questionAnswers) {
+  if (answer.questionAnswers && activity.questions.some((question) => answer.questionAnswers?.[question.id]?.trim())) {
     return {
       values: [],
       fields: activity.questions.map((question) => ({
