@@ -56,8 +56,6 @@ export function AssessmentRunner({ token }: { token: string }) {
   const { locale, messages, setLocale } = useLocale();
   const messagesRef = useRef(messages);
   const assessmentLocaleApplied = useRef(false);
-  const pendingPhaseRef = useRef<RunnerPhase | null>(null);
-  const phaseRef = useRef<RunnerPhase>("welcome");
   const [rawAssessment, setRawAssessment] = useState<Assessment | null>(null);
   const [publicSchedulingResults, setPublicSchedulingResults] = useState<Awaited<ReturnType<typeof fetchPublicSchedulingResults>>>(null);
   const [response, setResponse] = useState<AssessmentResponse | null>(null);
@@ -73,10 +71,6 @@ export function AssessmentRunner({ token }: { token: string }) {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
-
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
 
   useEffect(() => {
     let active = true;
@@ -168,23 +162,6 @@ export function AssessmentRunner({ token }: { token: string }) {
     };
   }, [rawAssessment?.status, showCollectionStatusIfChanged]);
 
-  useEffect(() => {
-    if (!activity) return;
-    setCurrentAnswer(answerForActivity(activity, response));
-    if (phaseRef.current === "welcome") return;
-    if (response?.status === "submitted") {
-      setPhase(activity.type === "planning_report" ? "report-download" : "complete");
-      pendingPhaseRef.current = null;
-      return;
-    }
-    if (activity.type === "planning_report") {
-      setPhase("interaction");
-      pendingPhaseRef.current = null;
-      return;
-    }
-    setPhase(pendingPhaseRef.current ?? "intro");
-    pendingPhaseRef.current = null;
-  }, [activity?.id]);
 
   if (loading) {
     return (
@@ -303,6 +280,18 @@ export function AssessmentRunner({ token }: { token: string }) {
         : activity.prompt
     : "";
 
+  function goToActivity(nextIndex: number, nextPhase: RunnerPhase = "intro", nextResponse = response) {
+    const nextActivity = activities[nextIndex];
+    if (!nextActivity) return;
+    setCurrentIndex(nextIndex);
+    setCurrentAnswer(answerForActivity(nextActivity, nextResponse));
+    setPhase(
+      nextResponse?.status === "submitted"
+        ? nextActivity.type === "planning_report" ? "report-download" : "complete"
+        : nextActivity.type === "planning_report" ? "interaction" : nextPhase
+    );
+  }
+
   async function completeCurrentActivity() {
     if (!response || !activity || !currentAnswer || !canComplete) return;
     setSaving(true);
@@ -317,7 +306,7 @@ export function AssessmentRunner({ token }: { token: string }) {
         return;
       }
       if (assessment?.hideActivitySummaries && currentIndex < activities.length - 1) {
-        setCurrentIndex((current) => current + 1);
+        goToActivity(currentIndex + 1, "intro", saved ?? response);
         return;
       }
       setPhase("summary");
@@ -350,7 +339,7 @@ export function AssessmentRunner({ token }: { token: string }) {
       }
       return;
     }
-    setCurrentIndex((current) => current + 1);
+    goToActivity(currentIndex + 1);
   }
 
   function goBack() {
@@ -365,8 +354,7 @@ export function AssessmentRunner({ token }: { token: string }) {
       return;
     }
     if (phase === "intro" && currentIndex > 0) {
-      pendingPhaseRef.current = assessment?.hideActivitySummaries ? "interaction" : "summary";
-      setCurrentIndex((current) => current - 1);
+      goToActivity(currentIndex - 1, assessment?.hideActivitySummaries ? "interaction" : "summary");
     }
   }
 

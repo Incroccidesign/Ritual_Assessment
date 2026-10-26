@@ -24,15 +24,15 @@ import { validateActivityConfig, validateActivityResponse } from "@/lib/activiti
 type RegistryEntry = {
   type: ActivityType;
   labelKey: ActivityType;
-  editor: ComponentType<any>;
-  participant: ComponentType<any>;
-  summary: ComponentType<any>;
+  editor: ComponentType<never>;
+  participant: ComponentType<never>;
+  summary: ComponentType<never>;
   validateConfig: (activity: Activity) => boolean;
   validateResponse: (activity: Activity, answer: ActivityAnswer) => boolean;
   dependency: { sourceType: ActivityType | null };
 };
 
-export const activityRegistry: Record<ActivityType, RegistryEntry> = {
+export const activityRegistry = {
   profiling: {
     type: "profiling",
     labelKey: "profiling",
@@ -93,4 +93,4 @@ export const activityRegistry: Record<ActivityType, RegistryEntry> = {
     validateResponse: validateActivityResponse,
     dependency: activityDependencyRequirements.scheduling
   }
-};
+} satisfies Record<ActivityType, RegistryEntry>;
