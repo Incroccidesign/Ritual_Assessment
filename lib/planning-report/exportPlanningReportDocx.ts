@@ -6,12 +6,19 @@ import {
   Paragraph,
   Table,
   TableCell,
+  TableLayoutType,
   TableRow,
   TextRun,
   WidthType
 } from "docx";
 import { PlanningReportField, PlanningReportModel } from "@/lib/planning-report/generatePlanningReport";
 import { safeFilename } from "@/lib/utils/text";
+
+const pageSize = { width: 11906, height: 16838 };
+const pageMargin = 1440;
+const tableWidth = pageSize.width - 2 * pageMargin;
+const labelColumnWidth = Math.round(tableWidth * 0.45);
+const valueColumnWidth = tableWidth - labelColumnWidth;
 
 function p(text: string, options: { bold?: boolean; muted?: boolean } = {}) {
   return new Paragraph({
@@ -28,8 +35,9 @@ function heading(text: string, level: 1 | 2 | 3 = 1) {
   });
 }
 
-function cell(text: string, bold = false) {
+function cell(text: string, width: number, bold = false) {
   return new TableCell({
+    width: { size: width, type: WidthType.DXA },
     margins: { top: 120, bottom: 120, left: 120, right: 120 },
     children: [
       new Paragraph({
@@ -42,12 +50,14 @@ function cell(text: string, bold = false) {
 
 function labelValueTable(fields: PlanningReportField[], emptyText: string) {
   return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
+    width: { size: tableWidth, type: WidthType.DXA },
+    columnWidths: [labelColumnWidth, valueColumnWidth],
+    layout: TableLayoutType.FIXED,
     rows: fields.map((field) =>
       new TableRow({
         children: [
-          cell(field.label, true),
-          cell(field.value || emptyText)
+          cell(field.label, labelColumnWidth, true),
+          cell(field.value || emptyText, valueColumnWidth)
         ]
       })
     )
@@ -93,7 +103,15 @@ export async function downloadPlanningReportDocx(model: PlanningReportModel) {
   const doc = new Document({
     creator: "Ritual Assessments",
     title: model.title,
-    sections: [{ children }]
+    sections: [{
+      properties: {
+        page: {
+          size: pageSize,
+          margin: { top: pageMargin, right: pageMargin, bottom: pageMargin, left: pageMargin }
+        }
+      },
+      children
+    }]
   });
 
   const blob = await Packer.toBlob(doc);
