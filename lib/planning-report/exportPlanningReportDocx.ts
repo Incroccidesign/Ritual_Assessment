@@ -19,11 +19,12 @@ const pageMargin = 1440;
 const tableWidth = pageSize.width - 2 * pageMargin;
 const labelColumnWidth = Math.round(tableWidth * 0.45);
 const valueColumnWidth = tableWidth - labelColumnWidth;
+const reportFont = "Arial";
 
 function p(text: string, options: { bold?: boolean; muted?: boolean } = {}) {
   return new Paragraph({
     spacing: { after: 160, line: 276 },
-    children: [new TextRun({ text, bold: options.bold, color: options.muted ? "6B7280" : "111827", size: 22 })]
+    children: [new TextRun({ text, bold: options.bold, color: options.muted ? "6B7280" : "111827", size: 22, font: reportFont })]
   });
 }
 
@@ -31,7 +32,7 @@ function heading(text: string, level: 1 | 2 | 3 = 1) {
   return new Paragraph({
     heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
     spacing: { before: 180, after: 180 },
-    children: [new TextRun({ text, bold: true, color: "243044", size: level === 1 ? 36 : level === 2 ? 28 : 24 })]
+    children: [new TextRun({ text, bold: true, color: "243044", size: level === 1 ? 36 : level === 2 ? 28 : 24, font: reportFont })]
   });
 }
 
@@ -42,7 +43,7 @@ function cell(text: string, width: number, bold = false) {
     children: [
       new Paragraph({
         alignment: AlignmentType.LEFT,
-        children: [new TextRun({ text, bold, size: 20 })]
+        children: [new TextRun({ text, bold, size: 20, font: reportFont })]
       })
     ]
   });
@@ -70,7 +71,7 @@ function bulletList(values: string[], emptyText: string) {
     new Paragraph({
       bullet: { level: 0 },
       spacing: { after: 100 },
-      children: [new TextRun({ text: value || emptyText, size: 21 })]
+      children: [new TextRun({ text: value || emptyText, size: 21, font: reportFont })]
     })
   );
 }

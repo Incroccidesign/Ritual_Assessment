@@ -65,6 +65,7 @@ for (const value of ["A meaningful answer", ""]) {
     }
     expect(xml).toContain('w:w="11906"');
     expect(xml).toContain('w:h="16838"');
+    expect(xml).toContain('<w:rFonts w:ascii="Arial" w:cs="Arial" w:eastAsia="Arial" w:hAnsi="Arial"/>');
     expect(xml).toContain("Resident");
     expect(xml).toContain("Nature and environment");
     expect(xml).toContain("Social life and community");
