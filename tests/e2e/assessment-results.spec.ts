@@ -68,8 +68,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
     await card.getByRole("button", { name: "More actions" }).click();
     await expect(card.getByRole("link", { name: "Results", exact: true })).toBeVisible();
     await expect(page).toHaveURL(/dashboard/);
-    await card.getByRole("button", { name: "More actions" }).click();
-    await card.click({ position: { x: 24, y: 150 } });
+    await card.getByRole("link", { name: "Results", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/assessments/${assessmentId}/results`));
     await expect(page.getByText("Completed responses", { exact: true })).toBeVisible();
     await expect(page.getByText("Participants who completed")).toBeVisible();
@@ -105,7 +104,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
     await page.getByRole("button", { name: "View report" }).nth(1).click();
     await dialog.getByRole("button", { name: "Close" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.getByText("P02 Â· Second organisation", { exact: true })).toBeVisible();
+    await expect(page.getByText("P02 · Second organisation", { exact: true })).toBeVisible();
     const individualDownload = page.waitForEvent("download");
     await page.getByRole("button", { name: "Download report" }).nth(1).click();
     expect((await individualDownload).suggestedFilename()).toMatch(/\.docx$/);

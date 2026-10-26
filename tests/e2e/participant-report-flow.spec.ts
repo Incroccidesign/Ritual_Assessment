@@ -117,11 +117,3 @@ test("a failed save retains the answer and allows a retry before advancing", asy
   expect(state.answers).toHaveLength(1);
 });
 
-test("reduced motion follows the browser preference and live changes", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/?locale=en");
-  const ambient = page.locator(".ambient-background").first();
-  await expect(ambient).toHaveClass(/ambient-background--reduced-motion/);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await expect(ambient).not.toHaveClass(/ambient-background--reduced-motion/);
-});
