@@ -18,6 +18,28 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  cursor: default;
+}
+
+input:not([type]),
+input:is(
+  [type="text"],
+  [type="email"],
+  [type="password"],
+  [type="search"],
+  [type="number"],
+  [type="tel"],
+  [type="url"],
+  [type="date"],
+  [type="datetime-local"],
+  [type="month"],
+  [type="time"],
+  [type="week"]
+),
+textarea,
+[contenteditable="true"],
+[contenteditable=""] {
+  cursor: text;
 }
 
 .route-page-fade {
