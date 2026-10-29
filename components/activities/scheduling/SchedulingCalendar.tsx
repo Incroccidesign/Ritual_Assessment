@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SchedulingMode, SchedulingSlot } from "@/types/activity";
-import { Button } from "@/components/ritual-ui";
+import { Button, selectClass } from "@/components/ritual-ui";
 
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const quarterHours = Array.from({ length: 96 }, (_, index) => `${String(Math.floor(index / 4)).padStart(2, "0")}:${String((index % 4) * 15).padStart(2, "0")}`);
@@ -24,21 +24,51 @@ export function SchedulingCalendar({ mode, slots, duration, onToggle, idPrefix =
   function move(amount: number) { const next = new Date(cursor); if (mode === "weekly") next.setDate(next.getDate() + amount * 7); else next.setMonth(next.getMonth() + amount, 1); setCursor(next); }
   function slotFor(date: Date, startTime?: string): SchedulingSlot { const dateKey = toDateKey(date); return mode === "monthly" ? { id: `${idPrefix}:${dateKey}`, date: dateKey } : { id: `${idPrefix}:${dateKey}:${startTime}`, date: dateKey, startTime, endTime: addMinutes(startTime!, duration) }; }
   function selected(slot: SchedulingSlot) { return slots.some((item) => item.date === slot.date && item.startTime === slot.startTime); }
-  return <section className="overflow-hidden rounded-lg border border-bone/12 bg-night/35"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-bone/10 px-4 py-3"><div className="inline-flex rounded-md border border-bone/15 p-1">{(["weekly", "monthly"] as SchedulingMode[]).map((item) => <button key={item} type="button" disabled={!onModeChange} onClick={() => onModeChange?.(item)} className={`rounded px-3 py-1.5 text-sm font-medium ${mode === item ? "bg-bone text-night" : "text-bone/60"}`}>{item === "weekly" ? "Week" : "Month"}</button>)}</div>{mode === "weekly" && onDurationChange ? <label className="flex items-center gap-2 text-sm text-bone/65">Slot <select className="rounded border border-bone/15 bg-night px-2 py-1 text-bone" value={duration} onChange={(event) => onDurationChange(Number(event.target.value))}>{[15, 30, 60, 90, 120, 180, 240].map((value) => <option key={value} value={value}>{value} min</option>)}</select></label> : null}</div><div className="flex items-center justify-between px-4 py-3"><Button type="button" variant="ghost" className="h-9 min-h-9 w-9 !p-0" onClick={() => move(-1)}><ChevronLeft size={17} /></Button><p className="font-semibold text-bone">{mode === "weekly" ? weekLabel : monthLabel}</p><Button type="button" variant="ghost" className="h-9 min-h-9 w-9 !p-0" onClick={() => move(1)}><ChevronRight size={17} /></Button></div>{mode === "weekly" ? <WeeklyGrid dates={weekDates} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /> : <MonthlyGrid dates={monthDates} cursor={cursor} slotFor={slotFor} selected={selected} onToggle={onToggle} />}</section>;
+  return <section className="overflow-hidden rounded-lg border border-bone/12 bg-night/35"><div className="flex items-center justify-between gap-2 border-b border-bone/10 px-3 py-2 sm:flex-wrap sm:gap-3 sm:px-4 sm:py-3"><div className="inline-flex h-11 shrink-0 rounded-md border border-bone/15 p-1">{(["weekly", "monthly"] as SchedulingMode[]).map((item) => <button key={item} type="button" disabled={!onModeChange} onClick={() => onModeChange?.(item)} className={`h-full rounded px-2 py-0 text-xs font-medium sm:px-3 sm:text-sm ${mode === item ? "bg-bone text-night" : "text-bone/60"}`}>{item === "weekly" ? "Week" : "Month"}</button>)}</div>{mode === "weekly" && onDurationChange ? <label className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-xs text-bone/65 sm:gap-2 sm:text-sm">Slot <select className={`${selectClass} !h-11 !min-h-11 !w-auto min-w-[6.25rem] !border-bone/15 !py-0 text-xs focus:!border-mint sm:min-w-32 sm:text-sm`} value={duration} onChange={(event) => onDurationChange(Number(event.target.value))}>{[15, 30, 60, 90, 120, 180, 240].map((value) => <option key={value} value={value}>{value} min</option>)}</select></label> : null}</div><div className="flex items-center justify-between px-2 py-3 sm:px-4"><Button type="button" variant="ghost" className="h-9 min-h-9 w-9 !p-0" onClick={() => move(-1)}><ChevronLeft size={17} /></Button><p className="text-center text-sm font-semibold text-bone sm:text-base">{mode === "weekly" ? weekLabel : monthLabel}</p><Button type="button" variant="ghost" className="h-9 min-h-9 w-9 !p-0" onClick={() => move(1)}><ChevronRight size={17} /></Button></div>{mode === "weekly" ? <WeeklyGrid dates={weekDates} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /> : <MonthlyGrid dates={monthDates} cursor={cursor} slotFor={slotFor} selected={selected} onToggle={onToggle} />}</section>;
 }
 
 function WeeklyGrid({ dates, slots, duration, slotFor, onToggle }: { dates: Date[]; slots: SchedulingSlot[]; duration: number; slotFor: (date: Date, time?: string) => SchedulingSlot; onToggle: (slot: SchedulingSlot) => void }) {
   const [mobileDay, setMobileDay] = useState(0);
-  return <><div className="md:hidden"><div className="flex gap-1 overflow-x-auto border-t border-bone/10 px-3 py-2">{dates.map((date, index) => <button type="button" key={toDateKey(date)} onClick={() => setMobileDay(index)} className={`min-w-12 rounded px-2 py-1.5 text-xs ${mobileDay === index ? "bg-bone text-night" : "text-bone/60"}`}>{dayNames[index]}<span className="mt-0.5 block font-semibold">{date.getDate()}</span></button>)}</div><DaySchedule date={dates[mobileDay]} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div><div className="hidden md:block"><div className="grid grid-cols-[3.5rem_repeat(7,minmax(5.5rem,1fr))] border-t border-bone/10 text-center text-xs text-bone/55"><span className="py-3" />{dates.map((date, index) => <span key={toDateKey(date)} className="py-3">{dayNames[index]}<strong className="mt-1 block text-bone">{date.getDate()}</strong></span>)}</div><DesktopSchedule dates={dates} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div></>;
+  return <><div className="md:hidden"><div className="grid grid-cols-7 gap-1 border-t border-bone/10 px-2 py-2 text-center">{dates.map((date, index) => <button type="button" key={toDateKey(date)} aria-pressed={mobileDay === index} onClick={() => setMobileDay(index)} className={`min-w-0 rounded px-0.5 py-1.5 text-[10px] leading-4 transition sm:text-xs ${mobileDay === index ? "bg-bone text-night" : "text-bone/60 hover:bg-bone/8"}`}>{dayNames[index]}<span className="mt-0.5 block text-xs font-semibold sm:text-sm">{date.getDate()}</span></button>)}</div><DaySchedule date={dates[mobileDay]} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div><div className="hidden md:block"><div className="grid grid-cols-[3.5rem_repeat(7,minmax(5.5rem,1fr))] border-t border-bone/10 text-center text-xs text-bone/55"><span className="py-3" />{dates.map((date, index) => <span key={toDateKey(date)} className="py-3">{dayNames[index]}<strong className="mt-1 block text-bone">{date.getDate()}</strong></span>)}</div><DesktopSchedule dates={dates} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div></>;
 }
 
 function timeIndex(time: string) { const [hours, minutes] = time.split(":").map(Number); return hours * 4 + minutes / 15; }
 function slotBlocks(slot: SchedulingSlot) { if (!slot.startTime || !slot.endTime) return 1; const start = timeIndex(slot.startTime); const end = timeIndex(slot.endTime); return (end > start ? end - start : end + 96 - start) || 1; }
 function containsTime(slot: SchedulingSlot, time: string) { if (!slot.startTime || !slot.endTime) return false; return slot.endTime > slot.startTime ? time >= slot.startTime && time < slot.endTime : time >= slot.startTime || time < slot.endTime; }
 
-function DesktopSchedule({ dates, slots, duration, slotFor, onToggle }: { dates: Date[]; slots: SchedulingSlot[]; duration: number; slotFor: (date: Date, time?: string) => SchedulingSlot; onToggle: (slot: SchedulingSlot) => void }) { const scrollRef = useRef<HTMLDivElement | null>(null); useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 8 * 4 * 20; }, []); return <div ref={scrollRef} className="max-h-[32rem] overflow-y-auto"><div className="grid grid-cols-[3.5rem_repeat(7,minmax(5.5rem,1fr))]"><TimeLabels />{dates.map((date) => <DayColumn key={toDateKey(date)} date={date} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} />)}</div></div>; }
+function DesktopSchedule({ dates, slots, duration, slotFor, onToggle }: { dates: Date[]; slots: SchedulingSlot[]; duration: number; slotFor: (date: Date, time?: string) => SchedulingSlot; onToggle: (slot: SchedulingSlot) => void }) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
-function DaySchedule({ date, slots, duration, slotFor, onToggle }: { date: Date; slots: SchedulingSlot[]; duration: number; slotFor: (date: Date, time?: string) => SchedulingSlot; onToggle: (slot: SchedulingSlot) => void }) { const scrollRef = useRef<HTMLDivElement | null>(null); useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 8 * 4 * 20; }, []); return <div ref={scrollRef} className="max-h-[32rem] overflow-y-auto"><div className="grid grid-cols-[3.5rem_1fr]"><TimeLabels /><DayColumn date={date} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div></div>; }
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    scrollElement.scrollTop = 8 * 4 * 20;
+
+    function forwardWheelToPage(event: WheelEvent) {
+      if (!window.matchMedia("(min-width: 768px)").matches || event.ctrlKey || event.deltaY === 0) return;
+
+      event.preventDefault();
+      let ancestor = scrollElement!.parentElement;
+      while (ancestor && ancestor !== document.body && ancestor !== document.documentElement) {
+        const overflowY = window.getComputedStyle(ancestor).overflowY;
+        if ((overflowY === "auto" || overflowY === "scroll") && ancestor.scrollHeight > ancestor.clientHeight) {
+          ancestor.scrollBy({ top: event.deltaY, behavior: "auto" });
+          return;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      window.scrollBy({ top: event.deltaY, behavior: "auto" });
+    }
+
+    scrollElement.addEventListener("wheel", forwardWheelToPage, { passive: false });
+    return () => scrollElement.removeEventListener("wheel", forwardWheelToPage);
+  }, []);
+
+  return <div ref={scrollRef} className="max-h-[32rem] overflow-y-auto"><div className="grid grid-cols-[3.5rem_repeat(7,minmax(5.5rem,1fr))]"><TimeLabels />{dates.map((date) => <DayColumn key={toDateKey(date)} date={date} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} />)}</div></div>;
+}
+
+function DaySchedule({ date, slots, duration, slotFor, onToggle }: { date: Date; slots: SchedulingSlot[]; duration: number; slotFor: (date: Date, time?: string) => SchedulingSlot; onToggle: (slot: SchedulingSlot) => void }) { const scrollRef = useRef<HTMLDivElement | null>(null); useEffect(() => { const frame = window.requestAnimationFrame(() => { if (scrollRef.current) scrollRef.current.scrollTop = 8 * 4 * 20; }); return () => window.cancelAnimationFrame(frame); }, []); return <div ref={scrollRef} className="max-h-[32rem] overflow-y-auto"><div className="grid grid-cols-[3.5rem_1fr]"><TimeLabels /><DayColumn date={date} slots={slots} duration={duration} slotFor={slotFor} onToggle={onToggle} /></div></div>; }
 
 function TimeLabels() { return <div className="border-r border-bone/10">{quarterHours.map((time) => <div key={time} className={`h-5 pr-2 text-right text-xs leading-5 text-bone/40 ${time.endsWith(":00") ? "border-t border-t-bone/20" : ""}`}>{time.endsWith(":00") ? time : ""}</div>)}</div>; }
 

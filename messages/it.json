@@ -63,6 +63,7 @@
     "emptyTitle": "Nessun rituale per ora.",
     "emptyBody": "Dai spazio a idee e prospettive diverse.",
     "newRitual": "Nuovo rituale",
+    "findDate": "Trova una data",
     "searchPlaceholder": "Cerca per nome…",
     "searchLabel": "Cerca rituali per nome",
     "allTypes": "Tutte le modalità",
@@ -356,7 +357,11 @@
     "assessment": {
       "draftTitle": "Assessment senza titolo",
       "demoTitle": "Assessment dei bisogni organizzativi",
-      "demoDescription": "Un percorso visuale guidato per identificare sfide, ordinare priorita e inquadrare bisogni emergenti."
+      "demoDescription": "Un percorso visuale guidato per identificare sfide, ordinare priorita e inquadrare bisogni emergenti.",
+      "dateFindingTitle": "Disponibilità per l’incontro",
+      "dateFindingDescription": "Condividi le tue disponibilità per trovare un momento adatto a tutte le persone dell'evento.",
+      "dateFindingActivityTitle": "Trova una data",
+      "dateFindingActivityPrompt": "Seleziona tutte le date o gli orari in cui sei disponibile."
     },
     "activities": {
       "profiling": {
@@ -411,10 +416,6 @@
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
     "estimatedDurationToggle": "Mostra la durata stimata nella schermata iniziale",
-    "activitySummaryToggle": {
-      "label": "Salta il riepilogo tra un'attività e l'altra",
-      "helper": "I partecipanti passano direttamente all'attività successiva. Resta visibile il riepilogo prima dell'invio del questionario."
-    },
     "languageLabel": "Lingua assessment",
     "promptLabel": "Domanda guida",
     "noActivitySelected": "Seleziona un'attivita per configurarla.",
@@ -443,12 +444,9 @@
     "collapse": "Comprimi",
     "moveUp": "Sposta su",
     "moveDown": "Sposta giu",
-    "templateToggle": {
-      "label": "Salva come modello riutilizzabile",
-      "helper": "I modelli sono strutture riutilizzabili. Non possono essere pubblicati o condivisi direttamente."
-    },
     "template": {
-      "save": "Salva modello"
+      "save": "Salva come modello",
+      "saved": "Modello salvato"
     },
     "activityCards": {
       "profiling": {

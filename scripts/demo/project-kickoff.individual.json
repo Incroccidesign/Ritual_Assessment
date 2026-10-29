@@ -1,0 +1,120 @@
+{
+  "note": "Fictional demo data for screenshots. No real people or organizations. Used by create-individual-demo.mjs and fill-individual-demo.mjs.",
+  "assessment": {
+    "language": "en",
+    "title": "Project kick-off: partner assessment",
+    "description": "A short assessment for partner organizations joining the project. Your answers help plan the first months of work together.",
+    "estimatedDuration": "Estimated completion time: around 10 minutes.",
+    "hideActivitySummaries": false,
+    "activities": [
+      {
+        "clientId": "profile",
+        "type": "profiling",
+        "title": "About your organization",
+        "prompt": "Tell us who you are and how your organization will take part in the project.",
+        "configJson": {
+          "fields": [
+            { "id": "org_name", "label": "Organization name", "fieldType": "text", "required": true },
+            { "id": "country", "label": "Country", "fieldType": "country", "required": true },
+            { "id": "role", "label": "Role in the project", "fieldType": "select", "required": true, "options": ["Research partner", "Implementing partner", "Associated partner", "Funder"], "allowOther": false },
+            { "id": "team_size", "label": "People involved in the project", "fieldType": "number", "required": false }
+          ]
+        }
+      },
+      {
+        "clientId": "explore",
+        "type": "exploration",
+        "title": "Expected challenges",
+        "prompt": "Which challenges do you expect in the first months of the project? Choose up to three.",
+        "configJson": {
+          "itemType": "barriers",
+          "responseMode": "open_list",
+          "options": [
+            "Different priorities across partners",
+            "Limited time for coordination",
+            "Unclear decision-making",
+            "Information spread across too many tools",
+            "Language barriers between teams",
+            "Low involvement of local communities"
+          ],
+          "optionGroups": [],
+          "optionGroupAssignments": {},
+          "allowOther": true,
+          "maxSelections": 3
+        }
+      },
+      {
+        "clientId": "prioritize",
+        "type": "prioritization",
+        "title": "What matters most",
+        "prompt": "Rank the challenges you selected, starting from the most urgent.",
+        "configJson": { "sourceActivityId": "explore" }
+      },
+      {
+        "clientId": "reflect",
+        "type": "framing",
+        "title": "Your first move",
+        "prompt": "Look at your top priority and tell us how you would address it.",
+        "configJson": {
+          "mode": "standard",
+          "sourceActivityId": "prioritize",
+          "maxLength": 600,
+          "questions": [
+            { "id": "help", "title": "What would help", "prompt": "What would help your team address your top priority?", "required": true },
+            { "id": "who", "title": "Who to involve", "prompt": "Who should be involved, inside or outside your organization?", "required": false }
+          ]
+        }
+      },
+      {
+        "clientId": "plan",
+        "type": "scheduling",
+        "title": "First working meeting",
+        "prompt": "When are you available for our first working meeting?",
+        "configJson": {
+          "mode": "weekly",
+          "timezone": "Europe/Rome",
+          "slotDurationMinutes": 90,
+          "slots": [
+            { "id": "slot_tue", "date": "2026-11-10", "startTime": "10:00", "endTime": "11:30" },
+            { "id": "slot_wed", "date": "2026-11-11", "startTime": "14:00", "endTime": "15:30" },
+            { "id": "slot_thu", "date": "2026-11-12", "startTime": "10:00", "endTime": "11:30" },
+            { "id": "slot_fri", "date": "2026-11-13", "startTime": "09:30", "endTime": "11:00" }
+          ]
+        }
+      },
+      {
+        "clientId": "report",
+        "type": "planning_report",
+        "title": "Your kick-off report",
+        "prompt": "Review a summary of your answers before sending them.",
+        "configJson": {
+          "reportTitle": "Partner kick-off report",
+          "reportSubtitle": "A summary of your organization, expected challenges, priorities and first steps.",
+          "sections": [
+            { "key": "organization", "title": "Organization", "visible": true, "items": [{ "id": "item_profile", "activityId": "profile", "title": "Profile", "visible": true }] },
+            { "key": "challenges", "title": "Challenges and priorities", "visible": true, "items": [
+              { "id": "item_explore", "activityId": "explore", "title": "Expected challenges", "visible": true },
+              { "id": "item_prioritize", "activityId": "prioritize", "title": "Priorities", "visible": true }
+            ] },
+            { "key": "first-steps", "title": "First steps", "visible": true, "items": [{ "id": "item_reflect", "activityId": "reflect", "title": "Your first move", "visible": true }] }
+          ]
+        }
+      }
+    ]
+  },
+  "answers": {
+    "profile": {
+      "Organization name": "Northshore Community Lab",
+      "Country": "Portugal",
+      "Role in the project": "Implementing partner",
+      "People involved in the project": "6"
+    },
+    "explore": ["Different priorities across partners", "Limited time for coordination", "Information spread across too many tools"],
+    "prioritize": ["Limited time for coordination", "Different priorities across partners", "Information spread across too many tools"],
+    "reflect": {
+      "What would help": "A shared monthly check-in with a clear agenda, and one place where decisions and documents are collected.",
+      "Who to involve": "Our project coordinator, the two field facilitators and a contact person from each partner organization."
+    },
+    "plan": [0, 2]
+  }
+}

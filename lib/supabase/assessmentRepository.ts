@@ -78,6 +78,7 @@ export type AssessmentBundle = {
   assessment: Assessment;
   participants: Participant[];
   responses: AssessmentResponse[];
+  responseCount: number;
 };
 
 export type PublicSchedulingResults = {
@@ -469,7 +470,7 @@ async function createAssessmentThroughApi(input: AssessmentCreationInput) {
       title: input.title,
       description: input.description ?? null,
       estimatedDuration: input.estimatedDuration ?? null,
-      hideActivitySummaries: Boolean(input.hideActivitySummaries),
+      hideActivitySummaries: input.hideActivitySummaries ?? true,
       activities: (input.activities ?? []).map((activity) => ({
         clientId: activity.id,
         type: activity.type,
@@ -627,6 +628,24 @@ export async function createSupabaseAssessment(language: Assessment["language"])
   });
 }
 
+export async function createSupabaseDateFindingAssessment(language: Assessment["language"]) {
+  const messages = getMessages(language);
+  const presetActivity = createActivityPreset("scheduling", 0, "", language);
+  if (presetActivity.type !== "scheduling") throw new Error("Unable to create scheduling activity.");
+
+  return createAssessmentThroughApi({
+    language,
+    title: messages.presets.assessment.dateFindingTitle,
+    description: messages.presets.assessment.dateFindingDescription,
+    activities: [{
+      ...presetActivity,
+      title: messages.presets.assessment.dateFindingActivityTitle,
+      prompt: messages.presets.assessment.dateFindingActivityPrompt,
+      slots: []
+    }]
+  });
+}
+
 export async function createSupabaseAssessmentFromTemplate(template: AssessmentTemplate) {
   const sourceIds = new Map<string, string>();
   const activities: Activity[] = [];
@@ -645,11 +664,12 @@ export async function createSupabaseAssessmentFromTemplate(template: AssessmentT
   });
 }
 
-function cloneActivityForAssessment(activity: Activity, orderIndex: number, sourceIds: Map<string, string>): Activity {
+function cloneActivityForAssessment(activity: Activity, orderIndex: number, sourceIds: Map<string, string>, locale: Assessment["language"]): Activity {
+  const defaults = createActivityPreset(activity.type, orderIndex, "", locale);
   const base = {
     id: uid("activity"),
-    title: activity.title,
-    prompt: activity.prompt,
+    title: activity.title.trim() || defaults.title,
+    prompt: activity.prompt.trim() || defaults.prompt,
     orderIndex
   };
 
@@ -728,7 +748,7 @@ export async function createSupabaseAssessmentFromExistingTemplate(template: Ass
   const ordered = template.activities.slice().sort((a, b) => a.orderIndex - b.orderIndex);
   for (let orderIndex = 0; orderIndex < ordered.length; orderIndex += 1) {
     const sourceActivity = ordered[orderIndex];
-    const activity = cloneActivityForAssessment(sourceActivity, orderIndex, sourceIds);
+    const activity = cloneActivityForAssessment(sourceActivity, orderIndex, sourceIds, template.language);
     sourceIds.set(sourceActivity.id, activity.id);
     activities.push(activity);
   }
@@ -769,7 +789,8 @@ export async function fetchAssessmentBundle(assessmentId: string, _ownerId?: str
   return {
     assessment: rowToAssessment(assessmentResult.data as AssessmentRow, activities),
     participants: ((participantsResult.data ?? []) as ParticipantRow[]).map(rowToParticipant),
-    responses: buildResponses((responsesResult.data ?? []) as ResponseRow[], (activityResponsesResult.data ?? []) as ActivityResponseRow[])
+    responses: buildResponses((responsesResult.data ?? []) as ResponseRow[], (activityResponsesResult.data ?? []) as ActivityResponseRow[]),
+    responseCount: ((responsesResult.data ?? []) as ResponseRow[]).filter((response) => response.status === "submitted").length
   };
 }
 
@@ -788,6 +809,16 @@ export async function fetchDesignerAssessmentBundles(ownerId: string): Promise<A
     .in("assessment_id", assessmentRows.map((row) => row.id))
     .order("order_index");
   if (activitiesError) throw activitiesError;
+  const responseCounts = await Promise.all(assessmentRows.map(async (row) => {
+    const { count, error: countError } = await client
+      .from("responses")
+      .select("id", { count: "exact", head: true })
+      .eq("assessment_id", row.id)
+      .eq("status", "submitted");
+    if (countError) throw countError;
+    return [row.id, count ?? 0] as const;
+  }));
+  const responseCountByAssessment = new Map(responseCounts);
   const activitiesByAssessment = new Map<string, Activity[]>();
   for (const row of (activities ?? []) as ActivityRow[]) {
     const current = activitiesByAssessment.get(row.assessment_id) ?? [];
@@ -797,7 +828,8 @@ export async function fetchDesignerAssessmentBundles(ownerId: string): Promise<A
   return assessmentRows.map((row) => ({
     assessment: rowToAssessment(row, activitiesByAssessment.get(row.id) ?? []),
     participants: [],
-    responses: []
+    responses: [],
+    responseCount: responseCountByAssessment.get(row.id) ?? 0
   }));
 }
 
@@ -917,6 +949,15 @@ export async function deleteSupabaseAssessment(assessmentId: string) {
   const client = requireSupabase();
   const { error } = await client.from("assessments").delete().eq("id", assessmentId);
   if (error) throw error;
+}
+
+export async function resetSupabaseAssessmentResults(assessmentId: string) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc("reset_individual_assessment_results", {
+    target_assessment_id: assessmentId
+  });
+  if (error) throw error;
+  return data as { deleted_responses: number; deleted_participants: number };
 }
 
 export async function fetchPublishedAssessmentByToken(publicToken: string) {

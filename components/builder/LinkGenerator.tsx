@@ -13,12 +13,14 @@ export function LinkGenerator({
   assessment,
   onPublish,
   disabled = false,
-  compact = false
+  compact = false,
+  className
 }: {
   assessment: Assessment;
   onPublish: (assessment: Assessment) => void;
   disabled?: boolean;
   compact?: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const { messages, href } = useLocale();
@@ -61,22 +63,22 @@ export function LinkGenerator({
 
   if (compact) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
+      <div className={`flex flex-wrap items-center gap-3 ${className ?? ""}`}>
         {!disabled && !assessment.publicToken ? (
-          <Button type="button" onClick={() => void publish()} disabled={publishing}>
+          <Button type="button" className="w-full sm:w-auto" onClick={() => void publish()} disabled={publishing}>
             {publishing ? messages.app.loading : messages.common.publish}
           </Button>
         ) : !disabled ? (
           <>
-            <Button type="button" variant="secondary" onClick={() => void copyLink()}>
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => void copyLink()}>
               {copied ? <Check size={17} /> : <Copy size={17} />}
               {copied ? messages.builder.copied : messages.common.copyPublicLink}
             </Button>
-            <ButtonLink href={publicPath} variant="ghost">
+            <ButtonLink href={publicPath} variant="ghost" className="w-full sm:w-auto">
               {messages.common.open} <ExternalLink size={17} />
             </ButtonLink>
             {assessment.status !== "published" ? (
-              <Button type="button" onClick={() => void publish()} disabled={publishing}>
+              <Button type="button" className="w-full sm:w-auto" onClick={() => void publish()} disabled={publishing}>
                 {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
               </Button>
             ) : null}

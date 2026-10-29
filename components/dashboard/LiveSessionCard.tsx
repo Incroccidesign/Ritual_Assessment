@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, RotateCcw, Settings2, Trash2 } from "lucide-react";
+import { CopyPlus, FileSpreadsheet, FileText, MoreHorizontal, RotateCcw, Settings2, Star, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
@@ -23,7 +23,7 @@ export function liveDashboardDestination(session: LiveSession) {
   return `/live?id=${session.id}`;
 }
 
-export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveSession; onDelete?: (sessionId: string) => void }) {
+export function LiveSessionCard({ session, onDelete, favorite = false, onToggleFavorite }: { session: DashboardLiveSession; onDelete?: (sessionId: string) => void; favorite?: boolean; onToggleFavorite?: () => void }) {
   const router = useRouter();
   const { locale, messages, href } = useLocale();
   const liveMessages = getLiveMessages(locale === "it" ? "it" : "en");
@@ -38,15 +38,7 @@ export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveS
   const canManageActivities = ["draft", "setup", "lobby"].includes(session.status);
   const canAccessResults = ["live", "intermission", "closed"].includes(session.status);
   const reportLanguage = locale === "it" ? "it" : "en";
-  const hasStatusIndicator = session.status !== "closed";
   useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
-
-  function statusClassName() {
-    if (session.status === "live") return "border-mint/20 text-bone";
-    if (session.status === "draft" || session.status === "setup") return "border-blue/20 text-bone";
-    if (session.status === "intermission") return "border-orange/20 text-bone";
-    return "border-bone/10 text-bone/60";
-  }
 
   async function download(kind: "docx" | "excel") {
     try {
@@ -102,14 +94,13 @@ export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveS
   }
 
   return <>
-    <Card className="flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
-      <div className="flex h-8 items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-medium text-bone">{messages.liveSessions.type}</span>
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}>
-            {hasStatusIndicator ? <span className={`size-2 rounded-full ${session.status === "intermission" ? "bg-orange" : session.status === "live" ? "bg-mint" : "bg-blue"}`} /> : null}
-            {status}
-          </span>
+    <Card className={`dashboard-card-hover-target flex min-h-[208px] h-full flex-col !p-6 !shadow-none ${session.status === "draft" || session.status === "setup" ? "dashboard-card-collective-draft" : "dashboard-card-collective"}`}>
+      <div className="flex h-6 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-sm font-medium text-bone">{messages.dashboard.collective}</span>
+          <span aria-hidden="true" className="text-sm text-bone/70">•</span>
+          <span className="truncate text-sm text-bone">{status}</span>
+          {onToggleFavorite ? <button type="button" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} title={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} onClick={onToggleFavorite} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
         </div>
         <div className="shrink-0">
           <div ref={menuRef} className="relative">
@@ -129,10 +120,10 @@ export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveS
           </div>
         </div>
       </div>
-      <div className="flex flex-1 flex-col justify-between pt-4">
+      <div className="flex flex-1 flex-col justify-between pt-0">
         <div>
-          <h2 className="line-clamp-2 font-heading text-2xl font-semibold leading-[30px] text-bone">{session.title}</h2>
-          <p className="mt-2 text-xs leading-4 text-bone/60">{messages.liveSessions.updated} {date}</p>
+          <p className="text-xs leading-4 text-bone/60">{messages.liveSessions.updated} {date}</p>
+          <h2 title={session.title} className="mt-2 line-clamp-2 font-heading text-xl font-semibold leading-6 text-bone">{session.title}</h2>
           <ActivityThumbnails activities={[...(session.live_activities ?? [])].sort((a, b) => a.order_index - b.order_index).map((activity) => ({
             id: activity.id,
             illustration: activityIllustrations[activity.activity_type],
@@ -141,7 +132,7 @@ export function LiveSessionCard({ session, onDelete }: { session: DashboardLiveS
               : liveMessages.activities[activity.activity_type].name
           }))} />
         </div>
-        <div className="flex justify-end pt-4"><ButtonLink className="dashboard-card-cta !min-h-11 !px-3" variant="ghost" href={href(liveDashboardDestination(session))}>{primaryLabel}</ButtonLink></div>
+        <div className="flex justify-end pt-0"><ButtonLink className="dashboard-card-cta !min-h-8 !h-8 !px-3" variant="ghost" href={href(liveDashboardDestination(session))}>{primaryLabel}</ButtonLink></div>
       </div>
       {notice ? <p className="text-sm text-orange">{notice}</p> : null}
     </Card>

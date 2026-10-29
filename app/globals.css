@@ -201,3 +201,77 @@ select {
     transition: none;
   }
 }
+
+.dashboard-card-individual {
+  border-color: rgb(73 112 165 / 0.22);
+  background: linear-gradient(to top, #111923 0%, #0c1118 48%, #090d13 100%);
+}
+
+.dashboard-card-collective {
+  border-color: rgb(186 104 71 / 0.24);
+  background: linear-gradient(to top, #2a1b18 0%, #171311 48%, #0b0d11 100%);
+}
+
+.dashboard-card-individual-draft,
+.dashboard-card-collective-draft {
+  background-color: #0b0e14;
+  background-repeat: no-repeat, repeat, repeat;
+  background-size: 100% 100%, 26px 26px, 26px 26px;
+  background-position: 0 0, left bottom, left bottom;
+}
+
+.dashboard-card-individual-draft {
+  border-color: rgb(73 112 165 / 0.25);
+  background-image: linear-gradient(to top, rgba(38, 54, 75, 0.34) 0%, rgba(11, 14, 20, 0.88) 72%, #0b0e14 100%), linear-gradient(#1e262f 2px, transparent 2px), linear-gradient(90deg, #1e262f 2px, transparent 2px);
+}
+
+.dashboard-card-collective-draft {
+  border-color: rgb(186 104 71 / 0.26);
+  background-image: linear-gradient(to top, rgba(117, 55, 37, 0.42) 0%, rgba(11, 14, 20, 0.88) 72%, #0b0e14 100%), linear-gradient(#28211c 2px, transparent 2px), linear-gradient(90deg, #28211c 2px, transparent 2px);
+}
+
+.dashboard-card-hover-reveal {
+  opacity: 1;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-card-hover-target .dashboard-card-hover-reveal {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(3px);
+  }
+
+  .dashboard-card-hover-target:hover .dashboard-card-hover-reveal,
+  .dashboard-card-hover-target:focus-within .dashboard-card-hover-reveal {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card-hover-reveal {
+    transition: none;
+  }
+}
+
+.dashboard-card-copy-link {
+  display: inline-flex;
+  min-width: 32px;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #f3efe6;
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.dashboard-card-copy-link:hover {
+  background-color: rgb(243 239 230 / 0.08);
+}
+
+.dashboard-card-copy-link:focus-visible {
+  outline: 2px solid rgb(243 239 230 / 0.72);
+  outline-offset: 2px;
+}

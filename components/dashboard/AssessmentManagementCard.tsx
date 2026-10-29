@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { FileText, MoreHorizontal, Pause, Pencil, Square, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { CopyPlus, FileText, MoreHorizontal, Pause, Pencil, RotateCcw, Square, Star, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { SchedulingActivity } from "@/types/activity";
 import { AssessmentResponse } from "@/types/response";
@@ -10,7 +11,7 @@ import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCo
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
-import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
+import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, resetSupabaseAssessmentResults, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 import { schedulingVotes, slotLabel } from "@/lib/activities/scheduling";
 import { ActivityThumbnails } from "@/components/dashboard/ActivityThumbnails";
 import type { ActivityType } from "@/types/activity";
@@ -25,19 +26,31 @@ export function AssessmentManagementCard({
   responses,
   currentUserId,
   onDelete,
-  onUpdate
+  onUpdate,
+  onDuplicate,
+  onResetResults,
+  favorite = false,
+  responseCount = 0,
+  onToggleFavorite
 }: {
   assessment: Assessment;
   responses: AssessmentResponse[];
   currentUserId: string;
   onDelete?: (assessmentId: string) => void;
   onUpdate?: (assessment: Assessment) => void;
+  onDuplicate?: (assessment: Assessment) => void;
+  onResetResults?: (assessmentId: string) => void;
+  favorite?: boolean;
+  responseCount?: number;
+  onToggleFavorite?: (assessment: Assessment) => void;
 }) {
   const { locale, messages, href } = useLocale();
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
   const [closeSlotId, setCloseSlotId] = useState<string | null>(null);
@@ -56,20 +69,6 @@ export function AssessmentManagementCard({
     return messages.dashboard.closed;
   }
 
-  function statusClassName() {
-    if (assessment.status === "published") return "border-mint/20 text-bone";
-    if (assessment.status === "paused") return "border-orange/25 text-bone";
-    if (assessment.status === "closed") return "border-violet/25 text-bone";
-    return "border-blue/20 text-bone";
-  }
-
-  function statusIndicatorClassName() {
-    if (assessment.status === "published") return "bg-mint";
-    if (assessment.status === "paused") return "bg-orange";
-    if (assessment.status === "closed") return "bg-violet";
-    return "bg-blue";
-  }
-
   function dateLabel() {
     const formattedDate = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", year: "numeric" }).format(new Date(assessment.updatedAt));
     return `${messages.dashboard.updatedDate} ${formattedDate}`;
@@ -80,10 +79,14 @@ export function AssessmentManagementCard({
       setNotice(messages.dashboard.publishToGenerateLink);
       return;
     }
-    await navigator.clipboard.writeText(`${window.location.origin}${href(`/participate/${assessment.publicToken}`)}`);
-    setNotice(null);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${href(`/participate/${assessment.publicToken}`)}`);
+      setNotice(null);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      setNotice(messages.reports.copyLinkError);
+    }
   }
 
   async function publishAssessment() {
@@ -144,12 +147,28 @@ export function AssessmentManagementCard({
     }
   }
 
+  async function confirmResetResults() {
+    try {
+      setResetting(true);
+      setNotice(null);
+      await resetSupabaseAssessmentResults(assessment.id);
+      onResetResults?.(assessment.id);
+      setResetOpen(false);
+    } catch {
+      setNotice("Unable to reset results. Please try again.");
+    } finally {
+      setResetting(false);
+    }
+  }
+
   return (
-    <Card className="relative flex min-h-[224px] h-full flex-col !p-6 !shadow-none">
-      <div className="flex h-8 items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-medium text-bone">Assessment</span>
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm leading-5 ${statusClassName()}`}><span className={`size-2 rounded-full ${statusIndicatorClassName()}`} />{statusLabel()}</span>
+    <Card className={`dashboard-card-hover-target relative flex min-h-[208px] h-full flex-col !p-6 !shadow-none ${assessment.status === "draft" ? "dashboard-card-individual-draft" : "dashboard-card-individual"}`}>
+      <div className="flex h-6 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-sm font-medium text-bone">Individual</span>
+          <span aria-hidden="true" className="text-sm text-bone/70">•</span>
+          <span className="truncate text-sm text-bone">{statusLabel()}</span>
+          {onToggleFavorite ? <button type="button" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} title={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} onClick={() => onToggleFavorite(assessment)} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
         </div>
         <div className={`relative shrink-0 ${menuOpen ? "z-30" : "z-10"}`}>
           <div ref={menuRef} className="relative">
@@ -176,9 +195,17 @@ export function AssessmentManagementCard({
                 triggerVariant="ghost"
                 triggerClassName="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"
               />
+              <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); onDuplicate?.(assessment); }}>
+                <CopyPlus size={16} /> <span>Duplicate</span>
+              </Button>
               <ButtonLink href={href(`/assessments/${assessment.id}/results`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
                 <FileText size={16} /> <span>{messages.dashboard.viewResults}</span>
               </ButtonLink>
+              {assessment.ownerId === currentUserId && responseCount > 0 ? (
+                <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setResetOpen(true); }}>
+                  <RotateCcw size={16} /> <span>Reset results</span>
+                </Button>
+              ) : null}
               {assessment.status === "published" ? (
                 <>
                   <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setStatusAction("pause"); }}>
@@ -207,27 +234,31 @@ export function AssessmentManagementCard({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col justify-between pt-4">
+      <div className="flex flex-1 flex-col justify-between pt-0">
         <div>
-          <h2 className="font-heading text-2xl font-semibold leading-[30px] text-bone"><Link href={href(assessment.status === "draft" ? `/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}` : `/assessments/${assessment.id}/results`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
-          <p className="mt-2 text-xs leading-4 text-bone/60">{dateLabel()}</p>
+          <p className="text-xs leading-4 text-bone/60">{dateLabel()}</p>
+          <h2 className="mt-2 font-heading text-xl font-semibold leading-6 text-bone"><Link title={assessment.title} href={href(assessment.status === "draft" ? `/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}` : `/assessments/${assessment.id}/results`)} prefetch={false} className="after:absolute after:inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"><span className="line-clamp-2">{assessment.title}</span></Link></h2>
           <ActivityThumbnails activities={[...assessment.activities].sort((a, b) => a.orderIndex - b.orderIndex).map((activity) => ({
             id: activity.id,
             illustration: activityIllustrations[activity.type],
             label: activity.title.trim() || messages.activities[activity.type].label
           }))} />
         </div>
-        <div className="pointer-events-none relative z-10 flex justify-end pt-4">
+        <div className="pointer-events-none relative z-10 flex justify-end pt-0">
         {assessment.status === "draft" ? (
-          <ButtonLink href={href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`)} variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3">
-            {messages.dashboard.continueBuilding}
-          </ButtonLink>
-        ) : assessment.status === "published" ? (
-          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3" onClick={() => void copyPublicLink()}>
-            {copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink}
+          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-8 !h-8 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
+            {publishing ? messages.app.loading : "Publish"}
           </Button>
+        ) : assessment.status === "published" ? (
+          <div className="pointer-events-auto flex items-center gap-2">
+            {assessment.publicToken ? <button type="button" aria-label={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} title={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} className="dashboard-card-hover-reveal dashboard-card-copy-link" onClick={() => void copyPublicLink()}>
+              <Image src="/icons/dashboard-copy-participant-link.svg" alt="" aria-hidden="true" width={16} height={16} className="size-4" />
+            </button> : null}
+            <span className="text-sm font-medium text-bone">{responseCount} responses</span>
+            {copied ? <span className="sr-only" role="status">{messages.dashboard.linkCopied}</span> : null}
+          </div>
         ) : (
-          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-11 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
+          <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-8 !h-8 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
             {publishing ? messages.app.loading : assessment.status === "closed" ? messages.dashboard.reopenCollection : messages.dashboard.resumeCollection}
           </Button>
         )}
@@ -245,6 +276,25 @@ export function AssessmentManagementCard({
               </Button>
               <Button type="button" variant="danger" onClick={() => void confirmDelete()} disabled={deleting}>
                 {messages.dashboard.delete}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
+      {resetOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
+          <Card className="ritual-overlay-surface w-full max-w-md border">
+            <h3 className="font-heading text-2xl font-semibold text-bone">Reset results?</h3>
+            <p className="mt-3 text-sm leading-6 text-bone/62">
+              This permanently deletes {responseCount} {responseCount === 1 ? "response" : "responses"} and all participant records for this ritual. The ritual and its link stay unchanged, so it can receive new responses immediately.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setResetOpen(false)} disabled={resetting}>
+                {messages.common.cancel}
+              </Button>
+              <Button type="button" variant="danger" onClick={() => void confirmResetResults()} disabled={resetting}>
+                {resetting ? messages.app.loading : "Reset results"}
               </Button>
             </div>
           </Card>

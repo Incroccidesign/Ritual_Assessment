@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Activity, ActivityType } from "@/types/activity";
 import { Assessment } from "@/types/assessment";
@@ -55,12 +55,14 @@ export function AssessmentBuilder({
   assessmentId,
   ownerId,
   initialTemplateMode = false,
+  initiallyOpenSchedulingActivity = false,
   embedded = false,
   onDismiss
 }: {
   assessmentId: string;
   ownerId: string;
   initialTemplateMode?: boolean;
+  initiallyOpenSchedulingActivity?: boolean;
   embedded?: boolean;
   onDismiss?: () => void;
 }) {
@@ -104,7 +106,9 @@ export function AssessmentBuilder({
         const nextIsTemplate = initialTemplateMode || Boolean(bundle?.assessment && isTemplateAssessment(bundle.assessment.id, ownerId));
         setIsTemplate(nextIsTemplate);
         if (initialTemplateMode && bundle?.assessment) markAssessmentAsTemplate(bundle.assessment.id, ownerId);
-        setSelectedActivityId(null);
+        setSelectedActivityId(initiallyOpenSchedulingActivity
+          ? bundle?.assessment?.activities.find((activity) => activity.type === "scheduling")?.id ?? null
+          : null);
       } catch (loadError) {
         if (!active) return;
         setError(getErrorMessage(loadError, messages.common.empty));
@@ -117,7 +121,7 @@ export function AssessmentBuilder({
     return () => {
       active = false;
     };
-  }, [assessmentId, initialTemplateMode, messages.common.empty, ownerId]);
+  }, [assessmentId, initialTemplateMode, initiallyOpenSchedulingActivity, messages.common.empty, ownerId]);
 
   useEffect(() => {
     assessmentRef.current = assessment;
@@ -392,14 +396,9 @@ export function AssessmentBuilder({
         </div>
       ) : null}
 
-      <div className={embedded ? "mt-7" : "mt-8"}>
+      <div className={embedded ? "mt-5 sm:mt-7" : "mt-8"}>
         <div className="mx-auto max-w-5xl space-y-6">
-          <div className="flex flex-wrap justify-end gap-3">
-            {assessment.status === "draft" && isOwner ? (
-              <Button type="button" variant="danger" onClick={() => setDeleteOpen(true)} disabled={deleting}>
-                {messages.builder.deleteDraft}
-              </Button>
-            ) : null}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
             <LinkGenerator
               assessment={assessment}
               onPublish={(published) => {
@@ -407,9 +406,29 @@ export function AssessmentBuilder({
                 if (embedded) onDismiss?.();
                 else router.replace("/dashboard");
               }}
-              disabled={isTemplate}
+              disabled={initialTemplateMode}
               compact
+              className="w-full sm:order-2 sm:w-auto"
             />
+            {isOwner ? (
+              <div className="flex gap-2 sm:order-1">
+                <Button
+                  type="button"
+                  variant={isTemplate ? "secondary" : "ghost"}
+                  className="!min-h-10 flex-1 !px-3 text-xs sm:!min-h-11 sm:flex-none sm:!px-4 sm:text-sm"
+                  onClick={() => updateTemplateMode(!isTemplate)}
+                  disabled={saving || (assessment.status === "published" && !isTemplate)}
+                  aria-pressed={isTemplate}
+                >
+                  {isTemplate ? messages.builder.template.saved : messages.builder.template.save}
+                </Button>
+                {assessment.status === "draft" ? (
+                  <Button type="button" variant="danger" className="!min-h-10 flex-1 !px-3 text-xs sm:!min-h-11 sm:flex-none sm:!px-4 sm:text-sm" onClick={() => setDeleteOpen(true)} disabled={deleting}>
+                    {messages.builder.deleteDraft}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           {assessment.status === "paused" ? (
             <p className="rounded-lg border border-mint/20 bg-mint/10 px-5 py-4 text-sm leading-6 text-bone/76">
@@ -424,18 +443,23 @@ export function AssessmentBuilder({
             <Field label={messages.builder.descriptionLabel}>
               <textarea className={`${inputClass} min-h-28 resize-y`} value={assessment.description ?? ""} onChange={(event) => updateAssessment({ description: event.target.value })} />
             </Field>
-            <div>
-              <h3 className="text-sm font-semibold text-bone">{messages.builder.privacyDetailsTitle}</h3>
-              <p className="mt-1 text-xs leading-5 text-bone/56">{messages.builder.privacyDetailsHelper}</p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Field label={messages.builder.dataControllerNameLabel}>
-                  <input className={inputClass} value={assessment.dataControllerName ?? ""} onChange={(event) => updateAssessment({ dataControllerName: event.target.value })} />
-                </Field>
-                <Field label={messages.builder.dataControllerContactLabel}>
-                  <input className={inputClass} type="email" value={assessment.dataControllerContact ?? ""} onChange={(event) => updateAssessment({ dataControllerContact: event.target.value })} />
-                </Field>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center gap-2.5 py-1 text-sm font-semibold text-bone [&::-webkit-details-marker]:hidden">
+                <ChevronRight size={16} className="shrink-0 text-bone/55 transition-transform group-open:rotate-90" aria-hidden="true" />
+                {messages.builder.privacyDetailsTitle}
+              </summary>
+              <div className="pt-2">
+                <p className="text-xs leading-4 text-bone/56">{messages.builder.privacyDetailsHelper}</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label={messages.builder.dataControllerNameLabel}>
+                    <input className={inputClass} value={assessment.dataControllerName ?? ""} onChange={(event) => updateAssessment({ dataControllerName: event.target.value })} />
+                  </Field>
+                  <Field label={messages.builder.dataControllerContactLabel}>
+                    <input className={inputClass} type="email" value={assessment.dataControllerContact ?? ""} onChange={(event) => updateAssessment({ dataControllerContact: event.target.value })} />
+                  </Field>
+                </div>
               </div>
-            </div>
+            </details>
             <div className="space-y-3">
               <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
                 <input
@@ -481,23 +505,6 @@ export function AssessmentBuilder({
                 </div>
               ) : null}
             </div>
-            <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
-              <input
-                type="checkbox"
-                checked={Boolean(assessment.hideActivitySummaries)}
-                onChange={(event) => updateAssessment({ hideActivitySummaries: event.target.checked })}
-              />
-              <span>{messages.builder.activitySummaryToggle.label}</span>
-            </label>
-            <label className="flex items-center gap-3 text-sm font-semibold text-bone/70">
-              <input
-                type="checkbox"
-                checked={isTemplate}
-                disabled={assessment.status === "published" && !isTemplate}
-                onChange={(event) => updateTemplateMode(event.target.checked)}
-              />
-              <span>{messages.builder.templateToggle.label}</span>
-            </label>
           </section>
           <section className="border-t border-bone/10 pt-6">
             <div className="mb-5 flex items-start justify-between gap-4">

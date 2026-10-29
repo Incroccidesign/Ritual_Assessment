@@ -18,6 +18,7 @@ import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessme
 import {
   AssessmentBundle,
   createSupabaseAssessment,
+  createSupabaseDateFindingAssessment,
   createSupabaseAssessmentFromExistingTemplate,
   createSupabaseAssessmentFromTemplate,
   deleteSupabaseAssessment,
@@ -66,6 +67,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [liveSessions, setLiveSessions] = useState<DashboardLiveSession[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<RitualTypeFilter>("all");
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [templateIds, setTemplateIds] = useState<Set<string>>(new Set());
+  const [favoritesAvailable, setFavoritesAvailable] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [creationOpen, setCreationOpen] = useState(false);
@@ -79,7 +83,6 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [error, setError] = useState<string | null>(null);
   const creationPopoverRef = useRef<HTMLSpanElement | null>(null);
   const ritualFileInputRef = useRef<HTMLInputElement | null>(null);
-  const templateIds = useMemo(() => templateAssessmentIdsForOwner(designer.id), [designer.id]);
   const templateBundles = useMemo(
     () => bundles.filter((bundle) => templateIds.has(bundle.assessment.id)),
     [bundles, templateIds]
@@ -116,10 +119,10 @@ function DashboardContent({ designer }: { designer: Designer }) {
       })
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }, [dashboardEntries, locale, searchQuery, typeFilter]);
-  const ritualSections: { id: "inProgress" | "drafts" | "completed"; label: string; entries: DashboardEntry[] }[] = [
+  const dashboardSections = [
+    { id: "favorites", label: "Favorites", entries: filteredEntries.filter((entry) => favoriteIds.has(`${entry.type}:${entry.id}`)) },
     { id: "drafts", label: messages.dashboard.sectionDrafts, entries: filteredEntries.filter((entry) => entry.group === "drafts") },
-    { id: "inProgress", label: messages.dashboard.sectionInProgress, entries: filteredEntries.filter((entry) => entry.group === "inProgress" || entry.group === "paused") },
-    { id: "completed", label: messages.dashboard.sectionCompleted, entries: filteredEntries.filter((entry) => entry.group === "completed") }
+    { id: "all", label: "All Rituals", entries: filteredEntries }
   ];
 
   function resetDashboardFilters() {
@@ -131,6 +134,17 @@ function DashboardContent({ designer }: { designer: Designer }) {
     setCreationOpen(false);
     setCreationType("choose");
   });
+
+  useEffect(() => {
+    const refreshTemplateIds = () => setTemplateIds(templateAssessmentIdsForOwner(designer.id));
+    refreshTemplateIds();
+    window.addEventListener("ritual-assessment-storage", refreshTemplateIds);
+    window.addEventListener("storage", refreshTemplateIds);
+    return () => {
+      window.removeEventListener("ritual-assessment-storage", refreshTemplateIds);
+      window.removeEventListener("storage", refreshTemplateIds);
+    };
+  }, [designer.id]);
 
   useEffect(() => {
     let active = true;
@@ -145,6 +159,15 @@ function DashboardContent({ designer }: { designer: Designer }) {
         if (!active) return;
         setBundles(nextBundles);
         setLiveSessions(nextLiveSessions);
+        const favoritesResult = await supabase!.from("dashboard_favorites").select("resource_type,resource_id").eq("user_id", designer.id);
+        if (!active) return;
+        if (favoritesResult.error) {
+          setFavoritesAvailable(false);
+          setFavoriteIds(new Set());
+        } else {
+          setFavoritesAvailable(true);
+          setFavoriteIds(new Set((favoritesResult.data ?? []).map((item) => `${item.resource_type}:${item.resource_id}`)));
+        }
       } catch (dashboardError) {
         if (!active) return;
         setError(getErrorMessage(dashboardError, messages.auth.signInError));
@@ -184,6 +207,35 @@ function DashboardContent({ designer }: { designer: Designer }) {
 
   function handleDeleteAssessment(assessmentId: string) {
     setBundles((current) => current.filter((bundle) => bundle.assessment.id !== assessmentId));
+  }
+
+  async function handleToggleFavorite(entry: DashboardEntry) {
+    if (!supabase || !favoritesAvailable) return;
+    const key = `${entry.type}:${entry.id}`;
+    const isFavorite = favoriteIds.has(key);
+    setFavoriteIds((current) => { const next = new Set(current); if (isFavorite) next.delete(key); else next.add(key); return next; });
+    const result = isFavorite
+      ? await supabase.from("dashboard_favorites").delete().eq("user_id", designer.id).eq("resource_type", entry.type).eq("resource_id", entry.id)
+      : await supabase.from("dashboard_favorites").insert({ user_id: designer.id, resource_type: entry.type, resource_id: entry.id });
+    if (result.error) setFavoriteIds((current) => { const next = new Set(current); if (isFavorite) next.add(key); else next.delete(key); return next; });
+  }
+
+  async function handleDuplicateAssessment(assessment: AssessmentBundle["assessment"]) {
+    setError(null);
+    try {
+      const duplicate = await createSupabaseAssessmentFromExistingTemplate(assessment);
+      setBundles((current) => [{ assessment: duplicate, participants: [], responses: [], responseCount: 0 }, ...current]);
+    } catch (duplicateError) {
+      setError(getErrorMessage(duplicateError, messages.assessmentCreate.createError));
+    }
+  }
+
+  function handleResetAssessmentResults(assessmentId: string) {
+    setBundles((current) => current.map((bundle) =>
+      bundle.assessment.id === assessmentId
+        ? { ...bundle, participants: [], responses: [], responseCount: 0 }
+        : bundle
+    ));
   }
 
   function handleUpdateAssessment(nextAssessment: AssessmentBundle["assessment"]) {
@@ -232,6 +284,22 @@ function DashboardContent({ designer }: { designer: Designer }) {
       router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}`), { scroll: false });
     } catch (createError) {
       setError(getErrorMessage(createError, messages.auth.signInError));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleCreateDateFindingAssessment() {
+    if (!isSupabaseConfigured || creating) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const assessment = await createSupabaseDateFindingAssessment(locale);
+      setCreationOpen(false);
+      setCreationType("choose");
+      router.push(href(`/dashboard?setup=individual&assessment=${encodeURIComponent(assessment.id)}&findDate=1`), { scroll: false });
+    } catch (createError) {
+      setError(getErrorMessage(createError, messages.assessmentCreate.createError));
     } finally {
       setCreating(false);
     }
@@ -363,6 +431,12 @@ function DashboardContent({ designer }: { designer: Designer }) {
     );
   }
 
+  function renderFindDateTrigger() {
+    return <Button type="button" variant="secondary" className="border-2 !border-bone" disabled={!isSupabaseConfigured || creating} onClick={() => void handleCreateDateFindingAssessment()}>
+      {creating ? messages.app.loading : messages.dashboard.findDate}
+    </Button>;
+  }
+
   return (
     <>
       <input
@@ -390,8 +464,8 @@ function DashboardContent({ designer }: { designer: Designer }) {
         ) : dashboardEntries.length ? (
           <div className="space-y-7">
             <div className="flex w-full flex-wrap items-end justify-between gap-x-8 gap-y-3">
-              <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
-                {renderCreationTrigger("header")}
+              <div className="flex shrink-0 items-center gap-2">{renderCreationTrigger("header")}{renderFindDateTrigger()}</div>
+              <div className="flex flex-1 flex-wrap items-end justify-end gap-x-6 gap-y-3">
                 <div role="group" aria-label={messages.dashboard.filterTypes}>
                   <div className="flex flex-wrap gap-1.5">
                     {(["all", "individual", "collective"] as RitualTypeFilter[]).map((type) => {
@@ -401,8 +475,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                     })}
                   </div>
                 </div>
-              </div>
-              <label className="relative block w-full max-w-sm lg:ml-auto">
+                <label className="relative block w-full max-w-sm sm:w-72">
                 <span className="sr-only">{messages.dashboard.searchLabel}</span>
                 <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-bone/45" />
                 <input
@@ -412,10 +485,11 @@ function DashboardContent({ designer }: { designer: Designer }) {
                   placeholder={messages.dashboard.searchPlaceholder}
                   className="min-h-9 w-full rounded-md border border-bone/12 bg-bone/[0.025] py-1.5 pl-10 pr-3 text-sm text-bone placeholder:text-bone/40 focus:border-bone/40 focus:outline-none focus:ring-2 focus:ring-bone/30"
                 />
-              </label>
+                </label>
+              </div>
             </div>
 
-            {filteredEntries.length ? ritualSections.filter((section) => section.entries.length > 0).map((section) => {
+            {filteredEntries.length ? dashboardSections.filter((section) => section.entries.length > 0).map((section) => {
               const collapsed = Boolean(collapsedSections[section.id]);
               return (
                 <section key={section.id} aria-labelledby={`dashboard-section-${section.id}`}>
@@ -431,13 +505,24 @@ function DashboardContent({ designer }: { designer: Designer }) {
                   </button>
                   {!collapsed ? <div className="grid gap-4 xl:grid-cols-3">
                     {section.entries.map((entry) => entry.type === "collective" && entry.session ? (
-                      <LiveSessionCard key={`live:${entry.id}`} session={entry.session} onDelete={handleDeleteLiveSession} />
+                      <LiveSessionCard
+                        key={`live:${entry.id}`}
+                        session={entry.session}
+                        onDelete={handleDeleteLiveSession}
+                        favorite={favoriteIds.has(`collective:${entry.id}`)}
+                        onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
+                      />
                     ) : entry.type === "individual" && entry.bundle ? (
                       <AssessmentManagementCard
                         key={`assessment:${entry.id}`}
                         assessment={entry.bundle.assessment}
                         responses={entry.bundle.responses}
                         currentUserId={designer.id}
+                        favorite={favoriteIds.has(`individual:${entry.id}`)}
+                        responseCount={entry.bundle.responseCount}
+                        onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
+                        onDuplicate={(assessment) => void handleDuplicateAssessment(assessment)}
+                        onResetResults={handleResetAssessmentResults}
                         onDelete={handleDeleteAssessment}
                         onUpdate={handleUpdateAssessment}
                       />
@@ -456,19 +541,20 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <div className="py-8 text-center">
             <h2 className="font-heading text-3xl font-semibold text-bone">{messages.dashboard.emptyTitle}</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-bone/58">{messages.dashboard.emptyBody}</p>
-            <div className="mt-6 flex justify-center">{renderCreationTrigger("empty")}</div>
+            <div className="mt-6 flex justify-center gap-2">{renderCreationTrigger("empty")}{renderFindDateTrigger()}</div>
           </div>
         )}
       </div>
       {setupType === "collective" ? <CreationDialog label={messages.home.collectiveEyebrow} closing={liveCloseRequested} onClose={() => setLiveCloseRequested(true)}>
         <SetupContent key={collectiveSessionId ?? "new"} embedded sessionId={collectiveSessionId} closeRequested={liveCloseRequested} onDismiss={() => void handleCloseLiveSetup()} onCloseCancelled={() => setLiveCloseRequested(false)} />
       </CreationDialog> : null}
-      {individualAssessmentId ? <CreationDialog label={messages.builder.individualTitle} onClose={() => void handleCloseIndividualSetup()}>
+      {individualAssessmentId ? <CreationDialog mobileFullScreen label={messages.builder.individualTitle} onClose={() => void handleCloseIndividualSetup()}>
         <AssessmentBuilder
           key={individualAssessmentId}
           assessmentId={individualAssessmentId}
           ownerId={designer.id}
           initialTemplateMode={searchParams.get("template") === "1"}
+          initiallyOpenSchedulingActivity={searchParams.get("findDate") === "1"}
           embedded
           onDismiss={() => void handleCloseIndividualSetup()}
         />
@@ -477,7 +563,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   );
 }
 
-function CreationDialog({ children, label, onClose, closing = false }: { children: React.ReactNode; label: string; onClose?: () => void; closing?: boolean }) {
+function CreationDialog({ children, label, onClose, closing = false, mobileFullScreen = false }: { children: React.ReactNode; label: string; onClose?: () => void; closing?: boolean; mobileFullScreen?: boolean }) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -487,9 +573,9 @@ function CreationDialog({ children, label, onClose, closing = false }: { childre
   }, []);
 
   return (
-    <div className="ritual-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={() => !closing && onClose?.()}>
-      <div role="dialog" aria-modal="true" aria-label={label} className="ritual-overlay-surface ritual-dialog-panel modal-scroll relative max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-lg border p-5 sm:p-8" onMouseDown={(event) => event.stopPropagation()}>
-        {onClose ? <button type="button" aria-label="Close" disabled={closing} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50"><X size={18} aria-hidden="true" /></button> : null}
+    <div className={`ritual-dialog-backdrop fixed inset-0 z-50 flex ${mobileFullScreen ? "items-stretch p-0 sm:items-center sm:justify-center sm:p-4" : "items-center justify-center p-4"}`} onMouseDown={() => !closing && onClose?.()}>
+      <div role="dialog" aria-modal="true" aria-label={label} className={`ritual-overlay-surface ritual-dialog-panel modal-scroll relative w-full overflow-y-auto ${mobileFullScreen ? "h-[100dvh] max-h-[100dvh] max-w-none rounded-none border-0 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-5xl sm:rounded-lg sm:border sm:p-8" : "max-h-[calc(100dvh-2rem)] max-w-5xl rounded-lg border p-5 sm:p-8"}`} onMouseDown={(event) => event.stopPropagation()}>
+        {onClose ? <button type="button" aria-label="Close" disabled={closing} onClick={onClose} className="absolute right-3 top-3 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50 sm:right-4 sm:top-4"><X size={18} aria-hidden="true" /></button> : null}
         {children}
       </div>
     </div>

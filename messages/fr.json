@@ -63,6 +63,7 @@
     "emptyTitle": "Aucun rituel pour le moment.",
     "emptyBody": "Réunissez idées et perspectives.",
     "newRitual": "Nouveau rituel",
+    "findDate": "Trouver une date",
     "searchPlaceholder": "Rechercher par nom…",
     "searchLabel": "Rechercher des rituels par nom",
     "allTypes": "Tous les types",
@@ -356,7 +357,11 @@
     "assessment": {
       "draftTitle": "Evaluation sans titre",
       "demoTitle": "Evaluation des besoins organisationnels",
-      "demoDescription": "Un parcours visuel guide pour identifier les defis, classer les priorites et cadrer les besoins emergents."
+      "demoDescription": "Un parcours visuel guide pour identifier les defis, classer les priorites et cadrer les besoins emergents.",
+      "dateFindingTitle": "Disponibilités pour la rencontre",
+      "dateFindingDescription": "Partagez vos disponibilités afin de trouver un moment qui convienne à toutes les personnes participant à l'événement.",
+      "dateFindingActivityTitle": "Trouver une date",
+      "dateFindingActivityPrompt": "Sélectionnez toutes les dates ou heures auxquelles vous êtes disponible."
     },
     "activities": {
       "profiling": {
@@ -411,10 +416,6 @@
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
     "estimatedDurationToggle": "Afficher la durée estimée sur l'écran d'accueil",
-    "activitySummaryToggle": {
-      "label": "Passer le récapitulatif entre les activités",
-      "helper": "Les participants passent directement à l'activité suivante. Le récapitulatif avant l'envoi du questionnaire reste visible."
-    },
     "languageLabel": "Langue de l'evaluation",
     "promptLabel": "Question guide",
     "noActivitySelected": "Selectionnez une activite pour la configurer.",
@@ -443,12 +444,9 @@
     "collapse": "Réduire",
     "moveUp": "Monter",
     "moveDown": "Descendre",
-    "templateToggle": {
-      "label": "Enregistrer comme modèle réutilisable",
-      "helper": "Les modeles sont des structures reutilisables. Ils ne peuvent pas etre publies ni partages directement."
-    },
     "template": {
-      "save": "Enregistrer le modele"
+      "save": "Enregistrer comme modèle",
+      "saved": "Modèle enregistré"
     },
     "activityCards": {
       "profiling": {

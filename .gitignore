@@ -6,3 +6,5 @@ node_modules
 .tmp/
 supabase/.temp/
 test-results/
+scripts/demo/.auth/
+demo-output/

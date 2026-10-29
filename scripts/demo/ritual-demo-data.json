@@ -1,0 +1,824 @@
+{
+  "scenario": "Project kick-off",
+  "note": "Fictional demo data for screenshots and video. No real people or organizations. Live session uses 8 participants: Ritual allows 8 joins per session from the same network every 10 minutes.",
+  "participants": [
+    "Anna",
+    "Marco",
+    "Léa",
+    "Tomás",
+    "Sara",
+    "Youssef",
+    "Giulia",
+    "Ben"
+  ],
+  "languages": {
+    "en": {
+      "collective": {
+        "title": "Project kick-off workshop",
+        "participants": 8,
+        "activities": [
+          {
+            "type": "trigger",
+            "label": "Explore",
+            "prompt": "In one word: how do you feel about this project?",
+            "visual": "word cloud",
+            "responses": [
+              {
+                "participant": "Anna",
+                "text": "Curious"
+              },
+              {
+                "participant": "Marco",
+                "text": "Curious"
+              },
+              {
+                "participant": "Léa",
+                "text": "Curious"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Curious"
+              },
+              {
+                "participant": "Sara",
+                "text": "Curious"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Curious"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Ambitious"
+              },
+              {
+                "participant": "Ben",
+                "text": "Ambitious"
+              },
+              {
+                "participant": "Anna",
+                "text": "Ambitious"
+              },
+              {
+                "participant": "Marco",
+                "text": "Ambitious"
+              },
+              {
+                "participant": "Léa",
+                "text": "Ambitious"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Open"
+              },
+              {
+                "participant": "Sara",
+                "text": "Open"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Open"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Open"
+              },
+              {
+                "participant": "Ben",
+                "text": "Ready"
+              },
+              {
+                "participant": "Anna",
+                "text": "Ready"
+              },
+              {
+                "participant": "Marco",
+                "text": "Ready"
+              },
+              {
+                "participant": "Léa",
+                "text": "Connected"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Connected"
+              },
+              {
+                "participant": "Sara",
+                "text": "Connected"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Hopeful"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Hopeful"
+              },
+              {
+                "participant": "Ben",
+                "text": "Hopeful"
+              },
+              {
+                "participant": "Anna",
+                "text": "Busy"
+              },
+              {
+                "participant": "Marco",
+                "text": "Busy"
+              },
+              {
+                "participant": "Léa",
+                "text": "Focused"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Focused"
+              },
+              {
+                "participant": "Sara",
+                "text": "Excited"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Excited"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Unsure"
+              },
+              {
+                "participant": "Ben",
+                "text": "Unsure"
+              },
+              {
+                "participant": "Anna",
+                "text": "Inspired"
+              },
+              {
+                "participant": "Marco",
+                "text": "Committed"
+              },
+              {
+                "participant": "Léa",
+                "text": "Optimistic"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Challenged"
+              }
+            ]
+          },
+          {
+            "type": "surface",
+            "label": "Reflect",
+            "prompt": "What could slow us down, and what can we build on?",
+            "visual": "clusters",
+            "categories": [
+              {
+                "id": "barriers",
+                "label": "Barriers",
+                "color": "orange"
+              },
+              {
+                "id": "opportunities",
+                "label": "Opportunities",
+                "color": "mint"
+              }
+            ],
+            "responses": [
+              {
+                "participant": "Anna",
+                "category": "barriers",
+                "text": "Different priorities across partners"
+              },
+              {
+                "participant": "Marco",
+                "category": "barriers",
+                "text": "Limited time for coordination"
+              },
+              {
+                "participant": "Léa",
+                "category": "barriers",
+                "text": "Unclear decision-making"
+              },
+              {
+                "participant": "Tomás",
+                "category": "barriers",
+                "text": "Information spread across too many tools"
+              },
+              {
+                "participant": "Sara",
+                "category": "barriers",
+                "text": "Different working languages"
+              },
+              {
+                "participant": "Youssef",
+                "category": "opportunities",
+                "text": "Complementary skills"
+              },
+              {
+                "participant": "Giulia",
+                "category": "opportunities",
+                "text": "Knowledge from previous projects"
+              },
+              {
+                "participant": "Ben",
+                "category": "opportunities",
+                "text": "Strong local networks"
+              },
+              {
+                "participant": "Anna",
+                "category": "opportunities",
+                "text": "Shared motivation to make an impact"
+              },
+              {
+                "participant": "Marco",
+                "category": "opportunities",
+                "text": "Partners already used to working remotely"
+              }
+            ]
+          },
+          {
+            "type": "priority",
+            "label": "Prioritize",
+            "prompt": "What matters most to start well?",
+            "visual": "ranking",
+            "source": "manual",
+            "votesPerParticipant": 3,
+            "items": [
+              {
+                "label": "Clear shared goals",
+                "targetVotes": 8
+              },
+              {
+                "label": "Regular check-ins",
+                "targetVotes": 6
+              },
+              {
+                "label": "Early user involvement",
+                "targetVotes": 5
+              },
+              {
+                "label": "Shared workspace",
+                "targetVotes": 3
+              },
+              {
+                "label": "Communication plan",
+                "targetVotes": 2
+              }
+            ]
+          },
+          {
+            "type": "pact",
+            "label": "Agree",
+            "visual": "statement vote",
+            "statementMode": "predefined",
+            "statement": "We agree on one shared goal and review our progress together every month.",
+            "targetVotes": {
+              "agree": 5,
+              "partial": 2,
+              "disagree": 1
+            }
+          }
+        ]
+      },
+      "individual": {
+        "title": "Project kick-off",
+        "activities": [
+          {
+            "type": "scheduling",
+            "label": "Plan",
+            "visual": "calendar",
+            "title": "First working meeting",
+            "prompt": "When are you available for our first working meeting?",
+            "mode": "weekly",
+            "timezone": "Europe/Rome",
+            "slotDurationMinutes": 90,
+            "slots": [
+              {
+                "id": "slot_tue",
+                "date": "2026-11-10",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_wed",
+                "date": "2026-11-11",
+                "startTime": "14:00",
+                "endTime": "15:30"
+              },
+              {
+                "id": "slot_thu",
+                "date": "2026-11-12",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_fri",
+                "date": "2026-11-13",
+                "startTime": "09:30",
+                "endTime": "11:00"
+              }
+            ],
+            "respondents": 14,
+            "targetSelections": {
+              "slot_tue": 11,
+              "slot_wed": 6,
+              "slot_thu": 9,
+              "slot_fri": 4
+            }
+          }
+        ]
+      }
+    },
+    "it": {
+      "collective": {
+        "title": "Workshop di avvio del progetto",
+        "participants": 8,
+        "activities": [
+          {
+            "type": "trigger",
+            "label": "Explore",
+            "prompt": "In una parola: come ti senti rispetto a questo progetto?",
+            "visual": "word cloud",
+            "responses": [
+              {
+                "participant": "Anna",
+                "text": "Curioso"
+              },
+              {
+                "participant": "Marco",
+                "text": "Curioso"
+              },
+              {
+                "participant": "Léa",
+                "text": "Curioso"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Curioso"
+              },
+              {
+                "participant": "Sara",
+                "text": "Ambizioso"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Ambizioso"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Ambizioso"
+              },
+              {
+                "participant": "Ben",
+                "text": "Aperto"
+              },
+              {
+                "participant": "Anna",
+                "text": "Aperto"
+              },
+              {
+                "participant": "Marco",
+                "text": "Aperto"
+              },
+              {
+                "participant": "Léa",
+                "text": "Impegnato"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Impegnato"
+              },
+              {
+                "participant": "Sara",
+                "text": "Connesso"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Connesso"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Fiducioso"
+              },
+              {
+                "participant": "Ben",
+                "text": "Incerto"
+              },
+              {
+                "participant": "Anna",
+                "text": "Pronto"
+              }
+            ]
+          },
+          {
+            "type": "surface",
+            "label": "Reflect",
+            "prompt": "Cosa potrebbe rallentarci e su cosa possiamo costruire?",
+            "visual": "clusters",
+            "categories": [
+              {
+                "id": "barriers",
+                "label": "Barriere",
+                "color": "orange"
+              },
+              {
+                "id": "opportunities",
+                "label": "Opportunità",
+                "color": "mint"
+              }
+            ],
+            "responses": [
+              {
+                "participant": "Anna",
+                "category": "barriers",
+                "text": "Priorità diverse tra i partner"
+              },
+              {
+                "participant": "Marco",
+                "category": "barriers",
+                "text": "Poco tempo per il coordinamento"
+              },
+              {
+                "participant": "Léa",
+                "category": "barriers",
+                "text": "Processi decisionali poco chiari"
+              },
+              {
+                "participant": "Tomás",
+                "category": "barriers",
+                "text": "Informazioni sparse su troppi strumenti"
+              },
+              {
+                "participant": "Sara",
+                "category": "barriers",
+                "text": "Lingue di lavoro diverse"
+              },
+              {
+                "participant": "Youssef",
+                "category": "opportunities",
+                "text": "Competenze complementari"
+              },
+              {
+                "participant": "Giulia",
+                "category": "opportunities",
+                "text": "Esperienza da progetti precedenti"
+              },
+              {
+                "participant": "Ben",
+                "category": "opportunities",
+                "text": "Reti locali solide"
+              },
+              {
+                "participant": "Anna",
+                "category": "opportunities",
+                "text": "Motivazione comune a generare impatto"
+              },
+              {
+                "participant": "Marco",
+                "category": "opportunities",
+                "text": "Partner già abituati a lavorare a distanza"
+              }
+            ]
+          },
+          {
+            "type": "priority",
+            "label": "Prioritize",
+            "prompt": "Cosa conta di più per partire bene?",
+            "visual": "ranking",
+            "source": "manual",
+            "votesPerParticipant": 3,
+            "items": [
+              {
+                "label": "Obiettivi comuni chiari",
+                "targetVotes": 8
+              },
+              {
+                "label": "Aggiornamenti regolari",
+                "targetVotes": 6
+              },
+              {
+                "label": "Coinvolgimento precoce degli utenti",
+                "targetVotes": 5
+              },
+              {
+                "label": "Spazio di lavoro condiviso",
+                "targetVotes": 3
+              },
+              {
+                "label": "Piano di comunicazione",
+                "targetVotes": 2
+              }
+            ]
+          },
+          {
+            "type": "pact",
+            "label": "Agree",
+            "visual": "statement vote",
+            "statementMode": "predefined",
+            "statement": "Ci accordiamo su un obiettivo comune e verifichiamo insieme i progressi ogni mese.",
+            "targetVotes": {
+              "agree": 5,
+              "partial": 2,
+              "disagree": 1
+            }
+          }
+        ]
+      },
+      "individual": {
+        "title": "Avvio di progetto",
+        "activities": [
+          {
+            "type": "scheduling",
+            "label": "Plan",
+            "visual": "calendar",
+            "title": "Primo incontro operativo",
+            "prompt": "Quando sei disponibile per il primo incontro operativo?",
+            "mode": "weekly",
+            "timezone": "Europe/Rome",
+            "slotDurationMinutes": 90,
+            "slots": [
+              {
+                "id": "slot_tue",
+                "date": "2026-11-10",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_wed",
+                "date": "2026-11-11",
+                "startTime": "14:00",
+                "endTime": "15:30"
+              },
+              {
+                "id": "slot_thu",
+                "date": "2026-11-12",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_fri",
+                "date": "2026-11-13",
+                "startTime": "09:30",
+                "endTime": "11:00"
+              }
+            ],
+            "respondents": 14,
+            "targetSelections": {
+              "slot_tue": 11,
+              "slot_wed": 6,
+              "slot_thu": 9,
+              "slot_fri": 4
+            }
+          }
+        ]
+      }
+    },
+    "fr": {
+      "collective": {
+        "title": "Atelier de lancement du projet",
+        "participants": 8,
+        "activities": [
+          {
+            "type": "trigger",
+            "label": "Explore",
+            "prompt": "En un mot : comment vous sentez-vous face à ce projet ?",
+            "visual": "word cloud",
+            "responses": [
+              {
+                "participant": "Anna",
+                "text": "Curieux"
+              },
+              {
+                "participant": "Marco",
+                "text": "Curieux"
+              },
+              {
+                "participant": "Léa",
+                "text": "Curieux"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Curieux"
+              },
+              {
+                "participant": "Sara",
+                "text": "Ambitieux"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Ambitieux"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Ambitieux"
+              },
+              {
+                "participant": "Ben",
+                "text": "Ouvert"
+              },
+              {
+                "participant": "Anna",
+                "text": "Ouvert"
+              },
+              {
+                "participant": "Marco",
+                "text": "Ouvert"
+              },
+              {
+                "participant": "Léa",
+                "text": "Occupé"
+              },
+              {
+                "participant": "Tomás",
+                "text": "Occupé"
+              },
+              {
+                "participant": "Sara",
+                "text": "Connecté"
+              },
+              {
+                "participant": "Youssef",
+                "text": "Connecté"
+              },
+              {
+                "participant": "Giulia",
+                "text": "Confiant"
+              },
+              {
+                "participant": "Ben",
+                "text": "Incertain"
+              },
+              {
+                "participant": "Anna",
+                "text": "Prêt"
+              }
+            ]
+          },
+          {
+            "type": "surface",
+            "label": "Reflect",
+            "prompt": "Qu'est-ce qui pourrait nous freiner, et sur quoi pouvons-nous nous appuyer ?",
+            "visual": "clusters",
+            "categories": [
+              {
+                "id": "barriers",
+                "label": "Obstacles",
+                "color": "orange"
+              },
+              {
+                "id": "opportunities",
+                "label": "Opportunités",
+                "color": "mint"
+              }
+            ],
+            "responses": [
+              {
+                "participant": "Anna",
+                "category": "barriers",
+                "text": "Priorités différentes entre partenaires"
+              },
+              {
+                "participant": "Marco",
+                "category": "barriers",
+                "text": "Peu de temps pour la coordination"
+              },
+              {
+                "participant": "Léa",
+                "category": "barriers",
+                "text": "Prise de décision peu claire"
+              },
+              {
+                "participant": "Tomás",
+                "category": "barriers",
+                "text": "Informations dispersées sur trop d'outils"
+              },
+              {
+                "participant": "Sara",
+                "category": "barriers",
+                "text": "Langues de travail différentes"
+              },
+              {
+                "participant": "Youssef",
+                "category": "opportunities",
+                "text": "Compétences complémentaires"
+              },
+              {
+                "participant": "Giulia",
+                "category": "opportunities",
+                "text": "Expérience de projets précédents"
+              },
+              {
+                "participant": "Ben",
+                "category": "opportunities",
+                "text": "Réseaux locaux solides"
+              },
+              {
+                "participant": "Anna",
+                "category": "opportunities",
+                "text": "Envie commune d'avoir un impact"
+              },
+              {
+                "participant": "Marco",
+                "category": "opportunities",
+                "text": "Partenaires habitués au travail à distance"
+              }
+            ]
+          },
+          {
+            "type": "priority",
+            "label": "Prioritize",
+            "prompt": "Qu'est-ce qui compte le plus pour bien démarrer ?",
+            "visual": "ranking",
+            "source": "manual",
+            "votesPerParticipant": 3,
+            "items": [
+              {
+                "label": "Objectifs communs clairs",
+                "targetVotes": 8
+              },
+              {
+                "label": "Points d'étape réguliers",
+                "targetVotes": 6
+              },
+              {
+                "label": "Implication précoce des utilisateurs",
+                "targetVotes": 5
+              },
+              {
+                "label": "Espace de travail partagé",
+                "targetVotes": 3
+              },
+              {
+                "label": "Plan de communication",
+                "targetVotes": 2
+              }
+            ]
+          },
+          {
+            "type": "pact",
+            "label": "Agree",
+            "visual": "statement vote",
+            "statementMode": "predefined",
+            "statement": "Nous nous accordons sur un objectif commun et faisons le point ensemble chaque mois.",
+            "targetVotes": {
+              "agree": 5,
+              "partial": 2,
+              "disagree": 1
+            }
+          }
+        ]
+      },
+      "individual": {
+        "title": "Lancement de projet",
+        "activities": [
+          {
+            "type": "scheduling",
+            "label": "Plan",
+            "visual": "calendar",
+            "title": "Première réunion de travail",
+            "prompt": "Quand êtes-vous disponible pour notre première réunion de travail ?",
+            "mode": "weekly",
+            "timezone": "Europe/Rome",
+            "slotDurationMinutes": 90,
+            "slots": [
+              {
+                "id": "slot_tue",
+                "date": "2026-11-10",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_wed",
+                "date": "2026-11-11",
+                "startTime": "14:00",
+                "endTime": "15:30"
+              },
+              {
+                "id": "slot_thu",
+                "date": "2026-11-12",
+                "startTime": "10:00",
+                "endTime": "11:30"
+              },
+              {
+                "id": "slot_fri",
+                "date": "2026-11-13",
+                "startTime": "09:30",
+                "endTime": "11:00"
+              }
+            ],
+            "respondents": 14,
+            "targetSelections": {
+              "slot_tue": 11,
+              "slot_wed": 6,
+              "slot_thu": 9,
+              "slot_fri": 4
+            }
+          }
+        ]
+      }
+    }
+  }
+}

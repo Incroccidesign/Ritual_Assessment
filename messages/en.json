@@ -63,6 +63,7 @@
     "emptyTitle": "No rituals yet.",
     "emptyBody": "Bring ideas and perspectives together.",
     "newRitual": "New ritual",
+    "findDate": "Find a date",
     "searchPlaceholder": "Search by name…",
     "searchLabel": "Search rituals by name",
     "allTypes": "All types",
@@ -356,7 +357,11 @@
     "assessment": {
       "draftTitle": "Untitled assessment",
       "demoTitle": "Organizational needs assessment",
-      "demoDescription": "A guided visual path to identify challenges, rank priorities and frame emerging needs."
+      "demoDescription": "A guided visual path to identify challenges, rank priorities and frame emerging needs.",
+      "dateFindingTitle": "Meeting availability",
+      "dateFindingDescription": "Share your availability and find a time that works for everyone at your event.",
+      "dateFindingActivityTitle": "Find a date",
+      "dateFindingActivityPrompt": "Select every date or time when you are available."
     },
     "activities": {
       "profiling": {
@@ -411,10 +416,6 @@
     "estimatedDurationMin": "Min",
     "estimatedDurationMax": "Max",
     "estimatedDurationToggle": "Show estimated duration on welcome screen",
-    "activitySummaryToggle": {
-      "label": "Skip recap between activities",
-      "helper": "Participants continue directly to the next activity. The review before submitting the questionnaire remains visible."
-    },
     "languageLabel": "Assessment language",
     "promptLabel": "Guiding question",
     "noActivitySelected": "Select an activity to configure it.",
@@ -443,12 +444,9 @@
     "collapse": "Collapse",
     "moveUp": "Move up",
     "moveDown": "Move down",
-    "templateToggle": {
-      "label": "Save as reusable template",
-      "helper": "Templates are reusable structures. They cannot be published or shared directly."
-    },
     "template": {
-      "save": "Save template"
+      "save": "Save as template",
+      "saved": "Template saved"
     },
     "activityCards": {
       "profiling": {

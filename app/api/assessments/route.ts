@@ -81,8 +81,10 @@ function rewriteActivityReferences(configJson: Record<string, unknown>, activity
 
 export async function POST(request: Request) {
   let createdAssessmentId: string | null = null;
+  let phase = "authentication";
   try {
     const user = await requireRequestUser(request);
+    phase = "request-validation";
     const body = await request.json().catch(() => null) as Record<string, unknown> | null;
     const language = body?.language;
     const title = text(body?.title, 240);
@@ -90,10 +92,11 @@ export async function POST(request: Request) {
     const estimatedDuration = body?.estimatedDuration === null ? null : text(body?.estimatedDuration, 120);
     const activities = parseActivities(body?.activities);
     if (typeof language !== "string" || !languages.has(language as Assessment["language"]) || !title || !activities) {
-      return new Response("Invalid assessment creation request.", { status: 400 });
+      return NextResponse.json({ error: "Invalid assessment creation request: language, title, or activity fields are incomplete." }, { status: 400 });
     }
 
     const admin = createSupabaseAdminClient();
+    phase = "assessment-insert";
     const { data: assessment, error: assessmentError } = await admin
       .from("assessments")
       .insert({
@@ -101,7 +104,7 @@ export async function POST(request: Request) {
         title,
         description,
         estimated_duration: estimatedDuration,
-        hide_activity_summaries: Boolean(body?.hideActivitySummaries),
+        hide_activity_summaries: body?.hideActivitySummaries === undefined ? true : Boolean(body.hideActivitySummaries),
         language,
         status: "draft"
       })
@@ -113,6 +116,7 @@ export async function POST(request: Request) {
     const activityIds = new Map<string, string>();
     const createdActivities = [];
     for (const activity of activities) {
+      phase = `activity-insert:${activity.orderIndex}:${activity.type}`;
       const { data: createdActivity, error: activityError } = await admin
         .from("activities")
         .insert({
@@ -136,6 +140,8 @@ export async function POST(request: Request) {
       await createSupabaseAdminClient().from("assessments").delete().eq("id", createdAssessmentId);
     }
     if (error instanceof Response) return error;
-    return new Response("Unable to create assessment.", { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown server error";
+    console.error("[api/assessments] Creation failed", { phase, message });
+    return NextResponse.json({ error: process.env.NODE_ENV === "development" ? `${phase}: ${message}` : "Unable to create assessment." }, { status: 500 });
   }
 }

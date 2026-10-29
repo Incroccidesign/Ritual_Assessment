@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "ritual_name": "Project kick-off workshop",
+  "facilitator_name": null,
+  "context": null,
+  "participantDetailsMode": "nickname_only",
+  "selected_roles": [],
+  "custom_roles": [],
+  "activities": [
+    {
+      "type": "innesco",
+      "custom_suffix_label": null,
+      "order": 1,
+      "question_or_instruction": "In one word: how do you feel about this project?",
+      "timer_enabled": false,
+      "timer_duration": null,
+      "show_live_responses": true
+    },
+    {
+      "type": "emersione",
+      "custom_suffix_label": null,
+      "order": 2,
+      "question_or_instruction": "What could slow us down, and what can we build on?",
+      "timer_enabled": false,
+      "timer_duration": null,
+      "show_live_responses": true,
+      "surface_input_types": [
+        {
+          "id": "barriers",
+          "label": {
+            "it": "Barriere",
+            "en": "Barriers"
+          },
+          "color": "orange"
+        },
+        {
+          "id": "opportunities",
+          "label": {
+            "it": "Opportunità",
+            "en": "Opportunities"
+          },
+          "color": "mint"
+        }
+      ]
+    },
+    {
+      "type": "priorita",
+      "custom_suffix_label": null,
+      "order": 3,
+      "question_or_instruction": "What matters most to start well?",
+      "timer_enabled": false,
+      "timer_duration": null,
+      "show_live_responses": true,
+      "priority_source_type": "manual",
+      "source_activity_order": null,
+      "manual_items": [
+        "Clear shared goals",
+        "Regular check-ins",
+        "Early user involvement",
+        "Shared workspace",
+        "Communication plan"
+      ],
+      "votesPerParticipant": 3
+    },
+    {
+      "type": "patto",
+      "custom_suffix_label": null,
+      "order": 4,
+      "question_or_instruction": "Express your level of agreement with the final pact.",
+      "timer_enabled": false,
+      "timer_duration": null,
+      "show_live_responses": true,
+      "pactStatementMode": "predefined",
+      "pactProposal": "We agree on one shared goal and review our progress together every month.",
+      "finalStatement": null,
+      "facilitatorNote": null
+    }
+  ]
+}
