@@ -450,9 +450,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
         }}
       />
       <div className="relative">
-        <h1 className="font-heading text-5xl font-semibold leading-none text-bone">{messages.dashboard.title}</h1>
+        <h1 className="font-heading text-4xl font-semibold leading-none text-bone sm:text-5xl">{messages.dashboard.title}</h1>
       </div>
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         {!isSupabaseConfigured ? (
           <Card>
             <p className="text-bone/62">{messages.auth.supabaseRequired}</p>
@@ -463,11 +463,11 @@ function DashboardContent({ designer }: { designer: Designer }) {
           <Card><p className="text-orange">{error}</p></Card>
         ) : dashboardEntries.length ? (
           <div className="space-y-7">
-            <div className="flex w-full flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <div className="flex w-full flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8">
               <div className="flex shrink-0 items-center gap-2">{renderCreationTrigger("header")}{renderFindDateTrigger()}</div>
-              <div className="flex flex-1 flex-wrap items-end justify-end gap-x-6 gap-y-3">
-                <div role="group" aria-label={messages.dashboard.filterTypes}>
-                  <div className="flex flex-wrap gap-1.5">
+              <div className="flex w-full flex-col gap-4 md:w-auto md:flex-1 md:flex-row md:items-end md:justify-end md:gap-6">
+                <div role="group" aria-label={messages.dashboard.filterTypes} className="w-full md:w-auto">
+                  <div className="flex flex-nowrap gap-1.5">
                     {(["all", "individual", "collective"] as RitualTypeFilter[]).map((type) => {
                       const label = type === "all" ? messages.dashboard.allTypes : type === "individual" ? messages.dashboard.individual : messages.dashboard.collective;
                       const selected = typeFilter === type;
@@ -475,7 +475,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
                     })}
                   </div>
                 </div>
-                <label className="relative block w-full max-w-sm sm:w-72">
+                <label className="relative block w-full md:max-w-sm md:w-72">
                 <span className="sr-only">{messages.dashboard.searchLabel}</span>
                 <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-bone/45" />
                 <input
