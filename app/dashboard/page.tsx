@@ -11,10 +11,12 @@ import { Designer } from "@/lib/auth/designerAuth";
 import { DesignerAuthGate } from "@/components/auth/DesignerAuthGate";
 import { AssessmentCreationCard } from "@/components/dashboard/AssessmentCreationCard";
 import { AssessmentManagementCard } from "@/components/dashboard/AssessmentManagementCard";
+import { PublishSuccessDialog } from "@/components/dashboard/PublishSuccessDialog";
 import { LiveSessionCard } from "@/components/dashboard/LiveSessionCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Button, Card } from "@/components/ritual-ui";
 import { AssessmentTemplate } from "@/data/templates/nasijSustainabilityAssessmentTemplate";
+import { Assessment } from "@/types/assessment";
 import {
   AssessmentBundle,
   createSupabaseAssessment,
@@ -44,6 +46,20 @@ type DashboardEntry = {
   bundle?: AssessmentBundle;
   session?: DashboardLiveSession;
 };
+type DashboardDateGroupId = "today" | "yesterday" | "last7Days" | "older";
+type DashboardDateGroup = { id: DashboardDateGroupId; label: string; entries: DashboardEntry[] };
+type DashboardSection = { id: string; label: string; entries: DashboardEntry[]; dateGroups?: DashboardDateGroup[] };
+
+function updatedDateGroup(updatedAt: string, todayOrdinal: number): DashboardDateGroupId {
+  const date = new Date(updatedAt);
+  if (!Number.isFinite(date.getTime())) return "older";
+  const dateOrdinal = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const daysAgo = Math.max(0, Math.floor((todayOrdinal - dateOrdinal) / 86_400_000));
+  if (daysAgo === 0) return "today";
+  if (daysAgo === 1) return "yesterday";
+  if (daysAgo <= 7) return "last7Days";
+  return "older";
+}
 
 export default function DashboardPage() {
   return (
@@ -76,6 +92,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   const [creationAnchor, setCreationAnchor] = useState<"header" | "empty">("header");
   const [creationType, setCreationType] = useState<"choose" | "assessment">("choose");
   const [liveCloseRequested, setLiveCloseRequested] = useState(false);
+  const [publishedAssessment, setPublishedAssessment] = useState<Assessment | null>(null);
   const setupType = searchParams.get("setup");
   const collectiveSessionId = setupType === "collective" ? searchParams.get("id") : null;
   const individualAssessmentId = setupType === "individual" ? searchParams.get("assessment") : null;
@@ -119,10 +136,22 @@ function DashboardContent({ designer }: { designer: Designer }) {
       })
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }, [dashboardEntries, locale, searchQuery, typeFilter]);
-  const dashboardSections = [
+  const today = new Date();
+  const todayOrdinal = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const dateGroupDefinitions: { id: DashboardDateGroupId; label: string }[] = [
+    { id: "today", label: messages.dashboard.sectionToday },
+    { id: "yesterday", label: messages.dashboard.sectionYesterday },
+    { id: "last7Days", label: messages.dashboard.sectionLast7Days },
+    { id: "older", label: messages.dashboard.sectionOlder }
+  ];
+  const allDateGroups: DashboardDateGroup[] = dateGroupDefinitions.map((group) => ({
+    ...group,
+    entries: filteredEntries.filter((entry) => updatedDateGroup(entry.updatedAt, todayOrdinal) === group.id)
+  }));
+  const dashboardSections: DashboardSection[] = [
     { id: "favorites", label: "Favorites", entries: filteredEntries.filter((entry) => favoriteIds.has(`${entry.type}:${entry.id}`)) },
     { id: "drafts", label: messages.dashboard.sectionDrafts, entries: filteredEntries.filter((entry) => entry.group === "drafts") },
-    { id: "all", label: "All Rituals", entries: filteredEntries }
+    { id: "all", label: "All Rituals", entries: filteredEntries, dateGroups: allDateGroups }
   ];
 
   function resetDashboardFilters() {
@@ -437,6 +466,34 @@ function DashboardContent({ designer }: { designer: Designer }) {
     </Button>;
   }
 
+  function renderEntryCards(entries: DashboardEntry[]) {
+    return <div className="grid gap-4 xl:grid-cols-3">
+      {entries.map((entry) => entry.type === "collective" && entry.session ? (
+        <LiveSessionCard
+          key={`live:${entry.id}`}
+          session={entry.session}
+          onDelete={handleDeleteLiveSession}
+          favorite={favoriteIds.has(`collective:${entry.id}`)}
+          onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
+        />
+      ) : entry.type === "individual" && entry.bundle ? (
+        <AssessmentManagementCard
+          key={`assessment:${entry.id}`}
+          assessment={entry.bundle.assessment}
+          responses={entry.bundle.responses}
+          currentUserId={designer.id}
+          favorite={favoriteIds.has(`individual:${entry.id}`)}
+          responseCount={entry.bundle.responseCount}
+          onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
+          onDuplicate={(assessment) => void handleDuplicateAssessment(assessment)}
+          onResetResults={handleResetAssessmentResults}
+          onDelete={handleDeleteAssessment}
+          onUpdate={handleUpdateAssessment}
+        />
+      ) : null)}
+    </div>;
+  }
+
   return (
     <>
       <input
@@ -503,31 +560,28 @@ function DashboardContent({ designer }: { designer: Designer }) {
                     <ChevronDown aria-hidden="true" size={17} className={`text-bone/55 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
                     <span className="font-heading text-xl font-semibold text-bone">{section.label}</span>
                   </button>
-                  {!collapsed ? <div className="grid gap-4 xl:grid-cols-3">
-                    {section.entries.map((entry) => entry.type === "collective" && entry.session ? (
-                      <LiveSessionCard
-                        key={`live:${entry.id}`}
-                        session={entry.session}
-                        onDelete={handleDeleteLiveSession}
-                        favorite={favoriteIds.has(`collective:${entry.id}`)}
-                        onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
-                      />
-                    ) : entry.type === "individual" && entry.bundle ? (
-                      <AssessmentManagementCard
-                        key={`assessment:${entry.id}`}
-                        assessment={entry.bundle.assessment}
-                        responses={entry.bundle.responses}
-                        currentUserId={designer.id}
-                        favorite={favoriteIds.has(`individual:${entry.id}`)}
-                        responseCount={entry.bundle.responseCount}
-                        onToggleFavorite={favoritesAvailable ? () => void handleToggleFavorite(entry) : undefined}
-                        onDuplicate={(assessment) => void handleDuplicateAssessment(assessment)}
-                        onResetResults={handleResetAssessmentResults}
-                        onDelete={handleDeleteAssessment}
-                        onUpdate={handleUpdateAssessment}
-                      />
-                    ) : null)}
-                  </div> : null}
+                  {!collapsed ? section.dateGroups ? (
+                    <div className="space-y-4">
+                      {section.dateGroups.filter((group) => group.entries.length > 0).map((group) => {
+                        const groupKey = `all-${group.id}`;
+                        const groupCollapsed = Boolean(collapsedSections[groupKey]);
+                        return <section key={group.id} aria-labelledby={`dashboard-section-${groupKey}`}>
+                          <button
+                            type="button"
+                            id={`dashboard-section-${groupKey}`}
+                            aria-expanded={!groupCollapsed}
+                            onClick={() => setCollapsedSections((current) => ({ ...current, [groupKey]: !current[groupKey] }))}
+                            className="mb-2 inline-flex min-h-8 items-center gap-2 rounded-md pr-2 text-left focus:outline-none focus:ring-2 focus:ring-mint"
+                          >
+                            <ChevronDown aria-hidden="true" size={15} className={`text-bone/45 transition-transform ${groupCollapsed ? "-rotate-90" : ""}`} />
+                            <span className="text-sm font-semibold text-bone/78">{group.label}</span>
+                            <span className="text-xs tabular-nums text-bone/40">{group.entries.length}</span>
+                          </button>
+                          {!groupCollapsed ? renderEntryCards(group.entries) : null}
+                        </section>;
+                      })}
+                    </div>
+                  ) : renderEntryCards(section.entries) : null}
                 </section>
               );
             }) : (
@@ -557,8 +611,13 @@ function DashboardContent({ designer }: { designer: Designer }) {
           initiallyOpenSchedulingActivity={searchParams.get("findDate") === "1"}
           embedded
           onDismiss={() => void handleCloseIndividualSetup()}
+          onPublishSuccess={(published) => {
+            setPublishedAssessment(published);
+            void handleCloseIndividualSetup();
+          }}
         />
       </CreationDialog> : null}
+      {publishedAssessment ? <PublishSuccessDialog assessment={publishedAssessment} onClose={() => setPublishedAssessment(null)} /> : null}
     </>
   );
 }

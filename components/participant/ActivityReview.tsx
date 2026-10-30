@@ -7,11 +7,21 @@ import { PlanningReportSummary } from "@/components/activities/planning-report/P
 import { PrioritizationSummary } from "@/components/activities/prioritization/PrioritizationSummary";
 import { ProfilingSummary } from "@/components/activities/profiling/ProfilingSummary";
 import { SchedulingSummary } from "@/components/activities/scheduling/SchedulingSummary";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 export function ActivityReview({ activity, answer }: { activity: Activity; answer: ActivityAnswer }) {
+  const { messages } = useLocale();
+
   return (
     <section>
-      <h1 className="font-heading text-3xl font-semibold leading-tight text-bone">{activity.title}</h1>
+      <h1 className="font-heading text-3xl font-semibold leading-tight text-bone">
+        {activity.type === "scheduling" ? messages.participant.scheduling.reviewTitle : activity.title}
+      </h1>
+      {activity.type === "scheduling" && "slotIds" in answer ? (
+        <p className="mt-3 text-base text-bone/62">
+          {messages.participant.scheduling.reviewSelectedCount.replace("{count}", String(answer.slotIds.length))}
+        </p>
+      ) : null}
       <div className="mt-6 border-y border-bone/10 py-1">
         {activity.type === "profiling" && "fields" in answer ? <ProfilingSummary activity={activity} answer={answer} /> : null}
         {activity.type === "exploration" && "items" in answer ? <ExplorationSummary answer={answer} /> : null}

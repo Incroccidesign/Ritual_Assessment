@@ -2,9 +2,10 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
+import Image from "next/image";
 import { AccountDeletionDialog } from "@/components/dashboard/AccountDeletionDialog";
 import { Designer, signOutDesigner } from "@/lib/auth/designerAuth";
+import { profileAvatarPath } from "@/lib/auth/profileAvatars";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { cn } from "@/lib/utils/cn";
@@ -26,8 +27,8 @@ export function AccountMenu({ designer }: { designer: Designer }) {
   return (
     <>
       <div ref={menuRef} className="relative">
-        <button type="button" aria-label={messages.account.menuLabel} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="inline-flex size-11 items-center justify-center rounded-full border border-bone/15 bg-bone text-night shadow-live transition hover:bg-mint focus:outline-none focus:ring-2 focus:ring-mint">
-          <UserRound size={23} strokeWidth={2.1} />
+        <button type="button" aria-label={messages.account.menuLabel} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="inline-flex size-11 items-center justify-center overflow-hidden rounded-full bg-transparent transition focus:outline-none focus:ring-2 focus:ring-mint">
+          <Image src={profileAvatarPath(designer.avatarId)} alt="" aria-hidden="true" width={256} height={256} className="size-full object-cover" />
         </button>
         {open ? (
           <div role="menu" className="ritual-popover-surface absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 rounded-lg border p-2">

@@ -139,7 +139,7 @@ function HomeContent() {
       </div>
     </main>
     {authMode ? <HomeAuthDialog pending={authPending} onClose={closeAuth}>
-      <LoginContent embedded onBusyChange={setAuthPending} className="ritual-overlay-surface auth-dialog-panel auth-dialog-scroll max-h-[calc(100dvh-3rem)] overflow-y-auto p-6 pb-12 sm:p-8 sm:pb-12" />
+      <LoginContent embedded onBusyChange={setAuthPending} className="ritual-overlay-surface auth-dialog-panel p-6 sm:p-8" />
     </HomeAuthDialog> : null}
     </>
   );
@@ -334,19 +334,21 @@ function HomeAuthDialog({ children, onClose, pending }: { children: React.ReactN
   }, [onClose, pending]);
 
   return (
-    <div className="auth-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#01060e]/74 px-4 py-6 backdrop-blur-md" onMouseDown={() => !pending && onClose()}>
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Authentication"
-        className="relative w-full max-w-xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <button type="button" aria-label="Close" disabled={pending} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50">
-          <X size={18} aria-hidden="true" />
-        </button>
-        {children}
+    <div className="auth-dialog-backdrop fixed inset-0 z-50 overflow-y-auto bg-[#01060e]/74 backdrop-blur-md" onMouseDown={() => !pending && onClose()}>
+      <div className="flex min-h-full items-start justify-center px-4 py-6">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Authentication"
+          className="relative my-auto w-full max-w-xl"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <button type="button" aria-label="Close" disabled={pending} onClick={onClose} className="absolute right-4 top-4 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50">
+            <X size={18} aria-hidden="true" />
+          </button>
+          {children}
+        </div>
       </div>
     </div>
   );

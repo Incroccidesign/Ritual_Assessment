@@ -8,24 +8,30 @@ import { Button, ButtonLink, SubtlePanel } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { publishSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { PublishSuccessDialog } from "@/components/dashboard/PublishSuccessDialog";
 
 export function LinkGenerator({
   assessment,
   onPublish,
   disabled = false,
   compact = false,
-  className
+  className,
+  onPublishedClose,
+  onPublishSuccess
 }: {
   assessment: Assessment;
   onPublish: (assessment: Assessment) => void;
   disabled?: boolean;
   compact?: boolean;
   className?: string;
+  onPublishedClose?: () => void;
+  onPublishSuccess?: (assessment: Assessment) => void;
 }) {
   const router = useRouter();
   const { messages, href } = useLocale();
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [publishedAssessment, setPublishedAssessment] = useState<Assessment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const publicPath = assessment.publicToken ? `/participate/${assessment.publicToken}` : "";
   const publicLink = useMemo(() => {
@@ -47,6 +53,8 @@ export function LinkGenerator({
       }
 
       onPublish(published);
+      if (onPublishSuccess) onPublishSuccess(published);
+      else setPublishedAssessment(published);
     } catch (publishError) {
       setError(getErrorMessage(publishError, messages.auth.signInError));
     } finally {
@@ -63,6 +71,7 @@ export function LinkGenerator({
 
   if (compact) {
     return (
+      <>
       <div className={`flex flex-wrap items-center gap-3 ${className ?? ""}`}>
         {!disabled && !assessment.publicToken ? (
           <Button type="button" className="w-full sm:w-auto" onClick={() => void publish()} disabled={publishing}>
@@ -86,10 +95,16 @@ export function LinkGenerator({
         ) : null}
         {error ? <p className="w-full text-sm text-orange">{error}</p> : null}
       </div>
+      {publishedAssessment ? <PublishSuccessDialog assessment={publishedAssessment} onClose={() => {
+        setPublishedAssessment(null);
+        onPublishedClose?.();
+      }} /> : null}
+      </>
     );
   }
 
   return (
+    <>
     <SubtlePanel className="space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/45">{messages.builder.participantPreview}</p>
@@ -127,5 +142,10 @@ export function LinkGenerator({
       ) : null}
       {error ? <p className="text-sm text-orange">{error}</p> : null}
     </SubtlePanel>
+    {publishedAssessment ? <PublishSuccessDialog assessment={publishedAssessment} onClose={() => {
+      setPublishedAssessment(null);
+      onPublishedClose?.();
+    }} /> : null}
+    </>
   );
 }

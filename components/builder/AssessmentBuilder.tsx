@@ -57,7 +57,8 @@ export function AssessmentBuilder({
   initialTemplateMode = false,
   initiallyOpenSchedulingActivity = false,
   embedded = false,
-  onDismiss
+  onDismiss,
+  onPublishSuccess
 }: {
   assessmentId: string;
   ownerId: string;
@@ -65,10 +66,12 @@ export function AssessmentBuilder({
   initiallyOpenSchedulingActivity?: boolean;
   embedded?: boolean;
   onDismiss?: () => void;
+  onPublishSuccess?: (assessment: Assessment) => void | Promise<void>;
 }) {
   const { messages } = useLocale();
   const router = useRouter();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [justPublished, setJustPublished] = useState(false);
   const [isTemplate, setIsTemplate] = useState(initialTemplateMode);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -343,7 +346,7 @@ export function AssessmentBuilder({
           </div>
         )}
       {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
-      {assessment.status === "published" ? (
+      {assessment.status === "published" && !justPublished ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="ritual-overlay-surface w-full max-w-md border">
             <h2 className="font-heading text-2xl font-semibold text-bone">{messages.builder.pauseToEditTitle}</h2>
@@ -402,10 +405,14 @@ export function AssessmentBuilder({
             <LinkGenerator
               assessment={assessment}
               onPublish={(published) => {
+                setJustPublished(true);
                 setAssessment(published);
+              }}
+              onPublishedClose={() => {
                 if (embedded) onDismiss?.();
                 else router.replace("/dashboard");
               }}
+              onPublishSuccess={onPublishSuccess ? (published) => void onPublishSuccess(published) : undefined}
               disabled={initialTemplateMode}
               compact
               className="w-full sm:order-2 sm:w-auto"

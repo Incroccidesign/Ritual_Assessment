@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { LegalFooter } from "@/components/legal/LegalFooter";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/auth/designerAuth";
 import { mapSignInError, mapSignUpError } from "@/lib/auth/authErrorMessages";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { PROFILE_AVATAR_IDS, type ProfileAvatarId, profileAvatarPath } from "@/lib/auth/profileAvatars";
 
 const PASSWORD_MIN_LENGTH = 12;
 const USERNAME_MIN_LENGTH = 2;
@@ -27,6 +29,7 @@ type FieldErrors = {
   email?: string;
   password?: string;
   username?: string;
+  profileAvatar?: string;
   legal?: string;
 };
 
@@ -61,6 +64,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
   const [mode, setMode] = useState<AuthMode>(() => passwordReset ? "new-password" : requestedMode === "sign-up" ? "sign-up" : "sign-in");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [profileAvatarId, setProfileAvatarId] = useState<ProfileAvatarId | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedLegal, setAcceptedLegal] = useState(false);
@@ -117,6 +121,10 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
       nextErrors.username = messages.auth.usernameInvalid;
     }
 
+    if (mode === "sign-up" && !profileAvatarId) {
+      nextErrors.profileAvatar = messages.auth.profileImageRequired;
+    }
+
     if (mode === "sign-up" && !acceptedLegal) {
       nextErrors.legal = messages.auth.legalAcceptanceRequired;
     }
@@ -159,7 +167,8 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
         await signInDesigner(email.trim(), password, captchaToken ?? undefined);
         router.replace(href(next));
       } else {
-        const result = await signUpDesigner(email.trim(), password, username.trim(), captchaToken ?? undefined);
+        if (!profileAvatarId) return;
+        const result = await signUpDesigner(email.trim(), password, username.trim(), profileAvatarId, captchaToken ?? undefined);
         if (result.requiresEmailConfirmation) {
           setPassword("");
           setPendingVerificationEmail(email.trim());
@@ -208,7 +217,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
   }
 
   return (
-    <AuthContainer embedded={embedded} header={<PublicHeader onSignIn={() => setMode("sign-in")} onSignUp={() => setMode("sign-up")} className="mb-10" />}>
+    <AuthContainer embedded={embedded} header={<PublicHeader activeAuthMode={mode === "sign-in" || mode === "sign-up" ? mode : undefined} onSignIn={() => setMode("sign-in")} onSignUp={() => setMode("sign-up")} className="mb-10" />}>
       <Card className={className}>
         <div>
           <h1 className="font-heading text-4xl font-semibold leading-tight text-bone">
@@ -304,7 +313,7 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
           </div>
         ) : (
           <form
-            className="mt-5 space-y-3"
+            className="mt-5 space-y-4"
             noValidate
             onSubmit={(event) => {
               event.preventDefault();
@@ -331,6 +340,29 @@ export function LoginContent({ onBusyChange, className, embedded = false }: Logi
                 {fieldErrors.username ? <p className="mt-2 text-sm text-orange">{fieldErrors.username}</p> : null}
               </>
             </Field> : null}
+            {mode === "sign-up" ? <fieldset className="min-w-0">
+              <legend className="text-xs font-semibold uppercase tracking-[0.18em] text-bone/58">{messages.auth.profileImageLabel}</legend>
+              <div role="group" aria-label={messages.auth.profileImageLabel} className="mt-3 grid grid-cols-6 gap-1.5">
+                {PROFILE_AVATAR_IDS.map((avatarId, index) => {
+                  const selected = profileAvatarId === avatarId;
+                  return <button
+                    key={avatarId}
+                    type="button"
+                    aria-label={messages.auth.profileImageOption.replace("{number}", String(index + 1))}
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setProfileAvatarId(avatarId);
+                      setFieldErrors((current) => ({ ...current, profileAvatar: undefined }));
+                      setFormError(null);
+                    }}
+                    className={`group relative aspect-square w-full max-w-14 justify-self-start overflow-hidden rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-mint focus-visible:ring-offset-2 focus-visible:ring-offset-night ${selected ? "border-[3px] border-mint" : "border-bone/15 hover:border-bone/55"}`}
+                  >
+                    <Image src={profileAvatarPath(avatarId)} alt="" aria-hidden="true" width={256} height={256} className="size-full object-cover" />
+                  </button>;
+                })}
+              </div>
+              {fieldErrors.profileAvatar ? <p className="mt-2 text-sm text-orange" role="alert">{fieldErrors.profileAvatar}</p> : null}
+            </fieldset> : null}
             {mode !== "new-password" ? <Field label={messages.auth.email}>
               <>
                 <input

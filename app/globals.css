@@ -90,14 +90,6 @@ select {
   box-shadow: 0 28px 80px rgb(0 0 0 / 0.72);
 }
 
-.auth-dialog-scroll {
-  scrollbar-width: none;
-}
-
-.auth-dialog-scroll::-webkit-scrollbar {
-  display: none;
-}
-
 .modal-scroll {
   scrollbar-width: none;
 }
@@ -274,4 +266,31 @@ select {
 .dashboard-card-copy-link:focus-visible {
   outline: 2px solid rgb(243 239 230 / 0.72);
   outline-offset: 2px;
+}
+
+.dashboard-card-copy-check {
+  animation: dashboard-copy-check-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes dashboard-copy-check-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) translateY(2px);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.12) translateY(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card-copy-check {
+    animation: none;
+  }
 }

@@ -119,6 +119,7 @@ export function SchedulingEditor({ activity, onChange }: { activity: SchedulingA
         mode={activity.mode}
         slots={activity.slots}
         duration={activity.slotDurationMinutes}
+        timezone={activity.timezone || browserTimezone()}
         onToggle={toggleSlot}
         onModeChange={changeMode}
         onDurationChange={(slotDurationMinutes) => onChange({ ...activity, slotDurationMinutes })}

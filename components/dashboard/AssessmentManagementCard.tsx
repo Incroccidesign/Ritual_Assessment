@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CopyPlus, FileText, MoreHorizontal, Pause, Pencil, RotateCcw, Square, Star, Trash2 } from "lucide-react";
+import { Check, CopyPlus, FileText, MoreHorizontal, Pause, Pencil, RotateCcw, Square, Star, Trash2 } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { SchedulingActivity } from "@/types/activity";
 import { AssessmentResponse } from "@/types/response";
@@ -14,6 +14,7 @@ import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, resetSupabaseAssessmentResults, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 import { schedulingVotes, slotLabel } from "@/lib/activities/scheduling";
 import { ActivityThumbnails } from "@/components/dashboard/ActivityThumbnails";
+import { PublishSuccessDialog } from "@/components/dashboard/PublishSuccessDialog";
 import type { ActivityType } from "@/types/activity";
 
 const activityIllustrations: Record<ActivityType, string> = {
@@ -52,6 +53,7 @@ export function AssessmentManagementCard({
   const [resetOpen, setResetOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [publishedAssessment, setPublishedAssessment] = useState<Assessment | null>(null);
   const [statusAction, setStatusAction] = useState<"pause" | "close" | null>(null);
   const [closeSlotId, setCloseSlotId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -95,6 +97,7 @@ export function AssessmentManagementCard({
       setNotice(null);
       const published = await publishSupabaseAssessment(assessment);
       onUpdate?.(published);
+      if (assessment.status === "draft") setPublishedAssessment(published);
       window.dispatchEvent(new Event("ritual-assessment-storage"));
     } catch {
       setNotice(messages.auth.signInError);
@@ -250,9 +253,9 @@ export function AssessmentManagementCard({
             {publishing ? messages.app.loading : "Publish"}
           </Button>
         ) : assessment.status === "published" ? (
-          <div className="pointer-events-auto flex items-center gap-2">
+          <div className="pointer-events-auto flex translate-y-2 items-center gap-2">
             {assessment.publicToken ? <button type="button" aria-label={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} title={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} className="dashboard-card-hover-reveal dashboard-card-copy-link" onClick={() => void copyPublicLink()}>
-              <Image src="/icons/dashboard-copy-participant-link.svg" alt="" aria-hidden="true" width={16} height={16} className="size-4" />
+              {copied ? <Check key="copied" aria-hidden="true" size={16} strokeWidth={2.6} className="dashboard-card-copy-check text-mint" /> : <Image key="copy-link" src="/icons/dashboard-copy-participant-link.svg" alt="" aria-hidden="true" width={16} height={16} className="size-4" />}
             </button> : null}
             <span className="text-sm font-medium text-bone">{responseCount} responses</span>
             {copied ? <span className="sr-only" role="status">{messages.dashboard.linkCopied}</span> : null}
@@ -324,6 +327,7 @@ export function AssessmentManagementCard({
       ) : null}
 
       {notice ? <p className="text-sm text-orange">{notice}</p> : null}
+      {publishedAssessment ? <PublishSuccessDialog assessment={publishedAssessment} onClose={() => setPublishedAssessment(null)} /> : null}
     </Card>
   );
 }

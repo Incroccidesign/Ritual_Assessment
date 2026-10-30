@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Designer, getCurrentDesigner, signOutDesigner } from "@/lib/auth/designerAuth";
+import { Designer, designerFromUser, getCurrentDesigner, signOutDesigner } from "@/lib/auth/designerAuth";
 import { Button } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { supabase } from "@/lib/supabase/client";
@@ -40,7 +40,7 @@ export function DesignerAuthGate({ children }: { children: (designer: Designer) 
     const authSubscription = supabase?.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       const user = session?.user;
-      setDesigner(user ? { id: user.id, email: user.email ?? "designer" } : null);
+      setDesigner(user ? designerFromUser(user) : null);
       setLoading(false);
       if (!user) {
         setLegalAccepted(null);

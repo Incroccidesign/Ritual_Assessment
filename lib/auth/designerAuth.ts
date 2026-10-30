@@ -1,11 +1,22 @@
 "use client";
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { isProfileAvatarId, type ProfileAvatarId } from "@/lib/auth/profileAvatars";
 
 export type Designer = {
   id: string;
   email: string;
+  avatarId: ProfileAvatarId;
 };
+
+export function designerFromUser(user: { id: string; email?: string; user_metadata?: Record<string, unknown> }): Designer {
+  const avatarId = user.user_metadata?.profile_avatar_id;
+  return {
+    id: user.id,
+    email: user.email ?? "designer",
+    avatarId: isProfileAvatarId(avatarId) ? avatarId : "01"
+  };
+}
 
 async function syncDesignerProfile(designer: Designer) {
   if (!supabase) return;
@@ -23,7 +34,7 @@ export async function getCurrentDesigner(): Promise<Designer | null> {
   if (!isSupabaseConfigured || !supabase) return null;
   const { data } = await supabase.auth.getUser();
   const user = data.user;
-  return user ? { id: user.id, email: user.email ?? "designer" } : null;
+  return user ? designerFromUser(user) : null;
 }
 
 export async function signInDesigner(email: string, password: string, captchaToken?: string) {
@@ -35,26 +46,26 @@ export async function signInDesigner(email: string, password: string, captchaTok
   });
   if (error) throw error;
   if (!data.user) throw new Error("No user returned by Supabase Auth.");
-  const designer = { id: data.user.id, email: data.user.email ?? email };
+  const designer = designerFromUser(data.user);
   await syncDesignerProfile(designer);
   window.dispatchEvent(new Event("ritual-designer-auth"));
   return designer;
 }
 
-export async function signUpDesigner(email: string, password: string, fullName: string, captchaToken?: string) {
+export async function signUpDesigner(email: string, password: string, fullName: string, avatarId: ProfileAvatarId, captchaToken?: string) {
   if (!isSupabaseConfigured || !supabase) throw new Error("Supabase Auth is not configured.");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
-      data: { full_name: fullName },
+      data: { full_name: fullName, profile_avatar_id: avatarId },
       ...(captchaToken ? { captchaToken } : {})
     }
   });
   if (error) throw error;
   if (!data.user) throw new Error("No user returned by Supabase Auth.");
-  const designer = { id: data.user.id, email: data.user.email ?? email };
+  const designer = designerFromUser(data.user);
   if (data.session) {
     await syncDesignerProfile(designer);
     window.dispatchEvent(new Event("ritual-designer-auth"));

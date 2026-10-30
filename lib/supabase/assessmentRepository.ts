@@ -630,15 +630,28 @@ export async function createSupabaseAssessment(language: Assessment["language"])
 
 export async function createSupabaseDateFindingAssessment(language: Assessment["language"]) {
   const messages = getMessages(language);
-  const presetActivity = createActivityPreset("scheduling", 0, "", language);
-  if (presetActivity.type !== "scheduling") throw new Error("Unable to create scheduling activity.");
+  const participantDetailsPreset = createActivityPreset("profiling", 0, "", language);
+  const schedulingPreset = createActivityPreset("scheduling", 1, "", language);
+  if (participantDetailsPreset.type !== "profiling" || schedulingPreset.type !== "scheduling") {
+    throw new Error("Unable to create date-finding activities.");
+  }
+
+  const participantDetails: Activity = {
+    ...participantDetailsPreset,
+    title: messages.presets.assessment.dateFindingParticipantTitle,
+    prompt: messages.presets.assessment.dateFindingParticipantPrompt,
+    fields: [
+      { ...participantDetailsPreset.fields[0], label: messages.presets.assessment.dateFindingParticipantName, fieldType: "text", required: true },
+      { ...participantDetailsPreset.fields[1], label: messages.presets.assessment.dateFindingParticipantContact, fieldType: "text", required: false }
+    ]
+  };
 
   return createAssessmentThroughApi({
     language,
     title: messages.presets.assessment.dateFindingTitle,
     description: messages.presets.assessment.dateFindingDescription,
-    activities: [{
-      ...presetActivity,
+    activities: [participantDetails, {
+      ...schedulingPreset,
       title: messages.presets.assessment.dateFindingActivityTitle,
       prompt: messages.presets.assessment.dateFindingActivityPrompt,
       slots: []

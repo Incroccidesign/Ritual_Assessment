@@ -428,10 +428,14 @@ export function AssessmentRunner({ token }: { token: string }) {
             <ActivityReview activity={activity} answer={currentAnswer} />
             <div className="mt-auto pt-8">
               <Button type="button" className="w-full min-h-14 text-base" disabled={saving} onClick={() => void goNext()}>
-                {saving ? messages.app.loading : currentIndex >= activities.length - 1 ? messages.common.submitAssessment : messages.common.next}
+                {saving
+                  ? messages.app.loading
+                  : currentIndex >= activities.length - 1
+                    ? activity.type === "scheduling" ? messages.participant.scheduling.submitAvailability : messages.common.submitAssessment
+                    : messages.common.next}
               </Button>
               <Button type="button" variant="ghost" className="mt-2 w-full min-h-11 text-base" disabled={saving} onClick={goBack}>
-                {messages.common.back}
+                {activity.type === "scheduling" ? messages.participant.scheduling.editAvailability : messages.common.back}
               </Button>
             </div>
           </div>
