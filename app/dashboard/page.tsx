@@ -149,9 +149,9 @@ function DashboardContent({ designer }: { designer: Designer }) {
     entries: filteredEntries.filter((entry) => updatedDateGroup(entry.updatedAt, todayOrdinal) === group.id)
   }));
   const dashboardSections: DashboardSection[] = [
-    { id: "favorites", label: "Favorites", entries: filteredEntries.filter((entry) => favoriteIds.has(`${entry.type}:${entry.id}`)) },
+    { id: "favorites", label: messages.dashboard.sectionFavorites, entries: filteredEntries.filter((entry) => favoriteIds.has(`${entry.type}:${entry.id}`)) },
     { id: "drafts", label: messages.dashboard.sectionDrafts, entries: filteredEntries.filter((entry) => entry.group === "drafts") },
-    { id: "all", label: "All Rituals", entries: filteredEntries, dateGroups: allDateGroups }
+    { id: "all", label: messages.dashboard.sectionAllRituals, entries: filteredEntries, dateGroups: allDateGroups }
   ];
 
   function resetDashboardFilters() {
@@ -396,7 +396,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
   async function handleRitualFile(file: File | null) {
     if (!file) return;
     if (file.size > 1024 * 1024) {
-      setError("The Ritual file is too large. Choose a file smaller than 1 MB.");
+      setError(messages.dashboard.importFileTooLarge);
       return;
     }
     try {
@@ -406,7 +406,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
       setLiveCloseRequested(false);
       router.push(href("/dashboard?setup=collective"), { scroll: false });
     } catch {
-      setError("This is not a valid Ritual file.");
+      setError(messages.dashboard.invalidImportFile);
     }
   }
 
@@ -436,13 +436,13 @@ function DashboardContent({ designer }: { designer: Designer }) {
                         setLiveCloseRequested(false);
                         router.push(href("/dashboard?setup=collective"), { scroll: false });
                       }}>
-                        <div className="flex items-center gap-3"><Image src="/illustrations/Collective.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">Collective</h2><p className="mt-1 text-sm leading-5 text-bone/60">Together, in real time.</p></div></div>
+                        <div className="flex items-center gap-3"><Image src="/illustrations/Collective.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">{messages.dashboard.collective}</h2><p className="mt-1 text-sm leading-5 text-bone/60">{messages.dashboard.collectiveDescription}</p></div></div>
                       </button>
                       <button type="button" className="block w-full rounded-md px-3 py-3 text-left transition hover:bg-bone/6 focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => setCreationType("assessment")}>
-                        <div className="flex items-center gap-3"><Image src="/illustrations/Individual.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">Individual</h2><p className="mt-1 text-sm leading-5 text-bone/60">Completed independently.</p></div></div>
+                        <div className="flex items-center gap-3"><Image src="/illustrations/Individual.svg" alt="" width={48} height={48} aria-hidden="true" className="shrink-0" /><div><h2 className="font-heading text-xl font-semibold text-bone">{messages.dashboard.individual}</h2><p className="mt-1 text-sm leading-5 text-bone/60">{messages.dashboard.individualDescription}</p></div></div>
                       </button>
                       <div className="mx-3 border-t border-bone/10" />
-                      <button type="button" className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-bone/62 transition hover:bg-bone/6 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => ritualFileInputRef.current?.click()}>Import ritual</button>
+                      <button type="button" className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-bone/62 transition hover:bg-bone/6 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint" onClick={() => ritualFileInputRef.current?.click()}>{messages.dashboard.importRitual}</button>
                     </div>
                   </Card>
                 ) : <AssessmentCreationCard
@@ -623,6 +623,7 @@ function DashboardContent({ designer }: { designer: Designer }) {
 }
 
 function CreationDialog({ children, label, onClose, closing = false, mobileFullScreen = false }: { children: React.ReactNode; label: string; onClose?: () => void; closing?: boolean; mobileFullScreen?: boolean }) {
+  const { messages } = useLocale();
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -634,7 +635,7 @@ function CreationDialog({ children, label, onClose, closing = false, mobileFullS
   return (
     <div className={`ritual-dialog-backdrop fixed inset-0 z-50 flex ${mobileFullScreen ? "items-stretch p-0 sm:items-center sm:justify-center sm:p-4" : "items-center justify-center p-4"}`} onMouseDown={() => !closing && onClose?.()}>
       <div role="dialog" aria-modal="true" aria-label={label} className={`ritual-overlay-surface ritual-dialog-panel modal-scroll relative w-full overflow-y-auto ${mobileFullScreen ? "h-[100dvh] max-h-[100dvh] max-w-none rounded-none border-0 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-5xl sm:rounded-lg sm:border sm:p-8" : "max-h-[calc(100dvh-2rem)] max-w-5xl rounded-lg border p-5 sm:p-8"}`} onMouseDown={(event) => event.stopPropagation()}>
-        {onClose ? <button type="button" aria-label="Close" disabled={closing} onClick={onClose} className="absolute right-3 top-3 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50 sm:right-4 sm:top-4"><X size={18} aria-hidden="true" /></button> : null}
+        {onClose ? <button type="button" aria-label={messages.assessmentCreate.close} disabled={closing} onClick={onClose} className="absolute right-3 top-3 z-10 rounded-md p-2 text-bone/55 transition hover:bg-bone/10 hover:text-bone focus:outline-none focus:ring-2 focus:ring-mint disabled:cursor-not-allowed disabled:opacity-50 sm:right-4 sm:top-4"><X size={18} aria-hidden="true" /></button> : null}
         {children}
       </div>
     </div>

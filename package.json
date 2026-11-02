@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "i18n:audit": "node scripts/audit-locales.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.6.1",

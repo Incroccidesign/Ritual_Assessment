@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Assessment } from "@/types/assessment";
 import { Button, ButtonLink, SubtlePanel } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { participantPathForAssessment } from "@/lib/i18n/detectAssessmentLocale";
 import { publishSupabaseAssessment } from "@/lib/supabase/assessmentRepository";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { PublishSuccessDialog } from "@/components/dashboard/PublishSuccessDialog";
@@ -33,7 +34,7 @@ export function LinkGenerator({
   const [publishing, setPublishing] = useState(false);
   const [publishedAssessment, setPublishedAssessment] = useState<Assessment | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const publicPath = assessment.publicToken ? `/participate/${assessment.publicToken}` : "";
+  const publicPath = assessment.publicToken ? participantPathForAssessment(assessment.publicToken, assessment.activities) : "";
   const publicLink = useMemo(() => {
     if (!assessment.publicToken || typeof window === "undefined") return "";
     return `${window.location.origin}${publicPath}`;

@@ -8,6 +8,7 @@ import { Check, CheckCircle2, X } from "lucide-react";
 import { Assessment } from "@/types/assessment";
 import { Button, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { participantPathForAssessment } from "@/lib/i18n/detectAssessmentLocale";
 
 export function PublishSuccessDialog({
   assessment,
@@ -20,7 +21,7 @@ export function PublishSuccessDialog({
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
-  const participantPath = assessment.publicToken ? href(`/participate/${assessment.publicToken}`) : "";
+  const participantPath = assessment.publicToken ? participantPathForAssessment(assessment.publicToken, assessment.activities) : "";
   const titleId = `publish-success-title-${assessment.id}`;
 
   if (typeof document === "undefined") return null;

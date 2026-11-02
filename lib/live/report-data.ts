@@ -14,7 +14,7 @@ export function buildLiveReport(snapshot: LiveSessionSnapshot, language: Languag
   const responses = snapshot.responses.map((r) => {
     const categories = normalizeSurfaceInputTypes(activity(r.live_activity_id)?.surface_input_types as SurfaceInputType[] | null);
     const matched = categories.find((c) => c.id === resolveSurfaceCategoryId(r.response_category, categories));
-    const category = r.activity_type !== "traccia" ? "" : matched ? surfaceLabel(matched, language) : r.response_category || (language === "it" ? "Senza categoria" : "Uncategorized");
+    const category = r.activity_type !== "traccia" ? "" : matched ? surfaceLabel(matched, language) : r.response_category || messages.categories.unclassified;
     return { ...activityFields(r.live_activity_id), ...participant(r.participant_id), response: r.response_text, category_id: r.response_category ?? "", category, created_at: r.created_at };
   });
   const priority = snapshot.priorityItems.map((i) => ({ ...activityFields(i.live_activity_id), item_id: i.id, item: i.label, source: i.source_type, votes: snapshot.priorityVotes.filter((v) => v.live_priority_item_id === i.id).length })).sort((a,b) => b.votes-a.votes);

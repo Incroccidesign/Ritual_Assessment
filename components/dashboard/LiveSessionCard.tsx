@@ -26,7 +26,7 @@ export function liveDashboardDestination(session: LiveSession) {
 export function LiveSessionCard({ session, onDelete, favorite = false, onToggleFavorite }: { session: DashboardLiveSession; onDelete?: (sessionId: string) => void; favorite?: boolean; onToggleFavorite?: () => void }) {
   const router = useRouter();
   const { locale, messages, href } = useLocale();
-  const liveMessages = getLiveMessages(locale === "it" ? "it" : "en");
+  const liveMessages = getLiveMessages(locale);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -37,7 +37,7 @@ export function LiveSessionCard({ session, onDelete, favorite = false, onToggleF
   const primaryLabel = messages.liveSessions.primary[session.status];
   const canManageActivities = ["draft", "setup", "lobby"].includes(session.status);
   const canAccessResults = ["live", "intermission", "closed"].includes(session.status);
-  const reportLanguage = locale === "it" ? "it" : "en";
+  const reportLanguage = locale;
   useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
 
   async function download(kind: "docx" | "excel") {
@@ -100,7 +100,7 @@ export function LiveSessionCard({ session, onDelete, favorite = false, onToggleF
           <span className="truncate text-sm font-medium text-bone">{messages.dashboard.collective}</span>
           <span aria-hidden="true" className="text-sm text-bone/70">•</span>
           <span className="truncate text-sm text-bone">{status}</span>
-          {onToggleFavorite ? <button type="button" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} title={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} onClick={onToggleFavorite} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
+          {onToggleFavorite ? <button type="button" aria-label={favorite ? messages.dashboard.removeFromFavorites : messages.dashboard.addToFavorites} title={favorite ? messages.dashboard.removeFromFavorites : messages.dashboard.addToFavorites} aria-pressed={favorite} onClick={onToggleFavorite} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
         </div>
         <div className="shrink-0">
           <div ref={menuRef} className="relative">

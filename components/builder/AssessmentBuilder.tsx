@@ -47,8 +47,17 @@ function durationRangeFromText(value?: string) {
 }
 
 function formatEstimatedDuration(min: number, max: number, locale: Locale) {
-  if (locale === "it") return `${min}–${max} minuti`;
-  return `${min}–${max} minutes`;
+  const unit: Record<Locale, string> = {
+    en: "minutes",
+    fr: "minutes",
+    it: "minuti",
+    bg: "минути",
+    pl: "min",
+    tr: "dakika",
+    de: "Minuten",
+    "pt-PT": "minutos"
+  };
+  return `${min}–${max} ${unit[locale]}`;
 }
 
 export function AssessmentBuilder({

@@ -15,9 +15,10 @@ export function getPublicBaseUrl() {
   return browserOrigin.replace(/\/$/, "");
 }
 
-export function getJoinUrl(sessionId: string, joinToken?: string | null) {
+export function getJoinUrl(sessionId: string, joinToken?: string | null, locale?: string) {
   const tokenParam = joinToken ? `&join=${encodeURIComponent(joinToken)}` : "";
-  return `${getPublicBaseUrl()}/live/join?id=${encodeURIComponent(sessionId)}${tokenParam}`;
+  const localeParam = locale ? `&locale=${encodeURIComponent(locale)}` : "";
+  return `${getPublicBaseUrl()}/live/join?id=${encodeURIComponent(sessionId)}${tokenParam}${localeParam}`;
 }
 
 export function isLocalhostUrl(value: string) {

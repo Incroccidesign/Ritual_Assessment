@@ -89,8 +89,8 @@ export function getLegalDocument(locale: Locale, document: LegalDocumentId) {
 }
 
 export const legalDocumentLinks: Array<{ id: LegalDocumentId; label: Record<Locale, string> }> = [
-  { id: "privacy", label: { it: "Privacy", en: "Privacy", fr: "Confidentialité" } },
-  { id: "terms", label: { it: "Termini", en: "Terms", fr: "Conditions" } },
-  { id: "data-processing", label: { it: "Accordo dati", en: "Data agreement", fr: "Accord de données" } },
-  { id: "cookies", label: { it: "Cookie", en: "Cookies", fr: "Cookies" } }
+  { id: "privacy", label: { it: "Privacy", en: "Privacy", fr: "Confidentialité", bg: "Поверителност", pl: "Prywatność", tr: "Gizlilik", de: "Datenschutz", "pt-PT": "Privacidade" } },
+  { id: "terms", label: { it: "Termini", en: "Terms", fr: "Conditions", bg: "Условия", pl: "Warunki", tr: "Koşullar", de: "Nutzungsbedingungen", "pt-PT": "Termos" } },
+  { id: "data-processing", label: { it: "Accordo dati", en: "Data agreement", fr: "Accord de données", bg: "Споразумение за данни", pl: "Umowa o przetwarzaniu danych", tr: "Veri sözleşmesi", de: "Datenverarbeitungsvereinbarung", "pt-PT": "Acordo de tratamento de dados" } },
+  { id: "cookies", label: { it: "Cookie", en: "Cookies", fr: "Cookies", bg: "Бисквитки", pl: "Pliki cookie", tr: "Çerezler", de: "Cookies", "pt-PT": "Cookies" } }
 ];

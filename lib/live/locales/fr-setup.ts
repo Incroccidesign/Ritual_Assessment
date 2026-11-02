@@ -1,10 +1,14 @@
 import { en } from "@/lib/live/locales/en";
 
-// The live setup has its own dictionary; the rest of the live experience retains
-// its existing language support until those screens are translated separately.
+// French overrides the shared collective catalog while retaining the English
+// fallback for strings that do not yet have a French translation.
 export const frSetup = {
   ...en,
-  common: { ...en.common, loading: "Chargement…", sessionNotFound: "Rituel introuvable", optional: "Facultatif", close: "Fermer" },
+  language: { code: "fr", label: "Français", short: "FR" },
+  common: { ...en.common, loading: "Chargement…", sessionNotFound: "Rituel introuvable", optional: "Facultatif", close: "Fermer", moveUp: "Monter", moveDown: "Descendre", remove: "Supprimer" },
+  categories: { ...en.categories, unclassified: "Sans catégorie" },
+  live: { ...en.live, categoryRequired: "Choisissez une catégorie avant l'envoi.", categoryRequiredLabel: "Choisissez une catégorie (obligatoire)", archiveRun: "Archive · session", participantCountLabel: "participants", responseCountLabel: "réponses", previousReports: "Rapports précédents", currentRun: "Session actuelle", runLabel: "Session" },
+  export: { ...en.export, voteLabel: "votes", finalProposal: "Proposition finale", confirmedWithRound: "confirmée, tour", confirmedRound: "Tour confirmé", unconfirmed: "non confirmée" },
   home: { ...en.home, invalidRitualFile: "Fichier de rituel invalide", unableToLoadRitualFile: "Impossible de charger ce fichier" },
   activities: {
     innesco: { ...en.activities.innesco, name: "Déclencheur", setupDescription: "Commencez par une réponse courte.", defaultPrompt: "En un mot : avec quelle énergie arrivez-vous aujourd'hui ?" },

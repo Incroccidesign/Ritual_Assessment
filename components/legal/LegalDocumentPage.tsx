@@ -7,7 +7,7 @@ import { type LegalDocumentId, getLegalDocument } from "@/lib/legal/documents";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 export function LegalDocumentPage({ document }: { document: LegalDocumentId }) {
-  const { href, locale } = useLocale();
+  const { href, locale, messages } = useLocale();
   const content = getLegalDocument(locale, document);
 
   return (
@@ -15,7 +15,7 @@ export function LegalDocumentPage({ document }: { document: LegalDocumentId }) {
       <article className="pb-2">
         <Link href={href("/")} className="text-sm text-bone/58 transition hover:text-bone">← Ritual</Link>
         <h1 className="mt-6 font-heading text-4xl font-semibold text-bone">{content.title}</h1>
-        {locale !== "it" ? <p className="mt-3 rounded-md border border-mint/20 bg-mint/5 p-3 text-xs leading-5 text-bone/65">The governing legal text is currently published in Italian.</p> : null}
+        {locale !== "it" ? <p className="mt-3 rounded-md border border-mint/20 bg-mint/5 p-3 text-xs leading-5 text-bone/65">{messages.auth.legalTextNotice}</p> : null}
         <p className="mt-4 text-sm leading-6 text-bone/68">{content.intro}</p>
         <p className="mt-3 text-xs text-bone/45">{content.updatedLabel}</p>
         <div className="mt-7 space-y-4">

@@ -36,8 +36,6 @@ const activityIllustrations: Partial<Record<ActivityType, string>> = {
 const activityIcons: Record<ActivityType, typeof Flame> = {
   innesco: Flame, traccia: Layers, focus: Focus, priorita: ListChecks, patto: Handshake
 };
-const frenchSurfaceNames: Record<string, string> = { issues: "Difficultés", barriers: "Obstacles", opportunities: "Opportunités", signals: "Signaux" };
-const frenchSurfaceColors: Record<SurfaceColorKey, string> = { orange: "Orange", mint: "Menthe", violet: "Violet", blue: "Bleu", yellow: "Jaune", rose: "Rose", gray: "Gris" };
 
 function ActivityIcon({ type, className, size = 22 }: { type: ActivityType; className?: string; size?: number }) {
   const illustration = activityIllustrations[type];
@@ -61,8 +59,8 @@ type SetupContentProps = {
 export function SetupContent({ embedded = false, onDismiss, closeRequested = false, onCloseCancelled, sessionId: embeddedSessionId = null }: SetupContentProps) {
   const router = useRouter();
   const params = useSearchParams();
-  const { language, locale, messages: liveMessages, href } = useLanguage();
-  const messages = locale === "fr" ? frSetup : liveMessages;
+  const { language, messages: liveMessages, href } = useLanguage();
+  const messages = liveMessages;
   const sessionId = embedded ? embeddedSessionId : params.get("id");
   const { snapshot, loading: sessionLoading } = useLiveSessionSnapshot(sessionId);
   const hydratedSessionId = useRef<string | null>(null);
@@ -227,7 +225,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
         timer_enabled: true,
         timer_duration: defaultActivityDuration(type),
         show_live_results: true,
-        surface_input_types: type === "traccia" ? defaultSurfaceInputTypes().map((item) => locale === "fr" ? { ...item, label: { ...item.label, en: frenchSurfaceNames[item.id] ?? item.label.en } } : item) : null,
+        surface_input_types: type === "traccia" ? defaultSurfaceInputTypes() : null,
         priority_source_type: "manual",
         priority_source_activity_order: null,
         priority_source_activity_local_id: null,
@@ -335,10 +333,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
         return {
           ...item,
           ...patch,
-          label: {
-            it: patch.label?.it ?? item.label.it,
-            en: patch.label?.en ?? item.label.en
-          }
+          label: patch.label ? { ...item.label, ...patch.label } : item.label
         };
       })
     });
@@ -360,7 +355,13 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
           id: uid("surface_type"),
           label: {
             it: `Categoria ${nextIndex}`,
-            en: `Category ${nextIndex}`
+            en: `Category ${nextIndex}`,
+            fr: `Catégorie ${nextIndex}`,
+            bg: `Категория ${nextIndex}`,
+            pl: `Kategoria ${nextIndex}`,
+            tr: `Kategori ${nextIndex}`,
+            de: `Kategorie ${nextIndex}`,
+            "pt-PT": `Categoria ${nextIndex}`
           },
           color: surfaceColorPalette[nextIndex % surfaceColorPalette.length].key
         }
@@ -701,7 +702,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           ) : null}
                           <button
                             type="button"
-                            aria-label={locale === "fr" ? `Monter ${description.name}` : `Move ${description.name} up`}
+                            aria-label={`${messages.common.moveUp} ${description.name}`}
                             onClick={() => moveActivity(activity.local_id, -1)}
                             className="rounded-md border border-bone/10 p-2 text-bone/58"
                           >
@@ -709,7 +710,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           </button>
                           <button
                             type="button"
-                            aria-label={locale === "fr" ? `Descendre ${description.name}` : `Move ${description.name} down`}
+                            aria-label={`${messages.common.moveDown} ${description.name}`}
                             onClick={() => moveActivity(activity.local_id, 1)}
                             className="rounded-md border border-bone/10 p-2 text-bone/58"
                           >
@@ -717,7 +718,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                           </button>
                           <button
                             type="button"
-                            aria-label={locale === "fr" ? `Supprimer ${description.name}` : `Remove ${description.name}`}
+                            aria-label={`${messages.common.remove} ${description.name}`}
                             onClick={() => removeActivity(activity.local_id)}
                             className="rounded-md border border-orange/20 p-2 text-orange"
                           >
@@ -761,15 +762,13 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                           <input
                                             aria-label={`${messages.setup.surfaceCategoryNamePlaceholder} ${categoryIndex + 1}`}
                                             className={inputClass}
-                                            value={surfaceType.label[language]}
+                                            value={surfaceType.label[language] || surfaceType.label.en || surfaceType.label.it}
                                             placeholder={messages.setup.surfaceCategoryNamePlaceholder}
                                             onChange={(event) =>
                                               updateSurfaceInputType(activity.local_id, surfaceType.id, {
                                                 label: {
                                                   ...surfaceType.label,
-                                                  [language]: event.target.value,
-                                                  [language === "it" ? "en" : "it"]:
-                                                    surfaceType.label[language === "it" ? "en" : "it"] || event.target.value
+                                                  [language]: event.target.value
                                                 }
                                               })
                                             }
@@ -796,8 +795,8 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                               <button
                                                 key={color.key}
                                                 type="button"
-                                                title={`${messages.setup.surfaceColorLabel}: ${locale === "fr" ? frenchSurfaceColors[color.key] : surfaceColorName(color.key, language)}`}
-                                                aria-label={`${messages.setup.surfaceColorLabel}: ${locale === "fr" ? frenchSurfaceColors[color.key] : surfaceColorName(color.key, language)}`}
+                                                title={`${messages.setup.surfaceColorLabel}: ${surfaceColorName(color.key, language)}`}
+                                                aria-label={`${messages.setup.surfaceColorLabel}: ${surfaceColorName(color.key, language)}`}
                                                 onClick={() => updateSurfaceInputType(activity.local_id, surfaceType.id, { color: color.key as SurfaceColorKey })}
                                                 className={cn(
                                                   "inline-flex h-8 w-8 items-center justify-center rounded-full border transition",
@@ -809,7 +808,7 @@ export function SetupContent({ embedded = false, onDismiss, closeRequested = fal
                                             );
                                           })}
                                         </div>
-                                        <span className={cn("text-sm font-medium", colorStyle.textClass)}>{surfaceType.label[language] || messages.setup.surfaceCategoryNamePlaceholder}</span>
+                                        <span className={cn("text-sm font-medium", colorStyle.textClass)}>{surfaceType.label[language] || surfaceType.label.en || messages.setup.surfaceCategoryNamePlaceholder}</span>
                                       </div>
                                     </div>
                                   );

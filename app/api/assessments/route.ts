@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import type { Assessment } from "@/types/assessment";
 import type { ActivityType } from "@/types/activity";
+import { locales } from "@/lib/i18n/config";
 import { createSupabaseAdminClient, requireRequestUser } from "@/lib/server/supabaseAdmin";
 
-const languages = new Set<Assessment["language"]>(["en", "fr", "it"]);
+const languages = new Set<Assessment["language"]>(locales);
 const activityTypes = new Set<ActivityType>(["profiling", "exploration", "prioritization", "framing", "planning_report", "scheduling"]);
 const maxActivities = 50;
 const maxActivityConfigBytes = 64_000;

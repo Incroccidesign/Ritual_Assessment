@@ -36,7 +36,7 @@ export function AccountMenu({ designer }: { designer: Designer }) {
             <div className="my-1 border-t border-bone/10" />
             <div className="px-3 pb-2 pt-1">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-bone/48">{messages.account.language}</p>
-              <div className="mt-2 flex gap-1">
+              <div className="mt-2 grid grid-cols-2 gap-1">
                 {locales.map((item) => (
                   <button key={item} type="button" role="menuitemradio" aria-checked={locale === item} onClick={() => setLocale(item)} className={cn("min-h-8 flex-1 rounded px-2 text-xs font-semibold transition", locale === item ? "bg-bone text-night" : "bg-bone/5 text-bone/65 hover:bg-bone/10 hover:text-bone")}>
                     {localeNames[item]}

@@ -11,18 +11,19 @@ type LanguageSwitcherProps = {
 };
 
 export function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps) {
-  const { locale, locales, localeNames, setLocale } = useLocale();
+  const { locale, locales, localeNames, messages, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const isMinimal = variant === "minimal";
+  const useDropdown = variant === "dropdown" || locales.length > 4;
   useDismissiblePopover(open, popoverRef, () => setOpen(false));
 
-  if (variant === "dropdown") {
+  if (useDropdown) {
     return (
       <div ref={popoverRef} className="relative">
         <button
           type="button"
-          aria-label="Language"
+          aria-label={messages.account.language}
           aria-haspopup="menu"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}

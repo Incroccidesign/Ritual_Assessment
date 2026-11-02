@@ -1,8 +1,10 @@
+import type { Locale } from "@/types/locale";
+
 export type LiveActivityType = "innesco" | "traccia" | "focus" | "priorita" | "patto";
 export type ActivityType = LiveActivityType;
 export type ParticipantDetailsMode = LiveParticipantDetailsMode;
 export type SurfaceColorKey = "orange" | "mint" | "violet" | "blue" | "yellow" | "rose" | "gray";
-export type SurfaceInputType = { id: string; label: { it: string; en: string }; color: SurfaceColorKey };
+export type SurfaceInputType = { id: string; label: Record<Locale, string>; color: SurfaceColorKey };
 export type PrioritySourceType = "previous_activity" | "manual" | null;
 export type LiveSessionStatus = "draft" | "setup" | "lobby" | "live" | "intermission" | "closed";
 export type LiveActivityStatus = "pending" | "live" | "paused" | "completed";

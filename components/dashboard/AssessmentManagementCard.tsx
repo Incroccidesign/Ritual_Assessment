@@ -10,6 +10,8 @@ import { AssessmentResponse } from "@/types/response";
 import { AssessmentCollaborators } from "@/components/collaboration/AssessmentCollaborators";
 import { Button, ButtonLink, Card } from "@/components/ritual-ui";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { formatResponseCount } from "@/lib/i18n/formatResponseCount";
+import { participantPathForAssessment } from "@/lib/i18n/detectAssessmentLocale";
 import { useDismissiblePopover } from "@/lib/ui/use-dismissible-popover";
 import { confirmSchedulingSlot, deleteSupabaseAssessment, fetchAssessmentResponses, publishSupabaseAssessment, resetSupabaseAssessmentResults, setSupabaseAssessmentStatus } from "@/lib/supabase/assessmentRepository";
 import { schedulingVotes, slotLabel } from "@/lib/activities/scheduling";
@@ -64,6 +66,7 @@ export function AssessmentManagementCard({
   useDismissiblePopover(menuOpen, menuRef, () => setMenuOpen(false));
   const scheduling = assessment.activities.find((activity): activity is SchedulingActivity => activity.type === "scheduling");
   const schedulingSummary = scheduling ? schedulingVotes(scheduling, closeResponses).slice(0, 3) : [];
+  const responseCountLabel = formatResponseCount(responseCount, locale, messages.dashboard.responseCount);
   function statusLabel() {
     if (assessment.status === "draft") return messages.dashboard.draft;
     if (assessment.status === "published") return messages.dashboard.published;
@@ -82,7 +85,7 @@ export function AssessmentManagementCard({
       return;
     }
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}${href(`/participate/${assessment.publicToken}`)}`);
+      await navigator.clipboard.writeText(`${window.location.origin}${participantPathForAssessment(assessment.publicToken, assessment.activities)}`);
       setNotice(null);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1400);
@@ -158,7 +161,7 @@ export function AssessmentManagementCard({
       onResetResults?.(assessment.id);
       setResetOpen(false);
     } catch {
-      setNotice("Unable to reset results. Please try again.");
+      setNotice(messages.dashboard.resetResultsError);
     } finally {
       setResetting(false);
     }
@@ -168,10 +171,10 @@ export function AssessmentManagementCard({
     <Card className={`dashboard-card-hover-target relative flex min-h-[208px] h-full flex-col !p-6 !shadow-none ${assessment.status === "draft" ? "dashboard-card-individual-draft" : "dashboard-card-individual"}`}>
       <div className="flex h-6 items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-sm font-medium text-bone">Individual</span>
+          <span className="truncate text-sm font-medium text-bone">{messages.dashboard.individual}</span>
           <span aria-hidden="true" className="text-sm text-bone/70">•</span>
           <span className="truncate text-sm text-bone">{statusLabel()}</span>
-          {onToggleFavorite ? <button type="button" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} title={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} onClick={() => onToggleFavorite(assessment)} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
+          {onToggleFavorite ? <button type="button" aria-label={favorite ? messages.dashboard.removeFromFavorites : messages.dashboard.addToFavorites} title={favorite ? messages.dashboard.removeFromFavorites : messages.dashboard.addToFavorites} aria-pressed={favorite} onClick={() => onToggleFavorite(assessment)} className="relative z-20 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-bone/75 transition hover:text-bone focus:outline-none focus:ring-2 focus:ring-bone/60"><Star size={18} fill={favorite ? "currentColor" : "none"} /></button> : null}
         </div>
         <div className={`relative shrink-0 ${menuOpen ? "z-30" : "z-10"}`}>
           <div ref={menuRef} className="relative">
@@ -199,14 +202,14 @@ export function AssessmentManagementCard({
                 triggerClassName="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left"
               />
               <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); onDuplicate?.(assessment); }}>
-                <CopyPlus size={16} /> <span>Duplicate</span>
+                <CopyPlus size={16} /> <span>{messages.liveSessions.duplicate}</span>
               </Button>
               <ButtonLink href={href(`/assessments/${assessment.id}/results`)} variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left">
                 <FileText size={16} /> <span>{messages.dashboard.viewResults}</span>
               </ButtonLink>
               {assessment.ownerId === currentUserId && responseCount > 0 ? (
                 <Button type="button" variant="ghost" className="grid w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-3 !justify-start px-3 text-left" onClick={() => { setMenuOpen(false); setResetOpen(true); }}>
-                  <RotateCcw size={16} /> <span>Reset results</span>
+                  <RotateCcw size={16} /> <span>{messages.dashboard.resetResults}</span>
                 </Button>
               ) : null}
               {assessment.status === "published" ? (
@@ -250,14 +253,14 @@ export function AssessmentManagementCard({
         <div className="pointer-events-none relative z-10 flex justify-end pt-0">
         {assessment.status === "draft" ? (
           <Button type="button" variant="ghost" className="pointer-events-auto dashboard-card-cta !min-h-8 !h-8 !px-3" onClick={() => void publishAssessment()} disabled={publishing}>
-            {publishing ? messages.app.loading : "Publish"}
+            {publishing ? messages.app.loading : messages.common.publish}
           </Button>
         ) : assessment.status === "published" ? (
           <div className="pointer-events-auto flex translate-y-2 items-center gap-2">
             {assessment.publicToken ? <button type="button" aria-label={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} title={copied ? messages.dashboard.linkCopied : messages.dashboard.copyLink} className="dashboard-card-hover-reveal dashboard-card-copy-link" onClick={() => void copyPublicLink()}>
               {copied ? <Check key="copied" aria-hidden="true" size={16} strokeWidth={2.6} className="dashboard-card-copy-check text-mint" /> : <Image key="copy-link" src="/icons/dashboard-copy-participant-link.svg" alt="" aria-hidden="true" width={16} height={16} className="size-4" />}
             </button> : null}
-            <span className="text-sm font-medium text-bone">{responseCount} responses</span>
+            <span className="text-sm font-medium text-bone">{responseCountLabel}</span>
             {copied ? <span className="sr-only" role="status">{messages.dashboard.linkCopied}</span> : null}
           </div>
         ) : (
@@ -288,16 +291,14 @@ export function AssessmentManagementCard({
       {resetOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020611]/[0.94] p-4 backdrop-blur-[64px]">
           <Card className="ritual-overlay-surface w-full max-w-md border">
-            <h3 className="font-heading text-2xl font-semibold text-bone">Reset results?</h3>
-            <p className="mt-3 text-sm leading-6 text-bone/62">
-              This permanently deletes {responseCount} {responseCount === 1 ? "response" : "responses"} and all participant records for this ritual. The ritual and its link stay unchanged, so it can receive new responses immediately.
-            </p>
+            <h3 className="font-heading text-2xl font-semibold text-bone">{messages.dashboard.resetResultsTitle}</h3>
+            <p className="mt-3 text-sm leading-6 text-bone/62">{messages.dashboard.resetResultsBody}</p>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="ghost" onClick={() => setResetOpen(false)} disabled={resetting}>
                 {messages.common.cancel}
               </Button>
               <Button type="button" variant="danger" onClick={() => void confirmResetResults()} disabled={resetting}>
-                {resetting ? messages.app.loading : "Reset results"}
+                {resetting ? messages.app.loading : messages.dashboard.resetResults}
               </Button>
             </div>
           </Card>
@@ -313,7 +314,7 @@ export function AssessmentManagementCard({
             <p className="mt-3 text-sm leading-6 text-bone/62">
               {statusAction === "pause" ? messages.dashboard.pauseBody : messages.dashboard.closeBody}
             </p>
-            {statusAction === "close" && scheduling ? <div className="mt-5 space-y-2 border-t border-bone/10 pt-4"><p className="text-sm font-semibold text-bone">Availability ({closeResponses.filter((response) => response.activityResponses.some((item) => item.activityId === scheduling.id && "slotIds" in item.answer)).length} respondents)</p>{loadingCloseResponses ? <p className="text-sm text-bone/55">{messages.app.loading}</p> : schedulingSummary.map(({ slot, count, percentage }) => <label key={slot.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-bone/10 px-3 py-2 text-sm"><span className="flex items-center gap-2"><input type="radio" name={`confirm-date-${assessment.id}`} checked={closeSlotId === slot.id} onChange={() => setCloseSlotId(slot.id)} />{slotLabel(slot, locale, scheduling.timezone)}</span><span className="text-bone/55">{count} · {percentage}%</span></label>)}<p className="text-xs text-bone/48">Optionally select a date to confirm it when closing.</p></div> : null}
+            {statusAction === "close" && scheduling ? <div className="mt-5 space-y-2 border-t border-bone/10 pt-4"><p className="text-sm font-semibold text-bone">{messages.dashboard.availabilityRespondents.replace("{count}", new Intl.NumberFormat(locale).format(closeResponses.filter((response) => response.activityResponses.some((item) => item.activityId === scheduling.id && "slotIds" in item.answer)).length))}</p>{loadingCloseResponses ? <p className="text-sm text-bone/55">{messages.app.loading}</p> : schedulingSummary.map(({ slot, count, percentage }) => <label key={slot.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-bone/10 px-3 py-2 text-sm"><span className="flex items-center gap-2"><input type="radio" name={`confirm-date-${assessment.id}`} checked={closeSlotId === slot.id} onChange={() => setCloseSlotId(slot.id)} />{slotLabel(slot, locale, scheduling.timezone)}</span><span className="text-bone/55">{count} · {percentage}%</span></label>)}<p className="text-xs text-bone/48">{messages.dashboard.confirmDateOptional}</p></div> : null}
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="ghost" onClick={() => setStatusAction(null)} disabled={publishing}>
                 {messages.common.cancel}

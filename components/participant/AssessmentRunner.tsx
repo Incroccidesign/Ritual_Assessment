@@ -21,6 +21,7 @@ import { getExplorationItems, getRankableItems, getRankingContext } from "@/lib/
 import { emptyAnswerForActivity } from "@/lib/activities/responseMapping";
 import { validateActivityResponse } from "@/lib/activities/validation";
 import { localizeActivityContent } from "@/lib/i18n/localizeActivityContent";
+import { participantLocaleForAssessment } from "@/lib/i18n/detectAssessmentLocale";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
   fetchPublishedAssessmentByToken,
@@ -89,9 +90,10 @@ export function AssessmentRunner({ token }: { token: string }) {
           if (schedulingResults?.activities.length) setPublicSchedulingResults(schedulingResults);
         }
         if (!active) return;
-        if (found && !assessmentLocaleApplied.current && !new URLSearchParams(window.location.search).get("locale")) {
+        const query = new URLSearchParams(window.location.search);
+        if (found && !assessmentLocaleApplied.current && query.get("participantLocaleChoice") !== "1") {
           assessmentLocaleApplied.current = true;
-          setLocale(found.language);
+          setLocale(participantLocaleForAssessment(found.activities), { participantChoice: false });
         }
         setRawAssessment(found);
         if (!found) return;

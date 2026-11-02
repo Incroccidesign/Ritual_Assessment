@@ -24,9 +24,9 @@ export function buildLiveDocx(snapshot: LiveSessionSnapshot, language: Language 
     new Paragraph({ text: `${activity.order_index + 1}. ${messages.activities[activity.activity_type].name}: ${activity.instance_label ?? ""} ${activity.prompt}`, heading: "Heading2" }),
     ...(activity.facilitator_note ? [new Paragraph(activity.facilitator_note)] : []),
     ...data.responses.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`• ${r.category ? `[${r.category}] ` : ""}${r.response} — ${r.participant}${r.role ? ` (${r.role})` : ""}`)),
-    ...data.priority.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`• ${r.item}: ${r.votes} ${language === "it" ? "voti" : "votes"}`)),
-    ...data.pacts.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${language === "it" ? "Proposta finale" : "Final proposal"}: ${r.final_statement} (${r.confirmed_round ? `${language === "it" ? "confermata, turno" : "confirmed, round"} ${r.confirmed_round}` : language === "it" ? "non confermata" : "unconfirmed"})`)),
-    ...data.pactRounds.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${language === "it" ? "Turno" : "Round"} ${r.round}: ${r.proposal} — ${messages.adhesionLabels.Concordo}: ${r.agree}; ${messages.adhesionLabels.Parzialmente}: ${r.partial}; ${messages.adhesionLabels["Non concordo"]}: ${r.disagree}`))
+    ...data.priority.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`• ${r.item}: ${r.votes} ${messages.export.voteLabel}`)),
+    ...data.pacts.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${messages.export.finalProposal}: ${r.final_statement} (${r.confirmed_round ? `${messages.export.confirmedWithRound} ${r.confirmed_round}` : messages.export.unconfirmed})`)),
+    ...data.pactRounds.filter((r) => r.activity_id === activity.id).map((r) => new Paragraph(`${messages.export.roundLabel} ${r.round}: ${r.proposal} — ${messages.adhesionLabels.Concordo}: ${r.agree}; ${messages.adhesionLabels.Parzialmente}: ${r.partial}; ${messages.adhesionLabels["Non concordo"]}: ${r.disagree}`))
   ]);
   return new Document({ sections: [{ children: [new Paragraph({ text: snapshot.session.title, heading: "Title" }), new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows }), ...blocks] }] });
 }

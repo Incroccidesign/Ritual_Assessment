@@ -25,7 +25,7 @@ export default function LobbyPage() {
 function LobbyContent() {
   const params = useSearchParams();
   const router = useRouter();
-  const { messages, href } = useLanguage();
+  const { language, messages, href } = useLanguage();
   const sessionId = params.get("id");
   const { snapshot, loading } = useSessionSnapshot(sessionId);
   const [qrExpanded, setQrExpanded] = useState(false);
@@ -37,8 +37,8 @@ function LobbyContent() {
   const [startError, setStartError] = useState<string | null>(null);
   const joinUrl = useMemo(() => {
     if (!sessionId || !(generatedJoinToken ?? joinToken)) return "";
-    return getJoinUrl(sessionId, generatedJoinToken ?? joinToken);
-  }, [generatedJoinToken, joinToken, sessionId]);
+    return getJoinUrl(sessionId, generatedJoinToken ?? joinToken, language);
+  }, [generatedJoinToken, joinToken, language, sessionId]);
   const isLocalQr = joinUrl ? isLocalhostUrl(joinUrl) : false;
 
   if (loading) return <AuthenticatedLiveShell><p className="text-bone/50">{messages.lobby.loading}</p></AuthenticatedLiveShell>;

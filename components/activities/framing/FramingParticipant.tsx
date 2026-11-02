@@ -37,10 +37,9 @@ export function FramingParticipant({
   answer: FramingAnswer;
   onChange: (answer: FramingAnswer) => void;
 }) {
-  const { locale, messages } = useLocale();
+  const { messages } = useLocale();
   const isMultiQuestion = activity.questions.length > 1;
-  const multiQuestionPlaceholder =
-    locale === "it" ? "Scrivi la tua risposta..." : locale === "fr" ? "Écrivez votre réponse..." : "Write your answer...";
+  const multiQuestionPlaceholder = messages.otherOption.placeholder;
   const questionAnswers = activity.questions.reduce<Record<string, string>>((currentAnswers, question, index) => {
     currentAnswers[question.id] = answer.questionAnswers?.[question.id] ?? (index === 0 ? answer.answer : "");
     return currentAnswers;

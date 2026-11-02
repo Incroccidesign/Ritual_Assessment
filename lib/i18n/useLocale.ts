@@ -51,9 +51,14 @@ export function useLocale() {
   }, [locale, storedLocale]);
 
   const setLocale = useCallback(
-    (nextLocale: Locale) => {
+    (nextLocale: Locale, options: { participantChoice?: boolean } = {}) => {
       const query = new URLSearchParams(window.location.search);
       query.set("locale", nextLocale);
+      if (window.location.pathname.startsWith("/participate/") && options.participantChoice !== false) {
+        query.set("participantLocaleChoice", "1");
+      } else {
+        query.delete("participantLocaleChoice");
+      }
       setStoredLocale(nextLocale);
       window.localStorage.setItem(storageKey, nextLocale);
       window.dispatchEvent(new CustomEvent(localeChangeEvent, { detail: nextLocale }));

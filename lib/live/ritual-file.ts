@@ -1,4 +1,5 @@
 import { dictionaries } from "@/lib/live/i18n";
+import { locales } from "@/lib/i18n/config";
 import { clampPriorityVotesPerParticipant, defaultActivityDuration, DEFAULT_PRIORITY_VOTES_PER_PARTICIPANT, PactStatementMode, ParticipantDetailsMode, LiveSessionSnapshot, SurfaceInputType } from "@/types/live";
 import { cloneSurfaceInputTypes, defaultSurfaceInputTypes, normalizeSurfaceInputTypes } from "@/lib/live/surface-input-types";
 
@@ -124,10 +125,11 @@ function normalizeSurfaceTypesForFile(input: unknown) {
     const labelRecord = asRecord(record.label);
     const it = stringValue(labelRecord.it, record.label_it, record.labelIt, record.name, record.title, record.id);
     const en = stringValue(labelRecord.en, record.label_en, record.labelEn, record.name, record.title, it);
+    const labels = Object.fromEntries(locales.map((locale) => [locale, stringValue(labelRecord[locale], locale === "it" ? it : en)]));
     const id = stringValue(record.id, record.key) || `surface-${index + 1}-${(it || en || "category").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
     return {
       id,
-      label: { it, en },
+      label: { ...labels, it, en },
       color: stringValue(record.color, record.color_key, record.colorKey)
     } as SurfaceInputType;
   }));

@@ -12,6 +12,7 @@ import { useLocale } from "@/lib/i18n/useLocale";
 
 type HomeAuthMode = "sign-in" | "sign-up";
 type ActivityIllustration = "Explore" | "Reflect" | "Prioritize" | "Agree" | "Plan";
+type HeroClaimText = { kind: "claim" | "word"; text: string };
 
 export default function HomePage() {
   return (
@@ -29,7 +30,40 @@ function HomeContent() {
   const authMode: HomeAuthMode | null = authParam === "sign-in" || authParam === "sign-up" ? authParam : null;
   const [authPending, setAuthPending] = useState(false);
   const [openActivity, setOpenActivity] = useState<ActivityIllustration | null>(null);
+  const [heroClaim, setHeroClaim] = useState<HeroClaimText>(() => ({ kind: "claim", text: messages.home.heroClaim }));
+  const [heroClaimTransition, setHeroClaimTransition] = useState<{ from: HeroClaimText; to: HeroClaimText } | null>(null);
+  const [heroClaimIntro, setHeroClaimIntro] = useState(true);
   const previewLabels = { play: messages.home.playPreview, pause: messages.home.pausePreview };
+
+  useEffect(() => {
+    const words = messages.home.heroWords;
+    const transitionDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 140;
+    let current: HeroClaimText = { kind: "claim", text: messages.home.heroClaim };
+    let timeout: number;
+    const introTimeout = window.setTimeout(() => setHeroClaimIntro(false), transitionDuration);
+
+    setHeroClaim(current);
+    setHeroClaimTransition(null);
+
+    function showSequenceItem(index: number) {
+      const next: HeroClaimText = index < words.length
+        ? { kind: "word", text: words[index] }
+        : { kind: "claim", text: messages.home.heroClaim };
+      setHeroClaimTransition({ from: current, to: next });
+      timeout = window.setTimeout(() => {
+        current = next;
+        setHeroClaim(next);
+        setHeroClaimTransition(null);
+        if (index < words.length) timeout = window.setTimeout(() => showSequenceItem(index + 1), 100);
+      }, transitionDuration);
+    }
+
+    timeout = window.setTimeout(() => showSequenceItem(0), 1000);
+    return () => {
+      window.clearTimeout(timeout);
+      window.clearTimeout(introTimeout);
+    };
+  }, [messages.home.heroClaim, messages.home.heroWords]);
 
   const openAuth = useCallback((mode: HomeAuthMode, next?: string) => {
     const params = new URLSearchParams({ auth: mode });
@@ -64,9 +98,19 @@ function HomeContent() {
         <PublicHeader className="absolute inset-x-0 top-0 mx-auto max-w-[92rem] px-5 py-7 md:px-10" onSignIn={() => openAuth("sign-in")} onSignUp={() => openAuth("sign-up")} />
 
         <div className="relative z-10 flex w-full items-center justify-center px-5 py-28 text-center">
-          <div className="flex max-w-2xl flex-col items-center">
-            <p className="font-heading text-4xl font-semibold leading-tight text-bone sm:text-5xl md:text-6xl">
-              {messages.home.heroClaim}
+          <div className="flex w-full max-w-[90rem] flex-col items-center">
+            <p aria-live="polite" aria-atomic="true" className="grid w-full place-items-center overflow-hidden text-balance font-heading text-4xl font-semibold leading-tight text-bone sm:text-5xl md:text-6xl">
+              {heroClaim.kind === "word" || heroClaimTransition?.from.kind === "word" ? (
+                <span aria-hidden="true" className="invisible col-start-1 row-start-1">{messages.home.heroClaim}</span>
+              ) : null}
+              {heroClaimTransition ? (
+                <>
+                  <span aria-hidden="true" className="home-hero-claim-exit col-start-1 row-start-1">{heroClaimTransition.from.text}</span>
+                  <span key={`${heroClaimTransition.to.kind}-${heroClaimTransition.to.text}`} className="home-hero-claim-enter col-start-1 row-start-1">{heroClaimTransition.to.text}</span>
+                </>
+              ) : (
+                <span key={`${heroClaim.kind}-${heroClaim.text}`} className={`col-start-1 row-start-1 ${heroClaimIntro ? "home-hero-claim-enter" : ""}`}>{heroClaim.text}</span>
+              )}
             </p>
             <Button
               type="button"
